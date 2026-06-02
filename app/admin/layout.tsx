@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AdminSidebar } from './_components/admin-sidebar'
-import { RoleSwitcher } from './_components/role-switcher'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -22,7 +21,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <main className="flex-1 overflow-auto bg-[var(--gray-100)] min-w-0">
         {children}
       </main>
-      <RoleSwitcher />
     </div>
   )
 }

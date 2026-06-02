@@ -13,7 +13,7 @@ export default async function RecepcionPage() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'receptionist') redirect('/login')
+  if (profile?.role !== 'receptionist' && profile?.role !== 'admin') redirect('/login')
 
   return (
     <div className="min-h-screen bg-[var(--gray-100)]">

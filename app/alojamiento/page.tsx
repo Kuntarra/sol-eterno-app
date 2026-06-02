@@ -13,7 +13,7 @@ export default async function AlojamientoPage() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'client') redirect('/login')
+  if (profile?.role !== 'client' && profile?.role !== 'admin') redirect('/login')
 
   return (
     <div className="min-h-screen bg-[var(--gray-100)]">
