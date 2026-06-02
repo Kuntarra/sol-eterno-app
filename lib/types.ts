@@ -1,0 +1,130 @@
+export type Role = 'admin' | 'receptionist' | 'client'
+export type PropertyType = 'hotel' | 'hostal' | 'departamento' | 'oficina'
+export type RoomType = 'single' | 'double' | 'triple' | 'suite' | 'shared'
+
+export interface City {
+  id: string
+  name: string
+  created_at: string
+}
+
+export interface Services {
+  wifi: boolean
+  parking: boolean
+  laundry: boolean
+  food: boolean
+  transport: boolean
+  cleaning: boolean
+}
+
+export interface Property {
+  id: string
+  city_id: string
+  name: string
+  type: PropertyType
+  address: string | null
+  icon_url: string | null
+  floors: number | null
+  services: Services
+  active: boolean
+  created_at: string
+  cities?: City
+  rooms?: Room[]
+}
+
+export interface Room {
+  id: string
+  property_id: string
+  number: string
+  floor: number | null
+  type: RoomType | null
+  capacity: number
+  created_at: string
+}
+
+export interface Company {
+  id: string
+  name: string
+  rut: string | null
+  contact_name: string | null
+  contact_phone: string | null
+  contact_email: string | null
+  active: boolean
+  created_at: string
+}
+
+export interface UserProfile {
+  id: string
+  role: Role
+  company_id: string | null
+  full_name: string | null
+  created_at: string
+}
+
+export interface Guest {
+  id: string
+  first_name: string
+  last_name_paterno: string
+  last_name_materno: string | null
+  rut: string | null
+  phone: string | null
+  company_id: string | null
+  created_at: string
+}
+
+export interface Stay {
+  id: string
+  guest_id: string
+  room_id: string
+  company_id: string
+  allocation_id: string | null
+  shift_type: string | null
+  checked_in_at: string
+  checked_out_at: string | null
+  estimated_checkout: string | null
+  notes: string | null
+  checked_in_by: string | null
+  checked_out_by: string | null
+}
+
+export interface Allocation {
+  id: string
+  company_id: string
+  room_id: string
+  start_date: string
+  end_date: string | null
+  created_at: string
+  created_by: string | null
+}
+
+// Labels de display
+export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
+  hotel: 'Hotel',
+  hostal: 'Hostal',
+  departamento: 'Departamento',
+  oficina: 'Oficina',
+}
+
+export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
+  single: 'Individual',
+  double: 'Doble',
+  triple: 'Triple',
+  suite: 'Suite',
+  shared: 'Compartido',
+}
+
+export const SERVICE_LABELS: Record<keyof Services, string> = {
+  wifi: 'WiFi',
+  parking: 'Estacionamiento',
+  laundry: 'Lavandería',
+  food: 'Alimentación',
+  transport: 'Transporte',
+  cleaning: 'Aseo',
+}
+
+export const PROPERTY_TYPE_COLORS: Record<PropertyType, string> = {
+  hotel: 'bg-blue-100 text-blue-700',
+  hostal: 'bg-green-100 text-green-700',
+  departamento: 'bg-purple-100 text-purple-700',
+  oficina: 'bg-orange-100 text-orange-700',
+}

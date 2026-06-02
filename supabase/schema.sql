@@ -5,6 +5,25 @@
 
 
 -- ============================================================
+-- LIMPIEZA (permite re-ejecutar sin errores)
+-- ============================================================
+
+drop table if exists public.receptionist_properties cascade;
+drop table if exists public.stays                   cascade;
+drop table if exists public.guests                  cascade;
+drop table if exists public.allocations             cascade;
+drop table if exists public.user_profiles           cascade;
+drop table if exists public.rooms                   cascade;
+drop table if exists public.companies               cascade;
+drop table if exists public.properties              cascade;
+drop table if exists public.cities                  cascade;
+
+drop function if exists public.handle_new_user()   cascade;
+drop function if exists public.get_my_role()       cascade;
+drop function if exists public.get_my_company()    cascade;
+
+
+-- ============================================================
 -- EXTENSIONES
 -- ============================================================
 
