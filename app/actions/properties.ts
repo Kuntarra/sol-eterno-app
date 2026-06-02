@@ -6,12 +6,12 @@ import { createClient } from '@/lib/supabase/server'
 
 function parseServices(formData: FormData) {
   return {
-    wifi:      formData.get('wifi')      === 'on',
-    parking:   formData.get('parking')   === 'on',
-    laundry:   formData.get('laundry')   === 'on',
-    food:      formData.get('food')      === 'on',
-    transport: formData.get('transport') === 'on',
-    cleaning:  formData.get('cleaning')  === 'on',
+    parking:       formData.get('parking')       === 'on',
+    parking_spots: Number(formData.get('parking_spots')) || 0,
+    laundry:       formData.get('laundry')       === 'on',
+    food:          formData.get('food')          === 'on',
+    transport:     formData.get('transport')     === 'on',
+    cleaning:      formData.get('cleaning')      === 'on',
   }
 }
 

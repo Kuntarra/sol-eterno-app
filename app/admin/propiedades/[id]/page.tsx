@@ -1,12 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import {
-  City, Room, Services,
-  PROPERTY_TYPE_LABELS, PROPERTY_TYPE_COLORS,
-  ROOM_TYPE_LABELS, SERVICE_LABELS,
-} from '@/lib/types'
+import { City, Room, Property, PROPERTY_TYPE_LABELS, PROPERTY_TYPE_COLORS, ROOM_TYPE_LABELS } from '@/lib/types'
 import { PropertyIcon } from '@/app/admin/_components/property-icon'
+import { PropertyForm } from '../_components/property-form'
 import { updateProperty, togglePropertyActive } from '@/app/actions/properties'
 import { createRoom, deleteRoom } from '@/app/actions/rooms'
 import { DeletePropertyButton } from '../_components/delete-property-button'
@@ -35,7 +32,6 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
   const { data: cities } = await supabase.from('cities').select('*').order('name')
 
   const rooms = (property.rooms ?? []) as Room[]
-  const services = (property.services ?? {}) as Services
   const city = property.cities as City | null
 
   const updateWithId = updateProperty.bind(null, id)
@@ -43,7 +39,7 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
   const toggleActive = togglePropertyActive.bind(null, id, !property.active)
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-8 max-w-3xl">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">
@@ -54,7 +50,7 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
           </Link>
           <PropertyIcon type={property.type} size="sm" />
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold text-[var(--navy)]">{property.name}</h1>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PROPERTY_TYPE_COLORS[property.type as keyof typeof PROPERTY_TYPE_COLORS]}`}>
                 {PROPERTY_TYPE_LABELS[property.type as keyof typeof PROPERTY_TYPE_LABELS]}
@@ -69,8 +65,7 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
           </div>
         </div>
 
-        {/* Acciones destructivas */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <form action={toggleActive}>
             <button type="submit" className="text-xs px-3 py-1.5 rounded-lg border border-[var(--gray-200)] text-[var(--gray-600)] hover:bg-[var(--gray-100)] transition-colors">
               {property.active ? 'Desactivar' : 'Activar'}
@@ -80,7 +75,6 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
         </div>
       </div>
 
-      {/* Mensajes */}
       {success && (
         <div className="mb-6 px-4 py-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-700">
           Propiedad {success} correctamente.
@@ -92,71 +86,16 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
         </div>
       )}
 
-      {/* Formulario editar propiedad */}
-      <form action={updateWithId} className="space-y-6 mb-10">
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Información general</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label htmlFor="name" className={LABEL}>Nombre *</label>
-              <input id="name" name="name" type="text" required defaultValue={property.name} className={INPUT} />
-            </div>
-
-            <div>
-              <label htmlFor="type" className={LABEL}>Tipo *</label>
-              <select id="type" name="type" required defaultValue={property.type} className={INPUT}>
-                <option value="hotel">Hotel</option>
-                <option value="hostal">Hostal</option>
-                <option value="departamento">Departamento</option>
-                <option value="oficina">Oficina</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="city_id" className={LABEL}>Ciudad *</label>
-              <select id="city_id" name="city_id" required defaultValue={property.city_id} className={INPUT}>
-                {(cities as City[])?.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <label htmlFor="address" className={LABEL}>Dirección</label>
-              <input id="address" name="address" type="text" defaultValue={property.address ?? ''} className={INPUT} />
-            </div>
-
-            <div>
-              <label htmlFor="floors" className={LABEL}>Pisos</label>
-              <input id="floors" name="floors" type="number" min="1" defaultValue={property.floors ?? ''} className={INPUT} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Servicios incluidos</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {(Object.entries(SERVICE_LABELS) as [keyof Services, string][]).map(([key, label]) => (
-              <label key={key} className="flex items-center gap-2.5 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  name={key}
-                  defaultChecked={services[key] ?? false}
-                  className="w-4 h-4 rounded border-[var(--gray-200)] accent-[var(--navy)] cursor-pointer"
-                />
-                <span className="text-sm text-[var(--gray-900)]">{label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <button type="submit" className="px-6 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg transition-colors">
-            Guardar cambios
-          </button>
-        </div>
-      </form>
+      {/* Formulario edición */}
+      <div className="mb-10">
+        <PropertyForm
+          action={updateWithId}
+          cities={cities as City[]}
+          property={property as unknown as Property}
+          cancelHref="/admin/propiedades"
+          submitLabel="Guardar cambios"
+        />
+      </div>
 
       {/* Habitaciones */}
       <div id="habitaciones">
@@ -211,7 +150,6 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
           </div>
         )}
 
-        {/* Agregar habitación */}
         <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
           <h3 className="text-sm font-semibold text-[var(--navy)] mb-4">Agregar habitación</h3>
           <form action={createRoomWithId}>

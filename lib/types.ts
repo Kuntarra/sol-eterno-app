@@ -9,8 +9,8 @@ export interface City {
 }
 
 export interface Services {
-  wifi: boolean
   parking: boolean
+  parking_spots: number
   laundry: boolean
   food: boolean
   transport: boolean
@@ -113,13 +113,46 @@ export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
   shared: 'Compartido',
 }
 
-export const SERVICE_LABELS: Record<keyof Services, string> = {
-  wifi: 'WiFi',
+export const SERVICE_LABELS: Record<keyof Omit<Services, 'parking_spots'>, string> = {
   parking: 'Estacionamiento',
   laundry: 'Lavandería',
   food: 'Alimentación',
   transport: 'Transporte',
   cleaning: 'Aseo',
+}
+
+// Servicios disponibles por tipo de propiedad
+export const SERVICES_BY_TYPE: Record<PropertyType, {
+  key: keyof Omit<Services, 'parking_spots'>
+  label: string
+  hasQuantity?: boolean
+  alwaysIncluded?: boolean
+}[]> = {
+  hotel: [
+    { key: 'parking',   label: 'Estacionamiento', hasQuantity: true },
+    { key: 'laundry',   label: 'Lavandería' },
+    { key: 'transport', label: 'Transporte' },
+    { key: 'food',      label: 'Alimentación' },
+    { key: 'cleaning',  label: 'Aseo', alwaysIncluded: true },
+  ],
+  hostal: [
+    { key: 'parking',   label: 'Estacionamiento', hasQuantity: true },
+    { key: 'laundry',   label: 'Lavandería' },
+    { key: 'transport', label: 'Transporte' },
+    { key: 'cleaning',  label: 'Aseo', alwaysIncluded: true },
+  ],
+  departamento: [
+    { key: 'laundry',   label: 'Lavandería' },
+    { key: 'food',      label: 'Alimentación' },
+    { key: 'transport', label: 'Transporte' },
+    { key: 'cleaning',  label: 'Aseo' },
+    { key: 'parking',   label: 'Estacionamiento', hasQuantity: true },
+  ],
+  oficina: [
+    { key: 'parking',   label: 'Estacionamiento', hasQuantity: true },
+    { key: 'transport', label: 'Transporte' },
+    { key: 'cleaning',  label: 'Aseo' },
+  ],
 }
 
 export const PROPERTY_TYPE_COLORS: Record<PropertyType, string> = {
