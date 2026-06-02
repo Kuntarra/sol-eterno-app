@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Property, Room, PROPERTY_TYPE_LABELS } from '@/lib/types'
-import { updateCompany, toggleCompanyActive, deleteCompany } from '@/app/actions/companies'
+import { updateCompany, toggleCompanyActive } from '@/app/actions/companies'
+import { DeleteCompanyButton } from '../_components/delete-company-button'
 import { createAllocation, deleteAllocation } from '@/app/actions/allocations'
 import { AllocationForm } from '../_components/allocation-form'
 
@@ -41,7 +42,6 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
 
   const updateWithId      = updateCompany.bind(null, id)
   const toggleActive      = toggleCompanyActive.bind(null, id, !company.active)
-  const deleteWithId      = deleteCompany.bind(null, id)
   const createAllocWithId = createAllocation.bind(null, id)
 
   const formatDate = (d: string | null) =>
@@ -79,15 +79,7 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
               {company.active ? 'Desactivar' : 'Activar'}
             </button>
           </form>
-          <form action={deleteWithId} onSubmit={undefined}>
-            <button
-              type="submit"
-              onClick={(e) => { if (!confirm('¿Eliminar esta empresa?')) e.preventDefault() }}
-              className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
-            >
-              Eliminar
-            </button>
-          </form>
+          <DeleteCompanyButton id={id} />
         </div>
       </div>
 
