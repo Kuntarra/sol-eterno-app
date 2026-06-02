@@ -1,4 +1,5 @@
 import { login } from '@/app/actions/auth'
+import Link from 'next/link'
 
 interface Props {
   searchParams: Promise<{ error?: string }>
@@ -83,6 +84,12 @@ export default async function LoginPage({ searchParams }: Props) {
             >
               Ingresar
             </button>
+
+            <div className="text-center">
+              <Link href="/forgot-password" className="text-xs text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
           </form>
         </div>
 
