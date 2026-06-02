@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Property, Room, PROPERTY_TYPE_LABELS } from '@/lib/types'
+import { Property, Room, Project, PROPERTY_TYPE_LABELS } from '@/lib/types'
 import { updateCompany, toggleCompanyActive } from '@/app/actions/companies'
-import { DeleteCompanyButton } from '../_components/delete-company-button'
 import { createAllocation, deleteAllocation } from '@/app/actions/allocations'
+import { createProject, toggleProjectActive, deleteProject } from '@/app/actions/projects'
 import { AllocationForm } from '../_components/allocation-form'
+import { DeleteCompanyButton } from '../_components/delete-company-button'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -14,23 +15,25 @@ interface Props {
 
 const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
 const LABEL = 'block text-sm font-medium text-[var(--gray-900)] mb-1.5'
+const LABEL_SM = 'block text-xs font-medium text-[var(--gray-600)] mb-1.5'
 
 export default async function ClienteDetailPage({ params, searchParams }: Props) {
   const { id } = await params
   const { success, error } = await searchParams
   const supabase = await createClient()
 
-  const { data: company } = await supabase
-    .from('companies')
-    .select('*')
-    .eq('id', id)
-    .single()
-
+  const { data: company } = await supabase.from('companies').select('*').eq('id', id).single()
   if (!company) notFound()
+
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('company_id', id)
+    .order('created_at')
 
   const { data: allocations } = await supabase
     .from('allocations')
-    .select('*, rooms(id, number, type, floor, capacity, property_id, properties(id, name, type, city_id, cities(name)))')
+    .select('*, projects(id, name), rooms(id, number, type, floor, capacity, properties(id, name, type, cities(name)))')
     .eq('company_id', id)
     .order('start_date', { ascending: false })
 
@@ -43,6 +46,7 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
   const updateWithId      = updateCompany.bind(null, id)
   const toggleActive      = toggleCompanyActive.bind(null, id, !company.active)
   const createAllocWithId = createAllocation.bind(null, id)
+  const createProjectWithId = createProject.bind(null, id)
 
   const formatDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString('es-CL') : '—'
@@ -94,7 +98,7 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
         </div>
       )}
 
-      {/* Formulario edición */}
+      {/* Datos empresa */}
       <form action={updateWithId} className="space-y-6 mb-10">
         <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
           <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Datos de la empresa</h2>
@@ -122,7 +126,7 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
               <input id="contact_phone" name="contact_phone" type="text" defaultValue={company.contact_phone ?? ''} className={INPUT} />
             </div>
             <div>
-              <label htmlFor="contact_email" className={LABEL}>Correo electrónico</label>
+              <label htmlFor="contact_email" className={LABEL}>Correo</label>
               <input id="contact_email" name="contact_email" type="email" defaultValue={company.contact_email ?? ''} className={INPUT} />
             </div>
           </div>
@@ -135,22 +139,94 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
         </div>
       </form>
 
+      {/* Proyectos */}
+      <div id="proyectos" className="mb-10">
+        <h2 className="text-lg font-bold text-[var(--navy)] mb-4">
+          Proyectos
+          <span className="ml-2 text-sm font-normal text-[var(--gray-600)]">({projects?.length ?? 0})</span>
+        </h2>
+
+        {projects && projects.length > 0 && (
+          <div className="space-y-2 mb-4">
+            {projects.map((project) => {
+              const projectAllocations = (allocations ?? []).filter(
+                a => (a.projects as { id: string } | null)?.id === project.id
+              )
+              const toggleProj = toggleProjectActive.bind(null, project.id, id, !project.active)
+              const deleteProj = deleteProject.bind(null, project.id, id)
+
+              return (
+                <div key={project.id} className="bg-white rounded-xl border border-[var(--gray-200)] p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-[var(--navy)]">{project.name}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          project.active ? 'bg-emerald-100 text-emerald-700' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
+                        }`}>
+                          {project.active ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </div>
+                      {project.description && (
+                        <p className="text-xs text-[var(--gray-600)] mt-0.5">{project.description}</p>
+                      )}
+                      <p className="text-xs text-[var(--gray-600)] mt-1">
+                        {projectAllocations.length} habitación{projectAllocations.length !== 1 ? 'es' : ''} asignada{projectAllocations.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <form action={toggleProj}>
+                        <button type="submit" className="text-xs px-2.5 py-1 rounded-lg border border-[var(--gray-200)] text-[var(--gray-600)] hover:bg-[var(--gray-100)] transition-colors">
+                          {project.active ? 'Desactivar' : 'Activar'}
+                        </button>
+                      </form>
+                      <form action={deleteProj}>
+                        <button type="submit" className="text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-colors">
+                          Eliminar
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Agregar proyecto */}
+        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
+          <h3 className="text-sm font-semibold text-[var(--navy)] mb-4">Agregar proyecto</h3>
+          <form action={createProjectWithId}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div>
+                <label className={LABEL_SM}>Nombre del proyecto *</label>
+                <input name="name" type="text" required placeholder="Proyecto Collahuasi" className={INPUT} />
+              </div>
+              <div>
+                <label className={LABEL_SM}>Descripción</label>
+                <input name="description" type="text" placeholder="Faena norte, turno 7x7" className={INPUT} />
+              </div>
+            </div>
+            <button type="submit" className="px-4 py-2 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg transition-colors">
+              + Agregar proyecto
+            </button>
+          </form>
+        </div>
+      </div>
+
       {/* Asignaciones */}
       <div id="asignaciones">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-[var(--navy)]">
-            Asignaciones de habitaciones
-            <span className="ml-2 text-sm font-normal text-[var(--gray-600)]">
-              ({allocations?.length ?? 0})
-            </span>
-          </h2>
-        </div>
+        <h2 className="text-lg font-bold text-[var(--navy)] mb-4">
+          Asignaciones de habitaciones
+          <span className="ml-2 text-sm font-normal text-[var(--gray-600)]">({allocations?.length ?? 0})</span>
+        </h2>
 
         {allocations && allocations.length > 0 ? (
           <div className="bg-white rounded-xl border border-[var(--gray-200)] overflow-hidden mb-4">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--gray-200)] bg-[var(--gray-50)]">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--gray-600)] uppercase tracking-wider">Proyecto</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--gray-600)] uppercase tracking-wider">Propiedad</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--gray-600)] uppercase tracking-wider">Habitación</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--gray-600)] uppercase tracking-wider">Período</th>
@@ -161,10 +237,20 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
                 {allocations.map((alloc) => {
                   const room = alloc.rooms as (Room & { properties: (Property & { cities: { name: string } }) | null }) | null
                   const prop = room?.properties
+                  const proj = alloc.projects as { id: string; name: string } | null
                   const deleteAllocAction = deleteAllocation.bind(null, alloc.id, id)
 
                   return (
                     <tr key={alloc.id} className="hover:bg-[var(--gray-50)]">
+                      <td className="px-4 py-3">
+                        {proj ? (
+                          <span className="text-xs font-medium bg-[var(--amber)]/20 text-[var(--navy)] px-2 py-0.5 rounded-full">
+                            {proj.name}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-[var(--gray-600)]">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         <p className="font-medium text-[var(--navy)]">{prop?.name ?? '—'}</p>
                         <p className="text-xs text-[var(--gray-600)]">
@@ -176,16 +262,12 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
                         <p className="font-medium text-[var(--navy)]">Hab. {room?.number ?? '—'}</p>
                         <p className="text-xs text-[var(--gray-600)]">{room?.capacity} cupo{(room?.capacity ?? 0) !== 1 ? 's' : ''}</p>
                       </td>
-                      <td className="px-4 py-3 text-[var(--gray-600)] text-xs">
-                        <span>{formatDate(alloc.start_date)}</span>
-                        <span className="mx-1">→</span>
-                        <span>{formatDate(alloc.end_date)}</span>
+                      <td className="px-4 py-3 text-xs text-[var(--gray-600)]">
+                        {formatDate(alloc.start_date)} → {formatDate(alloc.end_date)}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <form action={deleteAllocAction}>
-                          <button type="submit" className="text-xs text-red-500 hover:text-red-700 transition-colors">
-                            Eliminar
-                          </button>
+                          <button type="submit" className="text-xs text-red-500 hover:text-red-700 transition-colors">Eliminar</button>
                         </form>
                       </td>
                     </tr>
@@ -196,17 +278,21 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
           </div>
         ) : (
           <div className="bg-white rounded-xl border border-[var(--gray-200)] p-8 text-center mb-4">
-            <p className="text-sm text-[var(--gray-600)]">No hay habitaciones asignadas a esta empresa.</p>
+            <p className="text-sm text-[var(--gray-600)]">No hay habitaciones asignadas. Primero agrega un proyecto.</p>
           </div>
         )}
 
-        {/* Agregar asignación */}
         <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
           <h3 className="text-sm font-semibold text-[var(--navy)] mb-4">Asignar habitación</h3>
-          <AllocationForm
-            action={createAllocWithId}
-            properties={properties as unknown as Parameters<typeof AllocationForm>[0]['properties']}
-          />
+          {!projects?.length ? (
+            <p className="text-sm text-[var(--gray-600)]">Debes crear al menos un proyecto antes de asignar habitaciones.</p>
+          ) : (
+            <AllocationForm
+              action={createAllocWithId}
+              properties={properties as unknown as Parameters<typeof AllocationForm>[0]['properties']}
+              projects={(projects ?? []) as Project[]}
+            />
+          )}
         </div>
       </div>
     </div>

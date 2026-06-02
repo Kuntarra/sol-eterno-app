@@ -87,9 +87,19 @@ export interface Stay {
   checked_out_by: string | null
 }
 
+export interface Project {
+  id: string
+  company_id: string
+  name: string
+  description: string | null
+  active: boolean
+  created_at: string
+}
+
 export interface Allocation {
   id: string
   company_id: string
+  project_id: string | null
   room_id: string
   start_date: string
   end_date: string | null

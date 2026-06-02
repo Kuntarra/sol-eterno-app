@@ -8,15 +8,45 @@ export async function createAllocation(companyId: string, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { error } = await supabase.from('allocations').insert({
-    company_id: companyId,
-    room_id:    formData.get('room_id') as string,
-    start_date: formData.get('start_date') as string,
-    end_date:   (formData.get('end_date') as string) || null,
-    created_by: user?.id,
-  })
+  const roomIdValue  = formData.get('room_id') as string
+  const projectId    = (formData.get('project_id') as string) || null
+  const startDate    = formData.get('start_date') as string
+  const endDate      = (formData.get('end_date') as string) || null
 
-  if (error) redirect(`/admin/clientes/${companyId}?error=` + encodeURIComponent(error.message))
+  // Si el valor empieza con "ALL:" asignamos todas las habitaciones de esa propiedad
+  if (roomIdValue.startsWith('ALL:')) {
+    const propertyId = roomIdValue.split(':')[1]
+
+    const { data: rooms } = await supabase
+      .from('rooms')
+      .select('id')
+      .eq('property_id', propertyId)
+
+    if (rooms && rooms.length > 0) {
+      const { error } = await supabase.from('allocations').insert(
+        rooms.map(r => ({
+          company_id: companyId,
+          project_id: projectId,
+          room_id:    r.id,
+          start_date: startDate,
+          end_date:   endDate,
+          created_by: user?.id,
+        }))
+      )
+      if (error) redirect(`/admin/clientes/${companyId}?error=` + encodeURIComponent(error.message))
+    }
+  } else {
+    // Habitación individual
+    const { error } = await supabase.from('allocations').insert({
+      company_id: companyId,
+      project_id: projectId,
+      room_id:    roomIdValue,
+      start_date: startDate,
+      end_date:   endDate,
+      created_by: user?.id,
+    })
+    if (error) redirect(`/admin/clientes/${companyId}?error=` + encodeURIComponent(error.message))
+  }
 
   revalidatePath(`/admin/clientes/${companyId}`)
   redirect(`/admin/clientes/${companyId}#asignaciones`)
