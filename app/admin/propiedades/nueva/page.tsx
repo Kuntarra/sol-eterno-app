@@ -77,11 +77,6 @@ export default async function NuevaPropiedadPage({ searchParams }: Props) {
               <label htmlFor="floors" className={LABEL}>Número de pisos</label>
               <input id="floors" name="floors" type="number" min="1" max="50" placeholder="4" className={INPUT} />
             </div>
-
-            <div>
-              <label htmlFor="icon_url" className={LABEL}>URL del ícono / foto</label>
-              <input id="icon_url" name="icon_url" type="url" placeholder="https://..." className={INPUT} />
-            </div>
           </div>
         </div>
 

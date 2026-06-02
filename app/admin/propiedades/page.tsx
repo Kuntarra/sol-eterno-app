@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Property, PROPERTY_TYPE_LABELS, PROPERTY_TYPE_COLORS } from '@/lib/types'
+import { Property, PROPERTY_TYPE_LABELS } from '@/lib/types'
+import { PropertyIcon } from '@/app/admin/_components/property-icon'
 
 export default async function PropiedadesPage() {
   const supabase = await createClient()
@@ -17,6 +18,7 @@ export default async function PropiedadesPage() {
     return acc
   }, {})
 
+  const totalProps = properties?.length ?? 0
   const totalCapacity = (properties ?? []).reduce((sum, p) => {
     const rooms = p.rooms as { capacity: number }[] | null ?? []
     return sum + rooms.reduce((s, r) => s + r.capacity, 0)
@@ -29,7 +31,7 @@ export default async function PropiedadesPage() {
         <div>
           <h1 className="text-2xl font-bold text-[var(--navy)]">Propiedades</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">
-            {properties?.length ?? 0} propiedades · {totalCapacity} cupos totales
+            {totalProps} propiedades · {totalCapacity} cupos totales
           </p>
         </div>
         <Link
@@ -40,19 +42,28 @@ export default async function PropiedadesPage() {
         </Link>
       </div>
 
-      {/* Grupos por ciudad */}
       {Object.keys(grouped).length === 0 ? (
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-12 text-center">
-          <p className="text-[var(--gray-600)] text-sm">No hay propiedades registradas.</p>
-          <Link href="/admin/propiedades/nueva" className="text-[var(--navy)] text-sm font-medium mt-2 inline-block hover:underline">
-            Crear la primera propiedad →
+        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
+          <div className="w-16 h-16 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gray-600)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21v-6h6v6" />
+            </svg>
+          </div>
+          <p className="text-[var(--gray-600)] text-sm font-medium mb-1">No hay propiedades registradas</p>
+          <p className="text-[var(--gray-600)] text-xs mb-4">Comienza agregando tu primera propiedad</p>
+          <Link href="/admin/propiedades/nueva" className="text-[var(--navy)] text-sm font-semibold hover:underline">
+            Crear primera propiedad →
           </Link>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {Object.entries(grouped).map(([city, props]) => (
             <div key={city}>
-              <h2 className="text-xs font-semibold text-[var(--gray-600)] uppercase tracking-wider mb-3">{city}</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-xs font-bold text-[var(--gray-600)] uppercase tracking-widest">{city}</h2>
+                <div className="flex-1 h-px bg-[var(--gray-200)]" />
+                <span className="text-xs text-[var(--gray-600)]">{props.length} propiedades</span>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {props.map((p) => (
                   <PropertyCard key={p.id} property={p} />
@@ -66,41 +77,54 @@ export default async function PropiedadesPage() {
   )
 }
 
-function PropertyCard({ property: p }: { property: Property & { rooms?: { capacity: number }[] } }) {
+function PropertyCard({ property: p }: { property: Property & { rooms?: { capacity: number }[]; cities?: { name: string } } }) {
   const rooms = (p.rooms ?? []) as { capacity: number }[]
   const capacity = rooms.reduce((s, r) => s + r.capacity, 0)
-  const typeColor = PROPERTY_TYPE_COLORS[p.type]
-  const typeLabel = PROPERTY_TYPE_LABELS[p.type]
 
   return (
     <Link
       href={`/admin/propiedades/${p.id}`}
-      className="bg-white rounded-xl border border-[var(--gray-200)] p-5 hover:border-[var(--navy)]/40 hover:shadow-sm transition-all group"
+      className="group bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden hover:border-[var(--navy)]/30 hover:shadow-md transition-all duration-200"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${typeColor} mb-2`}>
-            {typeLabel}
-          </span>
-          <h3 className="text-sm font-semibold text-[var(--navy)] group-hover:underline leading-tight">
+      {/* Banner superior con icono */}
+      <div className="px-6 pt-6 pb-4 flex items-start gap-4">
+        <PropertyIcon type={p.type} size="md" />
+        <div className="flex-1 min-w-0 pt-1">
+          <p className="text-xs font-semibold text-[var(--gray-600)] uppercase tracking-wider mb-0.5">
+            {PROPERTY_TYPE_LABELS[p.type]}
+          </p>
+          <h3 className="text-base font-bold text-[var(--navy)] group-hover:text-[var(--navy-light)] leading-tight truncate transition-colors">
             {p.name}
           </h3>
           {p.address && (
             <p className="text-xs text-[var(--gray-600)] mt-0.5 truncate">{p.address}</p>
           )}
         </div>
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-          p.active ? 'bg-emerald-100 text-emerald-700' : 'bg-[var(--gray-200)] text-[var(--gray-600)]'
-        }`}>
-          {p.active ? 'Activa' : 'Inactiva'}
-        </span>
+        <span className={`shrink-0 mt-1 w-2 h-2 rounded-full ${p.active ? 'bg-emerald-400' : 'bg-[var(--gray-200)]'}`} title={p.active ? 'Activa' : 'Inactiva'} />
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-[var(--gray-600)] pt-3 border-t border-[var(--gray-100)]">
-        <span>{rooms.length} hab.</span>
-        <span>{capacity} cupos</span>
-        {p.floors && <span>{p.floors} pisos</span>}
+      {/* Stats */}
+      <div className="px-6 py-3 border-t border-[var(--gray-100)] flex items-center gap-5">
+        <Stat label="Hab." value={rooms.length} />
+        <Stat label="Cupos" value={capacity} />
+        {p.floors ? <Stat label="Pisos" value={p.floors} /> : null}
+        <div className="ml-auto">
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+            p.active ? 'bg-emerald-50 text-emerald-700' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
+          }`}>
+            {p.active ? 'Activa' : 'Inactiva'}
+          </span>
+        </div>
       </div>
     </Link>
+  )
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="text-center">
+      <p className="text-base font-bold text-[var(--navy)]">{value}</p>
+      <p className="text-xs text-[var(--gray-600)]">{label}</p>
+    </div>
   )
 }

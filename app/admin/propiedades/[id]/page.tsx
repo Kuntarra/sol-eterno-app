@@ -6,8 +6,10 @@ import {
   PROPERTY_TYPE_LABELS, PROPERTY_TYPE_COLORS,
   ROOM_TYPE_LABELS, SERVICE_LABELS,
 } from '@/lib/types'
-import { updateProperty, togglePropertyActive, deleteProperty } from '@/app/actions/properties'
+import { PropertyIcon } from '@/app/admin/_components/property-icon'
+import { updateProperty, togglePropertyActive } from '@/app/actions/properties'
 import { createRoom, deleteRoom } from '@/app/actions/rooms'
+import { DeletePropertyButton } from '../_components/delete-property-button'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -39,18 +41,18 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
   const updateWithId = updateProperty.bind(null, id)
   const createRoomWithId = createRoom.bind(null, id)
   const toggleActive = togglePropertyActive.bind(null, id, !property.active)
-  const deleteWithId = deleteProperty.bind(null, id)
 
   return (
     <div className="p-8 max-w-4xl">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Link href="/admin/propiedades" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 5l-7 7 7 7" />
             </svg>
           </Link>
+          <PropertyIcon type={property.type} size="sm" />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-[var(--navy)]">{property.name}</h1>
@@ -74,11 +76,7 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
               {property.active ? 'Desactivar' : 'Activar'}
             </button>
           </form>
-          <form action={deleteWithId} onSubmit={(e) => { if (!confirm('¿Eliminar esta propiedad? Esta acción no se puede deshacer.')) e.preventDefault() }}>
-            <button type="submit" className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
-              Eliminar
-            </button>
-          </form>
+          <DeletePropertyButton id={id} />
         </div>
       </div>
 
@@ -132,11 +130,6 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
             <div>
               <label htmlFor="floors" className={LABEL}>Pisos</label>
               <input id="floors" name="floors" type="number" min="1" defaultValue={property.floors ?? ''} className={INPUT} />
-            </div>
-
-            <div>
-              <label htmlFor="icon_url" className={LABEL}>URL ícono / foto</label>
-              <input id="icon_url" name="icon_url" type="url" defaultValue={property.icon_url ?? ''} className={INPUT} />
             </div>
           </div>
         </div>
