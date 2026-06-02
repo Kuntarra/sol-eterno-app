@@ -110,12 +110,12 @@ export function PropertyForm({ action, cities, property, cancelHref, submitLabel
 
       {/* Servicios contextuales */}
       <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-sm font-semibold text-[var(--navy)]">Servicios</h2>
-          <span className="text-xs text-[var(--gray-600)] bg-[var(--gray-100)] px-2 py-1 rounded-full">
-            Aseo siempre incluido en {PROPERTY_TYPE_LABELS[type]}
-          </span>
-        </div>
+        <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Servicios</h2>
+
+        {/* Aseo siempre incluido en hotel/hostal — sin mostrar */}
+        {(type === 'hotel' || type === 'hostal') && (
+          <input type="hidden" name="cleaning" value="on" />
+        )}
 
         <div className="space-y-3">
           {services.map((svc) => {

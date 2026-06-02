@@ -133,13 +133,11 @@ export const SERVICES_BY_TYPE: Record<PropertyType, {
     { key: 'laundry',   label: 'Lavandería' },
     { key: 'transport', label: 'Transporte' },
     { key: 'food',      label: 'Alimentación' },
-    { key: 'cleaning',  label: 'Aseo', alwaysIncluded: true },
   ],
   hostal: [
     { key: 'parking',   label: 'Estacionamiento', hasQuantity: true },
     { key: 'laundry',   label: 'Lavandería' },
     { key: 'transport', label: 'Transporte' },
-    { key: 'cleaning',  label: 'Aseo', alwaysIncluded: true },
   ],
   departamento: [
     { key: 'laundry',   label: 'Lavandería' },
