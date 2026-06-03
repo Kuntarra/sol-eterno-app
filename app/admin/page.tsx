@@ -34,6 +34,7 @@ export default async function AdminDashboard() {
         <QuickLink href="/admin/propiedades/nueva" label="Nueva propiedad" desc="Agregar hotel, hostal o departamento" />
         <QuickLink href="/admin/clientes/nuevo" label="Nuevo cliente" desc="Registrar empresa minera" />
         <QuickLink href="/admin/usuarios" label="Gestionar usuarios" desc="Recepcionistas y accesos cliente" />
+        <QuickLink href="/admin/estadias" label="Gestionar estadías" desc="Ver y corregir registros de entrada/salida" />
       </div>
     </div>
   )
