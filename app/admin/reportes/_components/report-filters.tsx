@@ -29,7 +29,7 @@ export function ReportFilters({ mes, anio, filtroEmpresa, empresas }: Props) {
       <select
         value={filtroEmpresa}
         onChange={e => navigate(mes, anio, e.target.value)}
-        className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none"
+        className="px-3 py-2 rounded-lg bg-[#142d47] border border-white/20 text-white text-sm focus:outline-none"
       >
         <option value="todas">Todas las empresas</option>
         {empresas.map(e => (
@@ -40,7 +40,7 @@ export function ReportFilters({ mes, anio, filtroEmpresa, empresas }: Props) {
       <select
         value={mes}
         onChange={e => navigate(parseInt(e.target.value), anio, filtroEmpresa)}
-        className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none"
+        className="px-3 py-2 rounded-lg bg-[#142d47] border border-white/20 text-white text-sm focus:outline-none"
       >
         {MONTHS.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
       </select>
@@ -48,7 +48,7 @@ export function ReportFilters({ mes, anio, filtroEmpresa, empresas }: Props) {
       <select
         value={anio}
         onChange={e => navigate(mes, parseInt(e.target.value), filtroEmpresa)}
-        className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none"
+        className="px-3 py-2 rounded-lg bg-[#142d47] border border-white/20 text-white text-sm focus:outline-none"
       >
         {years.map(y => <option key={y} value={y}>{y}</option>)}
       </select>
