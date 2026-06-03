@@ -39,7 +39,7 @@ export function RoleSwitcher() {
   ) ?? VIEWS[0]
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="no-print fixed bottom-6 right-6 z-50">
       {/* Menú desplegable */}
       {open && (
         <div className="mb-3 bg-white rounded-xl shadow-xl border border-[var(--gray-200)] overflow-hidden w-52">
