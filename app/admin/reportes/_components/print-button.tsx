@@ -13,7 +13,7 @@ export function PrintButton() {
       empresa:   searchParams.get('empresa')   ?? 'todas',
       propiedad: searchParams.get('propiedad') ?? 'todas',
     })
-    window.open('/admin/reportes/pdf?' + params.toString(), '_blank')
+    window.open('/print/reporte?' + params.toString(), '_blank')
   }
 
   return (
