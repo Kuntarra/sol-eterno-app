@@ -12,29 +12,55 @@ function formatDate(iso: string) {
 export default async function RecepcionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string }>
+  searchParams: Promise<{ success?: string; property?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: stays } = await supabase
+  // Propiedades asignadas al recepcionista
+  const { data: rpRows } = await supabase
+    .from('receptionist_properties')
+    .select('property_id, properties(id, name)')
+    .eq('user_id', user!.id)
+
+  const myProperties = (rpRows ?? []).map(r => {
+    const p = r.properties as unknown as { id: string; name: string } | null
+    return { id: p?.id ?? r.property_id, name: p?.name ?? r.property_id }
+  })
+
+  const selectedPropertyId = params.property ?? null
+  const showFilter = myProperties.length > 1
+
+  // Query de estadías activas, filtrada por propiedad si se seleccionó
+  let query = supabase
     .from('stays')
     .select(`
       id, shift_type, checked_in_at, estimated_checkout, notes,
       guests(first_name, last_name_paterno),
-      rooms(number, floor, properties(name, cities(name))),
+      rooms(number, floor, property_id, properties(id, name, cities(name))),
       companies(name)
     `)
     .is('checked_out_at', null)
     .order('checked_in_at', { ascending: false })
 
+  const { data: stays } = await query
+
+  // Filtrar por propiedad en JS para evitar join anidado en .eq()
+  const filtered = selectedPropertyId
+    ? (stays ?? []).filter(s => {
+        const room = s.rooms as unknown as { property_id: string } | null
+        return room?.property_id === selectedPropertyId
+      })
+    : (stays ?? [])
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold text-[var(--navy)]">Huéspedes activos</h1>
           <p className="text-sm text-[var(--gray-600)] mt-0.5">
-            {stays?.length ?? 0} estadía{stays?.length !== 1 ? 's' : ''} en curso
+            {filtered.length} estadía{filtered.length !== 1 ? 's' : ''} en curso
           </p>
         </div>
         <Link
@@ -48,6 +74,35 @@ export default async function RecepcionPage({
         </Link>
       </div>
 
+      {/* Filtro por propiedad — solo aparece si tiene más de una */}
+      {showFilter && (
+        <div className="flex flex-wrap gap-2 mb-5">
+          <Link
+            href="/recepcion"
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              !selectedPropertyId
+                ? 'bg-[var(--navy)] text-white'
+                : 'bg-white border border-[var(--gray-200)] text-[var(--gray-600)] hover:text-[var(--navy)]'
+            }`}
+          >
+            Todos
+          </Link>
+          {myProperties.map(p => (
+            <Link
+              key={p.id}
+              href={`/recepcion?property=${p.id}`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                selectedPropertyId === p.id
+                  ? 'bg-[var(--navy)] text-white'
+                  : 'bg-white border border-[var(--gray-200)] text-[var(--gray-600)] hover:text-[var(--navy)]'
+              }`}
+            >
+              {p.name}
+            </Link>
+          ))}
+        </div>
+      )}
+
       {params.success === '1' && (
         <div className="mb-4 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-700 font-medium">
           Check-in registrado correctamente.
@@ -59,16 +114,20 @@ export default async function RecepcionPage({
         </div>
       )}
 
-      {!stays?.length ? (
+      {!filtered.length ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
-          <p className="text-sm text-[var(--gray-600)]">No hay huéspedes activos en este momento.</p>
-          <Link href="/recepcion/checkin" className="inline-block mt-4 text-sm text-[var(--navy)] font-semibold hover:underline">
-            Registrar primer check-in →
-          </Link>
+          <p className="text-sm text-[var(--gray-600)]">
+            {selectedPropertyId ? 'No hay huéspedes activos en esta propiedad.' : 'No hay huéspedes activos en este momento.'}
+          </p>
+          {!selectedPropertyId && (
+            <Link href="/recepcion/checkin" className="inline-block mt-4 text-sm text-[var(--navy)] font-semibold hover:underline">
+              Registrar primer check-in →
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
-          {stays.map(stay => {
+          {filtered.map(stay => {
             const guest = stay.guests as unknown as { first_name: string; last_name_paterno: string } | null
             const room = stay.rooms as unknown as { number: string; floor: number | null; properties: { name: string; cities: { name: string } | null } | null } | null
             const company = stay.companies as unknown as { name: string } | null
@@ -84,6 +143,10 @@ export default async function RecepcionPage({
                       Hab. {room?.number}
                       {room?.floor != null ? ` · Piso ${room.floor}` : ''}
                     </span>
+                    {/* Mostrar propiedad solo si se ven todas */}
+                    {!selectedPropertyId && room?.properties?.name && (
+                      <span className="text-xs text-[var(--gray-500)]">{room.properties.name}</span>
+                    )}
                     <span className="text-xs text-[var(--gray-600)]">{company?.name}</span>
                     {stay.shift_type && (
                       <span className="text-xs text-[var(--gray-600)]">Turno {stay.shift_type}</span>
