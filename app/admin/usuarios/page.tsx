@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 
 const ROLE_LABELS: Record<string, string> = {
@@ -14,15 +14,13 @@ const ROLE_COLORS: Record<string, string> = {
 }
 
 export default async function UsuariosPage() {
-  const supabase = await createClient()
+  const adminClient = createAdminClient()
 
-  const { data: profiles } = await supabase
+  const { data: profiles } = await adminClient
     .from('user_profiles')
     .select('*, companies(name), receptionist_properties(property_id, properties(name))')
     .order('role')
     .order('full_name')
-
-  const searchParams_success = undefined // handled via URL in real use
 
   const grouped = (profiles ?? []).reduce<Record<string, typeof profiles>>((acc, p) => {
     const role = p.role ?? 'client'

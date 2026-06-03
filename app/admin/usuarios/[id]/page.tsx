@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { updateReceptionistProperties, deleteUser } from '@/app/actions/users'
@@ -14,9 +14,9 @@ const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] b
 export default async function UsuarioDetailPage({ params, searchParams }: Props) {
   const { id } = await params
   const { success, error } = await searchParams
-  const supabase = await createClient()
+  const adminClient = createAdminClient()
 
-  const { data: profile } = await supabase
+  const { data: profile } = await adminClient
     .from('user_profiles')
     .select('*, companies(name), receptionist_properties(property_id)')
     .eq('id', id)
@@ -24,13 +24,13 @@ export default async function UsuarioDetailPage({ params, searchParams }: Props)
 
   if (!profile) notFound()
 
-  const { data: properties } = await supabase
+  const { data: properties } = await adminClient
     .from('properties')
     .select('id, name, type, cities(name)')
     .eq('active', true)
     .order('name')
 
-  const { data: companies } = await supabase
+  const { data: companies } = await adminClient
     .from('companies')
     .select('id, name')
     .eq('active', true)
