@@ -182,7 +182,7 @@ export default async function ReportesPage({
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-8 py-8 space-y-8">
+      <div id="reporte-contenido" className="max-w-6xl mx-auto px-8 py-8 space-y-8">
 
         {/* ── KPIs + gauge ── */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
