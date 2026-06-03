@@ -16,11 +16,25 @@ const ROLE_COLORS: Record<string, string> = {
 export default async function UsuariosPage() {
   const adminClient = createAdminClient()
 
-  const { data: profiles } = await adminClient
-    .from('user_profiles')
-    .select('*, companies(name), receptionist_properties(property_id, properties(name))')
-    .order('role')
-    .order('full_name')
+  const [{ data: profiles }, { data: rp }] = await Promise.all([
+    adminClient
+      .from('user_profiles')
+      .select('*, companies(name)')
+      .order('role')
+      .order('full_name'),
+    adminClient
+      .from('receptionist_properties')
+      .select('user_id, properties(name)'),
+  ])
+
+  // Agrupar propiedades por user_id
+  const propsByUser = (rp ?? []).reduce<Record<string, string[]>>((acc, row) => {
+    const name = (row.properties as unknown as { name: string } | null)?.name
+    if (!name) return acc
+    if (!acc[row.user_id]) acc[row.user_id] = []
+    acc[row.user_id]!.push(name)
+    return acc
+  }, {})
 
   const grouped = (profiles ?? []).reduce<Record<string, typeof profiles>>((acc, p) => {
     const role = p.role ?? 'client'
@@ -63,7 +77,7 @@ export default async function UsuariosPage() {
 
               <div className="bg-white rounded-xl border border-[var(--gray-200)] overflow-hidden">
                 {users.map((user, i) => {
-                  const props = (user.receptionist_properties as { properties: { name: string } | null }[] | null) ?? []
+                  const props = propsByUser[user.id] ?? []
                   const company = user.companies as { name: string } | null
 
                   return (
@@ -82,7 +96,7 @@ export default async function UsuariosPage() {
                         <p className="text-xs text-[var(--gray-600)] truncate">{user.email ?? '—'}</p>
                         {props.length > 0 && (
                           <p className="text-xs text-[var(--gray-600)] mt-0.5 truncate">
-                            {props.map(p => p.properties?.name).filter(Boolean).join(' · ')}
+                            {props.join(' · ')}
                           </p>
                         )}
                         {company && (
