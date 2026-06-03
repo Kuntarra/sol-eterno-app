@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { RecepcionNav } from './_components/recepcion-nav'
-import { logout } from '@/app/actions/auth'
+import { RecepcionSidebar } from './_components/recepcion-sidebar'
 
 export default async function RecepcionLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -16,28 +15,24 @@ export default async function RecepcionLayout({ children }: { children: React.Re
 
   if (profile?.role !== 'receptionist' && profile?.role !== 'admin') redirect('/login')
 
+  // Propiedades asignadas (para mostrar en sidebar)
+  const { data: rpRows } = await supabase
+    .from('receptionist_properties')
+    .select('properties(name, cities(name))')
+    .eq('user_id', user.id)
+
+  const properties = (rpRows ?? []).map(row => {
+    const p = row.properties as unknown as { name: string; cities: { name: string } | null } | null
+    return { name: p?.name ?? '', city: p?.cities?.name ?? '' }
+  }).filter(p => p.name)
+
   return (
-    <div className="min-h-screen bg-[var(--gray-100)]">
-      <header className="bg-[var(--navy)] text-white px-4 py-3 shadow-md">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div>
-              <p className="text-sm font-bold leading-tight">Sol Eterno</p>
-              <p className="text-xs text-white/50">Recepción</p>
-            </div>
-            <RecepcionNav />
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-white/60 hidden sm:block">{profile?.full_name}</span>
-            <form action={logout}>
-              <button type="submit" className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors">
-                Salir
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-      <main className="max-w-4xl mx-auto p-4 sm:p-6">
+    <div className="flex min-h-screen">
+      <RecepcionSidebar
+        fullName={profile?.full_name ?? user.email ?? 'Recepcionista'}
+        properties={properties}
+      />
+      <main className="flex-1 overflow-auto bg-[var(--gray-100)] min-w-0 p-4 sm:p-6">
         {children}
       </main>
     </div>
