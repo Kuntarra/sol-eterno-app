@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { PrintButton } from './_components/print-button'
 
 const MONTHS = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -19,9 +20,12 @@ export default async function ReportesPage({
   const mes  = parseInt(params.mes  ?? String(now.getMonth() + 1))
   const filtroEmpresa = params.empresa ?? 'todas'
 
-  const diasMes = new Date(anio, mes, 0).getDate()
-  const desde   = new Date(anio, mes - 1, 1).toISOString()
-  const hasta   = new Date(anio, mes, 1).toISOString()
+  const diasMes  = new Date(anio, mes, 0).getDate()
+  // Usar strings de fecha simples para evitar problemas de timezone en PostgREST
+  const desdeStr = `${anio}-${String(mes).padStart(2,'0')}-01`
+  const hastaStr = `${anio}-${String(mes).padStart(2,'0')}-${String(diasMes).padStart(2,'0')}`
+  const desde    = desdeStr
+  const hasta    = `${hastaStr}T23:59:59`
 
   const admin = createAdminClient()
 
@@ -33,8 +37,8 @@ export default async function ReportesPage({
       rooms(id, number, type, capacity, properties(id, name, cities(name))),
       companies(id, name)
     `)
-    .lt('checked_in_at', hasta)
-    .or(`checked_out_at.is.null,checked_out_at.gte.${desde}`)
+    .lte('checked_in_at', hasta)
+    // Filtrar en JS para evitar bug de PostgREST con timestamps en or()
     .order('checked_in_at', { ascending: true }),
 
     admin.from('allocations').select(`
@@ -46,7 +50,14 @@ export default async function ReportesPage({
     admin.from('companies').select('id, name').eq('active', true).order('name'),
   ])
 
-  const allStays = staysRaw ?? []
+  // Filtrar en JS: estadías que se solapan con el mes
+  const mesInicio = new Date(desdeStr + 'T00:00:00')
+  const mesFin    = new Date(hastaStr + 'T23:59:59')
+
+  const allStays = (staysRaw ?? []).filter(s => {
+    const checkout = s.checked_out_at ? new Date(s.checked_out_at) : null
+    return !checkout || checkout >= mesInicio
+  })
   const allAllocs = allocsRaw ?? []
 
   // Filtrar por empresa si aplica
@@ -58,13 +69,14 @@ export default async function ReportesPage({
     ? allAllocs
     : allAllocs.filter(a => (a.companies as any)?.id === filtroEmpresa)
 
-  // ── Cálculo de noches por estadía (solo dentro del mes) ──────
+  // ── Cálculo de noches dentro del mes (clamp a límites del mes) ──
   function noches(s: typeof allStays[0]) {
     const entrada = new Date(s.checked_in_at)
-    const salida  = s.checked_out_at ? new Date(s.checked_out_at) : new Date(hasta)
-    const ini = entrada < new Date(desde) ? new Date(desde) : entrada
-    const fin = salida  > new Date(hasta) ? new Date(hasta)  : salida
-    return Math.max(0, Math.round((fin.getTime() - ini.getTime()) / 86400000))
+    const salida  = s.checked_out_at ? new Date(s.checked_out_at) : mesFin
+    const ini = entrada < mesInicio ? mesInicio : entrada
+    const fin = salida  > mesFin    ? mesFin    : salida
+    if (fin <= ini) return 0
+    return Math.max(1, Math.round((fin.getTime() - ini.getTime()) / 86400000))
   }
 
   // ── Métricas globales ────────────────────────────────────────
@@ -141,7 +153,7 @@ export default async function ReportesPage({
             <p className="text-white/60 text-sm mt-1">{diasMes} días · {nPropiedades} propiedad{nPropiedades !== 1 ? 'es' : ''}</p>
           </div>
 
-          {/* Selector */}
+          {/* Selector + PDF */}
           <form method="GET" className="flex flex-wrap gap-2 items-center">
             <select name="empresa" defaultValue={filtroEmpresa}
               className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none">
@@ -163,6 +175,7 @@ export default async function ReportesPage({
               Ver
             </button>
           </form>
+          <PrintButton />
         </div>
       </div>
 

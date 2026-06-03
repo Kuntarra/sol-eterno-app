@@ -34,3 +34,11 @@ body {
   background-color: var(--gray-50);
   -webkit-font-smoothing: antialiased;
 }
+
+@media print {
+  .no-print { display: none !important; }
+  nav, aside, header form, button { display: none !important; }
+  body { background: white !important; }
+  .bg-\[var\(--navy\)\] { background: #1B3A5C !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { margin: 1.5cm; size: A4 landscape; }
+}
