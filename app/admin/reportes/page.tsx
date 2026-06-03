@@ -110,10 +110,13 @@ export default async function ReportesPage({
     const r = a.rooms as any
     if (r?.id) habitacionesAsignadas.set(r.id, r.capacity ?? 1)
   }
-  const camasDisponibles = [...habitacionesAsignadas.values()].reduce((acc, c) => acc + c, 0)
-  const camasNocheTotal  = camasDisponibles * diasPeriodo
-  const camasNocheLibres = Math.max(0, camasNocheTotal - nochesHuesped)
-  const ocupacionPct     = camasNocheTotal > 0
+  const camasDisponibles  = [...habitacionesAsignadas.values()].reduce((acc, c) => acc + c, 0)
+  const camasNocheTotal   = camasDisponibles * diasPeriodo
+  const camasNocheLibres  = Math.max(0, camasNocheTotal - nochesHuesped)
+  // Camas promedio ocupadas por día = noches-huésped ÷ días del período
+  const camasOcupadas     = diasPeriodo > 0 ? Math.round((nochesHuesped / diasPeriodo) * 10) / 10 : 0
+  const camasLibresDia    = Math.max(0, camasDisponibles - camasOcupadas)
+  const ocupacionPct      = camasNocheTotal > 0
     ? Math.round((nochesHuesped / camasNocheTotal) * 100)
     : 0
 
@@ -121,13 +124,14 @@ export default async function ReportesPage({
   const nPropiedades   = propiedadesSet.size
 
   // ── Por propiedad ────────────────────────────────────────────
-  const propMap = new Map<string, { nombre: string; camasNoche: number; nochesUsadas: number; estadias: number }>()
+  const propMap = new Map<string, { nombre: string; camasTotal: number; camasNoche: number; nochesUsadas: number; estadias: number }>()
   for (const a of allocs) {
     const r = a.rooms as any
     const p = r?.properties
     if (!p?.id) continue
-    if (!propMap.has(p.id)) propMap.set(p.id, { nombre: p.name, camasNoche: 0, nochesUsadas: 0, estadias: 0 })
-    propMap.get(p.id)!.camasNoche += (r.capacity ?? 1) * diasPeriodo
+    if (!propMap.has(p.id)) propMap.set(p.id, { nombre: p.name, camasTotal: 0, camasNoche: 0, nochesUsadas: 0, estadias: 0 })
+    propMap.get(p.id)!.camasTotal  += (r.capacity ?? 1)
+    propMap.get(p.id)!.camasNoche  += (r.capacity ?? 1) * diasPeriodo
   }
   for (const s of stays) {
     const pid = (s.rooms as any)?.properties?.id
@@ -137,7 +141,12 @@ export default async function ReportesPage({
     }
   }
   const porPropiedad = [...propMap.values()]
-    .map(p => ({ ...p, pct: p.camasNoche > 0 ? Math.round((p.nochesUsadas / p.camasNoche) * 100) : 0 }))
+    .map(p => ({
+      ...p,
+      pct: p.camasNoche > 0 ? Math.round((p.nochesUsadas / p.camasNoche) * 100) : 0,
+      // Camas promedio ocupadas por día en esta propiedad
+      camasOcupadasProm: diasPeriodo > 0 ? Math.round((p.nochesUsadas / diasPeriodo) * 10) / 10 : 0,
+    }))
     .sort((a, b) => b.pct - a.pct)
 
   // ── Por empresa ──────────────────────────────────────────────
@@ -205,15 +214,15 @@ export default async function ReportesPage({
             </div>
             <div className="mt-4 w-full space-y-1.5 text-xs text-[var(--gray-600)]">
               <div className="flex justify-between">
-                <span>Camas-noche disponibles</span>
+                <span>Camas-{periodo === 'anual' ? 'año' : 'mes'} disponibles</span>
                 <span className="font-semibold text-[var(--navy)]">{camasNocheTotal.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between">
-                <span>Camas-noche usadas</span>
+                <span>Camas-{periodo === 'anual' ? 'año' : 'mes'} usadas</span>
                 <span className="font-semibold text-emerald-600">{nochesHuesped.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between">
-                <span>Camas-noche libres</span>
+                <span>Camas-{periodo === 'anual' ? 'año' : 'mes'} sin usar</span>
                 <span className="font-semibold text-[var(--gray-500)]">{camasNocheLibres.toLocaleString('es-CL')}</span>
               </div>
             </div>
@@ -221,10 +230,10 @@ export default async function ReportesPage({
 
           {/* 4 KPIs */}
           <div className="lg:col-span-3 grid grid-cols-2 gap-4">
-            <MetricCard icon="🛏️" label="Noches-huésped" value={nochesHuesped}
-              sub={`Suma de noches de todos los huéspedes`} accent="navy" />
-            <MetricCard icon="🏠" label="Camas asignadas" value={camasDisponibles}
-              sub={`${habitacionesAsignadas.size} habitaciones · ${diasPeriodo} días`} accent="amber" />
+            <MetricCard icon="🛏️" label="Camas usadas" value={nochesHuesped}
+              sub={`${camasDisponibles} camas × ${diasPeriodo} días = ${camasNocheTotal.toLocaleString('es-CL')} disponibles`} accent="navy" />
+            <MetricCard icon="📭" label="Camas sin usar" value={camasNocheLibres}
+              sub={`${100 - ocupacionPct}% de capacidad sin ocupar`} accent="amber" />
             <MetricCard icon="🏨" label="Propiedades" value={nPropiedades}
               sub={`${stays.length} estadías en total`} accent="green" />
             <MetricCard icon="🏢" label="Empresas" value={porEmpresa.length}
@@ -242,7 +251,7 @@ export default async function ReportesPage({
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-sm font-medium text-[var(--navy)]">{p.nombre}</span>
                     <div className="flex items-center gap-4 text-xs text-[var(--gray-600)]">
-                      <span>{p.estadias} estadías · {p.nochesUsadas} noches usadas / {p.camasNoche} disponibles</span>
+                      <span>{p.estadias} estadías · {p.nochesUsadas} camas usadas / {p.camasNoche} disponibles</span>
                       <span className={`font-bold text-base ${p.pct >= 80 ? 'text-emerald-600' : p.pct >= 50 ? 'text-amber-600' : 'text-[var(--navy)]'}`}>
                         {p.pct}%
                       </span>
@@ -380,10 +389,11 @@ function MetricCard({ icon, label, value, sub, accent }: {
   icon: string; label: string; value: number; sub: string; accent: string
 }) {
   const border = accent==='navy' ? 'border-t-[var(--navy)]' : accent==='amber' ? 'border-t-[var(--amber)]' : accent==='green' ? 'border-t-emerald-500' : 'border-t-[var(--gray-300)]'
+  const display = Number.isInteger(value) ? value.toLocaleString('es-CL') : value.toFixed(1)
   return (
     <div className={`bg-white rounded-xl border border-[var(--gray-200)] border-t-4 ${border} p-5`}>
       <span className="text-2xl">{icon}</span>
-      <p className="text-2xl font-bold text-[var(--navy)] mt-2">{value.toLocaleString('es-CL')}</p>
+      <p className="text-2xl font-bold text-[var(--navy)] mt-2">{display}</p>
       <p className="text-sm font-medium text-[var(--gray-700)] mt-0.5">{label}</p>
       <p className="text-xs text-[var(--gray-500)] mt-1">{sub}</p>
     </div>
