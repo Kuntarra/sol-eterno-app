@@ -16,29 +16,16 @@ export default async function UsuarioDetailPage({ params, searchParams }: Props)
   const { success, error } = await searchParams
   const adminClient = createAdminClient()
 
-  const { data: profile } = await adminClient
-    .from('user_profiles')
-    .select('*, companies(name), receptionist_properties(property_id)')
-    .eq('id', id)
-    .single()
+  const [{ data: profile }, { data: properties }, { data: companies }, { data: rp }] = await Promise.all([
+    adminClient.from('user_profiles').select('*, companies(name)').eq('id', id).single(),
+    adminClient.from('properties').select('id, name, type, cities(name)').eq('active', true).order('name'),
+    adminClient.from('companies').select('id, name').eq('active', true).order('name'),
+    adminClient.from('receptionist_properties').select('property_id').eq('user_id', id),
+  ])
 
   if (!profile) notFound()
 
-  const { data: properties } = await adminClient
-    .from('properties')
-    .select('id, name, type, cities(name)')
-    .eq('active', true)
-    .order('name')
-
-  const { data: companies } = await adminClient
-    .from('companies')
-    .select('id, name')
-    .eq('active', true)
-    .order('name')
-
-  const assignedPropertyIds = new Set(
-    (profile.receptionist_properties as { property_id: string }[] | null ?? []).map(rp => rp.property_id)
-  )
+  const assignedPropertyIds = new Set((rp ?? []).map(r => r.property_id))
 
   const updatePropsWithId = updateReceptionistProperties.bind(null, id)
   const company = profile.companies as { name: string } | null
