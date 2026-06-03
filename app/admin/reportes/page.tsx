@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PrintButton } from './_components/print-button'
+import { ReportFilters } from './_components/report-filters'
 
 const MONTHS = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -137,7 +138,6 @@ export default async function ReportesPage({
   const fmt = (iso: string) =>
     new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
-  const years = [2024, 2025, 2026]
   const circ  = 2 * Math.PI * 54  // circunferencia del gauge (r=54)
   const dash  = (ocupacionPct / 100) * circ
 
@@ -153,29 +153,15 @@ export default async function ReportesPage({
             <p className="text-white/60 text-sm mt-1">{diasMes} días · {nPropiedades} propiedad{nPropiedades !== 1 ? 'es' : ''}</p>
           </div>
 
-          {/* Selector + PDF */}
-          <form method="GET" className="flex flex-wrap gap-2 items-center">
-            <select name="empresa" defaultValue={filtroEmpresa}
-              className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none">
-              <option value="todas">Todas las empresas</option>
-              {(empresasRaw ?? []).map(e => (
-                <option key={e.id} value={e.id}>{e.name}</option>
-              ))}
-            </select>
-            <select name="mes" defaultValue={mes}
-              className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none">
-              {MONTHS.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
-            </select>
-            <select name="anio" defaultValue={anio}
-              className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none">
-              {years.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
-            <button type="submit"
-              className="px-5 py-2 bg-[var(--amber)] text-[var(--navy)] text-sm font-bold rounded-lg hover:bg-amber-400 transition-colors">
-              Ver
-            </button>
-          </form>
-          <PrintButton />
+          <div className="flex flex-wrap gap-2 items-center">
+            <ReportFilters
+              mes={mes}
+              anio={anio}
+              filtroEmpresa={filtroEmpresa}
+              empresas={(empresasRaw ?? []).map(e => ({ id: e.id, name: e.name }))}
+            />
+            <PrintButton />
+          </div>
         </div>
       </div>
 
