@@ -3,17 +3,16 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 
 export async function createReceptionist(formData: FormData) {
   const adminClient = createAdminClient()
-  const supabase    = await createClient()
 
-  const email     = formData.get('email') as string
-  const password  = formData.get('password') as string
-  const fullName  = formData.get('full_name') as string
+  const email       = formData.get('email') as string
+  const password    = formData.get('password') as string
+  const fullName    = formData.get('full_name') as string
   const propertyIds = formData.getAll('property_ids') as string[]
 
+  // 1. Crear usuario en auth
   const { data, error } = await adminClient.auth.admin.createUser({
     email,
     password,
@@ -25,9 +24,16 @@ export async function createReceptionist(formData: FormData) {
 
   const userId = data.user.id
 
-  // Asignar propiedades
+  // 2. Crear perfil explícitamente (no dependemos solo del trigger)
+  const { error: profileError } = await adminClient
+    .from('user_profiles')
+    .upsert({ id: userId, role: 'receptionist', full_name: fullName, email })
+
+  if (profileError) redirect('/admin/usuarios/nuevo-recepcionista?error=' + encodeURIComponent(profileError.message))
+
+  // 3. Asignar propiedades
   if (propertyIds.length > 0) {
-    await supabase.from('receptionist_properties').insert(
+    await adminClient.from('receptionist_properties').insert(
       propertyIds.map(pid => ({ user_id: userId, property_id: pid }))
     )
   }
@@ -44,6 +50,7 @@ export async function createClientUser(formData: FormData) {
   const fullName  = formData.get('full_name') as string
   const companyId = formData.get('company_id') as string
 
+  // 1. Crear usuario en auth
   const { data, error } = await adminClient.auth.admin.createUser({
     email,
     password,
@@ -53,11 +60,14 @@ export async function createClientUser(formData: FormData) {
 
   if (error) redirect('/admin/usuarios/nuevo-cliente?error=' + encodeURIComponent(error.message))
 
-  // Asociar a empresa
-  await adminClient
+  const userId = data.user.id
+
+  // 2. Crear perfil explícitamente con empresa
+  const { error: profileError } = await adminClient
     .from('user_profiles')
-    .update({ company_id: companyId })
-    .eq('id', data.user.id)
+    .upsert({ id: userId, role: 'client', full_name: fullName, email, company_id: companyId })
+
+  if (profileError) redirect('/admin/usuarios/nuevo-cliente?error=' + encodeURIComponent(profileError.message))
 
   revalidatePath('/admin/usuarios')
   redirect('/admin/usuarios?success=cliente')
@@ -71,13 +81,13 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateReceptionistProperties(userId: string, formData: FormData) {
-  const supabase = await createClient()
+  const adminClient = createAdminClient()
   const propertyIds = formData.getAll('property_ids') as string[]
 
-  await supabase.from('receptionist_properties').delete().eq('user_id', userId)
+  await adminClient.from('receptionist_properties').delete().eq('user_id', userId)
 
   if (propertyIds.length > 0) {
-    await supabase.from('receptionist_properties').insert(
+    await adminClient.from('receptionist_properties').insert(
       propertyIds.map(pid => ({ user_id: userId, property_id: pid }))
     )
   }
