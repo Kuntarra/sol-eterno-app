@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserId } from '@/lib/effective-user'
 import Link from 'next/link'
 import { CheckinForm } from '../_components/checkin-form'
 
@@ -8,19 +9,21 @@ export default async function CheckinPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const effectiveId = await getEffectiveUserId()
+  const supabase = createAdminClient()
 
   // Verificar si el recepcionista tiene propiedades asignadas
   const { data: assignedProps } = await supabase
     .from('receptionist_properties')
     .select('property_id')
-    .eq('user_id', user!.id)
+    .eq('user_id', effectiveId)
 
   const noPropertiesAssigned = !assignedProps?.length
 
-  // Traer todas las allocations visibles para este usuario (RLS filtra por propiedad asignada)
-  const { data: allocs } = await supabase
+  // Traer allocations de las propiedades asignadas al usuario efectivo
+  const propIds = (assignedProps ?? []).map(r => r.property_id)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: allocs } = await (supabase as any)
     .from('allocations')
     .select(`
       company_id,
@@ -29,6 +32,7 @@ export default async function CheckinPage({
         properties(id, name, cities(name))
       )
     `)
+    .in('rooms.property_id' as any, propIds.length ? propIds : ['00000000-0000-0000-0000-000000000000'])
 
   // Construir estructura: propiedad → empresa → habitaciones
   const propertyMap = new Map<string, {

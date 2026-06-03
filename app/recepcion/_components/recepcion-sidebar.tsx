@@ -45,9 +45,10 @@ const NAV = [
 interface Props {
   fullName: string
   properties: { name: string; city: string }[]
+  impersonating?: boolean
 }
 
-export function RecepcionSidebar({ fullName, properties }: Props) {
+export function RecepcionSidebar({ fullName, properties, impersonating }: Props) {
   const pathname = usePathname()
 
   return (

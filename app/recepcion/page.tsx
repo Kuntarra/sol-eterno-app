@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserId } from '@/lib/effective-user'
 import Link from 'next/link'
 import { CheckoutButton } from './_components/checkout-button'
 
@@ -15,14 +17,14 @@ export default async function RecepcionPage({
   searchParams: Promise<{ success?: string; property?: string }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const effectiveId = await getEffectiveUserId()
+  const supabase = createAdminClient()
 
   // Propiedades asignadas al recepcionista
   const { data: rpRows } = await supabase
     .from('receptionist_properties')
     .select('property_id, properties(id, name)')
-    .eq('user_id', user!.id)
+    .eq('user_id', effectiveId)
 
   const myProperties = (rpRows ?? []).map(r => {
     const p = r.properties as unknown as { id: string; name: string } | null
