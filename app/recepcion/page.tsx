@@ -82,7 +82,7 @@ export default async function RecepcionPage({
   })
 
   const nombre = (s: typeof filtered[0]) => {
-    const g = s.guests as { first_name: string; last_name_paterno: string } | null
+    const g = s.guests as unknown as { first_name: string; last_name_paterno: string } | null
     return `${g?.first_name ?? ''} ${g?.last_name_paterno ?? ''}`.trim()
   }
 
@@ -171,9 +171,9 @@ export default async function RecepcionPage({
         /* ── Grid de tarjetas de huéspedes ── */
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {filtered.map(stay => {
-            const guest   = stay.guests   as { first_name: string; last_name_paterno: string; rut?: string; phone?: string } | null
-            const room    = stay.rooms    as { number: string; floor: number | null; property_id: string; properties: { name: string; cities: { name: string } | null } | null } | null
-            const company = stay.companies as { name: string } | null
+            const guest   = stay.guests   as unknown as { first_name: string; last_name_paterno: string; rut?: string; phone?: string } | null
+            const room    = stay.rooms    as unknown as { number: string; floor: number | null; property_id: string; properties: { name: string; cities: { name: string } | null } | null } | null
+            const company = stay.companies as unknown as { name: string } | null
             const n       = nombre(stay)
             const initials = n.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
 

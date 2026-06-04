@@ -43,7 +43,7 @@ export default async function EstadiasPage({
   // Ocupación: total camas de todas las allocations
   const { data: allocsData } = await supabase.from('allocations').select('rooms(capacity)')
   const totalCamas = (allocsData ?? []).reduce((sum, a) => {
-    const r = a.rooms as { capacity: number } | null
+    const r = a.rooms as unknown as { capacity: number } | null
     return sum + (r?.capacity ?? 0)
   }, 0)
   const ocupacionPct = totalCamas > 0
