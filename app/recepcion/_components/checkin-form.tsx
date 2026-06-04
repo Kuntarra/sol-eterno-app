@@ -18,8 +18,8 @@ interface Props {
   error?: string
 }
 
-const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow disabled:opacity-50'
-const LABEL = 'block text-sm font-medium text-[var(--gray-900)] mb-1.5'
+const INPUT = 'input-premium disabled:opacity-40'
+const LABEL = 'block text-sm font-semibold text-[var(--navy)] mb-1.5'
 
 const ROOM_LABELS: Record<string, string> = {
   single: 'Individual', double: 'Doble', triple: 'Triple', suite: 'Suite', shared: 'Compartido'
@@ -53,8 +53,8 @@ export function CheckinForm({ properties, error }: Props) {
       )}
 
       {/* Propiedad / Empresa / Habitación */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
-        <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Asignación</h2>
+      <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
+        <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--gray-500)] mb-4">Asignación</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
           {properties.length > 1 && (
@@ -100,8 +100,8 @@ export function CheckinForm({ properties, error }: Props) {
       </div>
 
       {/* Datos del huésped */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
-        <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Datos del huésped</h2>
+      <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
+        <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--gray-500)] mb-4">Datos del huésped</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={LABEL}>Nombre *</label>
@@ -127,8 +127,8 @@ export function CheckinForm({ properties, error }: Props) {
       </div>
 
       {/* Estadía */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
-        <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Estadía</h2>
+      <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
+        <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--gray-500)] mb-4">Estadía</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={LABEL}>Tipo de turno *</label>
@@ -161,8 +161,7 @@ export function CheckinForm({ properties, error }: Props) {
         </div>
       </div>
 
-      <button type="submit"
-        className="w-full py-3 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white font-semibold rounded-xl transition-colors">
+      <button type="submit" className="btn-primary w-full justify-center py-3 text-sm">
         Registrar check-in
       </button>
     </form>

@@ -1,17 +1,45 @@
 @import "tailwindcss";
 
 :root {
+  /* ── Paleta principal ─────────────────────────────────── */
   --navy:        #1B3A5C;
   --navy-dark:   #142d47;
   --navy-light:  #2a5180;
   --amber:       #F5B520;
   --amber-dark:  #D99A10;
   --amber-light: #fdd05a;
+
+  /* ── Escala de grises ─────────────────────────────────── */
   --gray-50:     #F8F9FA;
   --gray-100:    #F1F3F5;
   --gray-200:    #E9ECEF;
+  --gray-300:    #DEE2E6;
+  --gray-500:    #ADB5BD;
   --gray-600:    #6C757D;
+  --gray-700:    #495057;
   --gray-900:    #212529;
+
+  /* ── Navy tints ──────────────────────────────────────── */
+  --navy-5:  rgb(27 58 92 / 0.05);
+  --navy-8:  rgb(27 58 92 / 0.08);
+  --navy-12: rgb(27 58 92 / 0.12);
+
+  /* ── Sombras ──────────────────────────────────────────── */
+  --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm:    0 1px 4px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-md:    0 4px 16px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+  --shadow-lg:    0 12px 32px -4px rgb(0 0 0 / 0.10), 0 4px 12px -2px rgb(0 0 0 / 0.05);
+  --shadow-navy:  0 4px 16px -2px rgb(27 58 92 / 0.30);
+  --shadow-amber: 0 4px 16px -2px rgb(245 181 32 / 0.30);
+
+  /* ── Radios ───────────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* ── Ease ─────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
@@ -24,21 +52,191 @@
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
-* {
-  box-sizing: border-box;
+/* ── Base ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   font-family: var(--font-sans);
   color: var(--gray-900);
-  background-color: var(--gray-50);
-  -webkit-font-smoothing: antialiased;
+  background-color: var(--gray-100);
+  line-height: 1.55;
 }
 
-@page { margin: 1cm; size: A4 landscape; }
+/* text-wrap: pretty en todo texto largo */
+p, li, blockquote { text-wrap: pretty; }
+h1, h2, h3, h4 { text-wrap: balance; }
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-500); }
+
+/* ── Focus ring ──────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Transición global ───────────────────────────────────── */
+a, button, [role="button"] {
+  transition: color 150ms var(--ease-out),
+              background-color 150ms var(--ease-out),
+              border-color 150ms var(--ease-out),
+              box-shadow 150ms var(--ease-out),
+              transform 150ms var(--ease-out),
+              opacity 150ms var(--ease-out);
+}
+
+/* ── Etiqueta de sección — patrón brochure ───────────────── */
+.section-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 5px;
+}
+
+/* ── Botón primario global ───────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-navy);
+}
+.btn-primary:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -2px rgb(27 58 92 / 0.35);
+}
+.btn-primary:active { transform: translateY(0); }
+
+/* ── Tabla admin premium ─────────────────────────────────── */
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+
+.admin-table thead tr {
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+.admin-table thead th {
+  text-align: left;
+  padding: 11px 16px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--gray-600);
+}
+.admin-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background-color 100ms;
+}
+.admin-table tbody tr:hover { background: var(--gray-50); }
+.admin-table tbody td { padding: 13px 16px; color: var(--gray-700); }
+.admin-table tfoot tr {
+  background: var(--gray-50);
+  border-top: 2px solid var(--gray-200);
+}
+.admin-table tfoot td { padding: 11px 16px; font-weight: 700; font-size: 13px; }
+
+/* ── Card premium ────────────────────────────────────────── */
+.premium-card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 200ms var(--ease-out), transform 200ms var(--ease-out);
+}
+.premium-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* ── Input premium ───────────────────────────────────────── */
+.input-premium {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  color: var(--gray-900);
+  transition: border-color 150ms, box-shadow 150ms, background-color 150ms;
+  outline: none;
+}
+.input-premium:hover { border-color: var(--gray-300); background: #fff; }
+.input-premium:focus {
+  border-color: var(--navy);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(27 58 92 / 0.08);
+}
+.input-premium::placeholder { color: var(--gray-500); }
+
+/* ── Números de datos — tabular-nums para KPIs ───────────── */
+.data-number {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: -0.02em;
+}
+
+/* ── Shimmer para botones CTA ────────────────────────────── */
+@keyframes shimmer-slide {
+  0%   { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(250%)  skewX(-12deg); }
+}
+.btn-amber-cta {
+  position: relative;
+  overflow: hidden;
+}
+.btn-amber-cta::after {
+  content: '';
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.22), transparent);
+  animation: shimmer-slide 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Entrada suave para cards ────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fade-up 300ms var(--ease-out) both;
+}
+
+/* ── Badge de estado ──────────────────────────────────────── */
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+.badge-green  { background: #d1fae5; color: #065f46; }
+.badge-amber  { background: rgb(245 181 32 / 0.12); color: var(--amber-dark); }
+.badge-navy   { background: var(--navy-5); color: var(--navy); }
+.badge-gray   { background: var(--gray-100); color: var(--gray-600); }
+.badge-red    { background: #fee2e2; color: #991b1b; }
+
+/* ── Print ────────────────────────────────────────────────── */
+@page { margin: 1.5cm; size: letter portrait; }
 
 @media print {
   .no-print { display: none !important; }
-  aside { display: none !important; }
-  body { background: white !important; }
+  aside     { display: none !important; }
+  body      { background: white !important; }
 }

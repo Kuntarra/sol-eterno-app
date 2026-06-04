@@ -20,7 +20,7 @@ DECLARE
   city_iqq uuid; city_ant uuid; city_cal uuid;
 
   -- ── Variables de trabajo ───────────────────────────────────
-  i integer; floor_num integer;
+  i integer := 0; floor_num integer := 0;
   rid uuid; aid uuid; gid uuid;
   rtype text; rcap integer; rnum text;
   comp_id uuid; prop_id uuid; alloc_id uuid;
@@ -60,6 +60,10 @@ BEGIN
     OR id::text LIKE 'd1000000%';
   DELETE FROM public.rooms      WHERE property_id IN (p_norte,p_minero,p_sol)
     OR id::text LIKE 'b1000000%';
+  -- Desvincular perfiles de usuario antes de borrar empresas del seed anterior
+  UPDATE public.user_profiles SET company_id = NULL
+    WHERE company_id IN (c_mc,c_ct,c_nm,c_am,c_en)
+       OR company_id::text LIKE 'c1000000%';
   DELETE FROM public.companies  WHERE id IN (c_mc,c_ct,c_nm,c_am,c_en)
     OR id::text LIKE 'c1000000%';
   DELETE FROM public.properties WHERE id IN (p_norte,p_minero,p_sol)

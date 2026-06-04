@@ -92,7 +92,7 @@ export default async function ReportePrintPage({
 
   const css = `
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#212529;background:#fff;padding:20px}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#212529;background:#fff;padding:20px}
     table{border-collapse:collapse;width:100%}
     th,td{text-align:left;padding:5px 9px}
     thead th{background:#f1f3f5;font-size:10px;font-weight:700;color:#6C757D;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #dee2e6}
@@ -100,7 +100,7 @@ export default async function ReportePrintPage({
     tfoot td{background:#f1f3f5;font-weight:700;border-top:2px solid #dee2e6}
     .badge-ok{background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:600}
     .badge-done{background:#f1f3f5;color:#6C757D;padding:1px 7px;border-radius:20px;font-size:10px}
-    @page{size:A4 landscape;margin:1.2cm}
+    @page{size:letter portrait;margin:1.5cm}
     @media print{body{padding:0}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
   `
 

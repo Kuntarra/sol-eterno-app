@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PrintButton } from './_components/print-button'
 import { ReportFilters } from './_components/report-filters'
@@ -13,15 +14,16 @@ const ROOM_LABELS: Record<string, string> = {
 export default async function ReportesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string; anio?: string; empresa?: string; propiedad?: string; periodo?: string }>
+  searchParams: Promise<{ mes?: string; anio?: string; empresa?: string; propiedad?: string; periodo?: string; proyecto?: string }>
 }) {
   const params = await searchParams
   const now    = new Date()
-  const periodo        = params.periodo  ?? 'mensual'
-  const anio           = parseInt(params.anio ?? String(now.getFullYear()))
-  const mes            = parseInt(params.mes  ?? String(now.getMonth() + 1))
-  const filtroEmpresa  = params.empresa  ?? 'todas'
+  const periodo         = params.periodo  ?? 'mensual'
+  const anio            = parseInt(params.anio ?? String(now.getFullYear()))
+  const mes             = parseInt(params.mes  ?? String(now.getMonth() + 1))
+  const filtroEmpresa   = params.empresa  ?? 'todas'
   const filtroPropiedad = params.propiedad ?? 'todas'
+  const filtroProyecto  = params.proyecto ?? 'todos'
 
   // ── Rango de fechas según período ───────────────────────────
   let desdeStr: string
@@ -54,29 +56,35 @@ export default async function ReportesPage({
 
   const admin = createAdminClient()
 
-  const [{ data: staysRaw }, { data: allocsRaw }, { data: empresasRaw }, { data: propiedadesRaw }] = await Promise.all([
+  const desde = desdeStr + 'T00:00:00'
+
+  const [{ data: staysRaw }, { data: allocsRaw }, { data: empresasRaw }, { data: propiedadesRaw }, { data: proyectosRaw }] = await Promise.all([
     admin.from('stays').select(`
       id, shift_type, checked_in_at, checked_out_at,
       guests(first_name, last_name_paterno, rut),
       rooms(id, number, type, capacity, properties(id, name, cities(name))),
       companies(id, name)
-    `).lte('checked_in_at', hasta).order('checked_in_at', { ascending: true }),
+    `)
+    // Estadías que se solapan con el período:
+    // checkin <= fin_periodo  AND  (checkout >= inicio_periodo OR sin checkout)
+    .lte('checked_in_at', hasta)
+    .or(`checked_out_at.gte.${desde},checked_out_at.is.null`)
+    .order('checked_in_at', { ascending: true })
+    .limit(5000),
 
     admin.from('allocations').select(`
-      room_id, company_id,
+      room_id, company_id, project_id,
       rooms(id, number, type, capacity, properties(id, name)),
       companies(id, name)
     `),
 
     admin.from('companies').select('id, name').eq('active', true).order('name'),
     admin.from('properties').select('id, name').eq('active', true).order('name'),
+    admin.from('projects').select('id, name, company_id').eq('active', true).order('name'),
   ])
 
-  // ── Filtro: estadías que se solapan con el período ───────────
-  let stays = (staysRaw ?? []).filter(s => {
-    const checkout = s.checked_out_at ? new Date(s.checked_out_at) : null
-    return !checkout || checkout >= periodoInicio
-  })
+  // El filtro principal ya viene desde la BD; este es solo seguridad extra
+  let stays = staysRaw ?? []
   let allocs = allocsRaw ?? []
 
   // Filtrar por empresa
@@ -85,20 +93,29 @@ export default async function ReportesPage({
     allocs = allocs.filter(a => (a.companies as any)?.id === filtroEmpresa)
   }
 
+  // Filtrar por proyecto — usa room_ids de allocations con ese project_id
+  if (filtroProyecto !== 'todos') {
+    const roomsDelProyecto = new Set(
+      allocs.filter(a => (a as any).project_id === filtroProyecto).map(a => a.room_id)
+    )
+    stays  = stays.filter(s => roomsDelProyecto.has((s.rooms as any)?.id))
+    allocs = allocs.filter(a => (a as any).project_id === filtroProyecto)
+  }
+
   // Filtrar por propiedad
   if (filtroPropiedad !== 'todas') {
     stays  = stays.filter(s => (s.rooms as any)?.properties?.id === filtroPropiedad)
     allocs = allocs.filter(a => (a.rooms as any)?.properties?.id === filtroPropiedad)
   }
 
-  // ── Cálculo de noches (clamp al período) ────────────────────
+  // ── Cálculo de noches dentro del período (ceil: 1 hora = 1 noche) ──
   function noches(s: typeof stays[0]) {
     const entrada = new Date(s.checked_in_at)
     const salida  = s.checked_out_at ? new Date(s.checked_out_at) : periodoFin
     const ini = entrada < periodoInicio ? periodoInicio : entrada
     const fin = salida  > periodoFin    ? periodoFin    : salida
     if (fin <= ini) return 0
-    return Math.max(1, Math.round((fin.getTime() - ini.getTime()) / 86400000))
+    return Math.ceil((fin.getTime() - ini.getTime()) / 86400000)
   }
 
   // ── Métricas globales ────────────────────────────────────────
@@ -170,12 +187,20 @@ export default async function ReportesPage({
     <div className="min-h-screen bg-[var(--gray-100)]">
 
       {/* ── Header ── */}
-      <div className="bg-[var(--navy)] text-white px-8 py-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+      <div className="bg-[var(--navy)] text-white px-8 py-8 relative overflow-hidden">
+        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.03]" aria-hidden="true">
+          <defs>
+            <pattern id="rp" width="52" height="52" patternUnits="userSpaceOnUse">
+              <path d="M26 0 L52 26 L26 52 L0 26 Z" fill="none" stroke="white" strokeWidth="0.7"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#rp)"/>
+        </svg>
+        <div className="relative max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
-            <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-1">Reporte de ocupación</p>
-            <h1 className="text-3xl font-bold">{tituloperiodo}</h1>
-            <p className="text-white/60 text-sm mt-1">
+            <span className="section-label">Reporte de ocupación</span>
+            <h1 className="text-[2rem] font-bold leading-tight text-white tracking-tight">{tituloperiodo}</h1>
+            <p className="text-white/45 text-sm mt-1">
               {diasPeriodo} días · {nPropiedades} propiedad{nPropiedades !== 1 ? 'es' : ''}
             </p>
           </div>
@@ -183,8 +208,10 @@ export default async function ReportesPage({
             <ReportFilters
               periodo={periodo} mes={mes} anio={anio}
               filtroEmpresa={filtroEmpresa} filtroPropiedad={filtroPropiedad}
+              filtroProyecto={filtroProyecto}
               empresas={(empresasRaw ?? []).map(e => ({ id: e.id, name: e.name }))}
               propiedades={(propiedadesRaw ?? []).map(p => ({ id: p.id, name: p.name }))}
+              proyectos={(proyectosRaw ?? []).map(p => ({ id: p.id, name: p.name, company_id: p.company_id }))}
             />
             <PrintButton />
           </div>
@@ -230,13 +257,13 @@ export default async function ReportesPage({
 
           {/* 4 KPIs */}
           <div className="lg:col-span-3 grid grid-cols-2 gap-4">
-            <MetricCard icon="🛏️" label="Camas usadas" value={nochesHuesped}
-              sub={`${camasDisponibles} camas × ${diasPeriodo} días = ${camasNocheTotal.toLocaleString('es-CL')} disponibles`} accent="navy" />
-            <MetricCard icon="📭" label="Camas sin usar" value={camasNocheLibres}
+            <MetricCard icon={<BedIcon/>} label="Camas usadas" value={nochesHuesped}
+              sub={`${camasDisponibles} camas × ${diasPeriodo} días = ${camasNocheTotal.toLocaleString('es-CL')} disp.`} accent="navy" />
+            <MetricCard icon={<SlashIcon/>} label="Camas sin usar" value={camasNocheLibres}
               sub={`${100 - ocupacionPct}% de capacidad sin ocupar`} accent="amber" />
-            <MetricCard icon="🏨" label="Propiedades" value={nPropiedades}
+            <MetricCard icon={<BuildingIcon/>} label="Propiedades" value={nPropiedades}
               sub={`${stays.length} estadías en total`} accent="green" />
-            <MetricCard icon="🏢" label="Empresas" value={porEmpresa.length}
+            <MetricCard icon={<CompanyIcon/>} label="Empresas" value={porEmpresa.length}
               sub={`${stays.filter(s => !s.checked_out_at).length} huéspedes activos`} accent="gray" />
           </div>
         </div>
@@ -326,12 +353,20 @@ export default async function ReportesPage({
             <p className="px-6 py-10 text-center text-sm text-[var(--gray-500)]">No hay estadías para este período.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[860px]">
+              <table className="w-full text-sm min-w-[1100px]">
                 <thead>
                   <tr className="bg-[var(--gray-50)] border-b border-[var(--gray-100)]">
-                    {['#','Huésped','RUT','Empresa','Propiedad','Hab.','Turno','Entrada','Salida','Noches','Estado'].map((h,i) => (
-                      <th key={h} className={`px-4 py-3 text-xs font-semibold text-[var(--gray-600)] ${i===9?'text-right':i===10?'text-center':'text-left'}`}>{h}</th>
-                    ))}
+                    <th className="w-8 px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">#</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Huésped</th>
+                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">RUT</th>
+                    <th className="w-36 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Empresa</th>
+                    <th className="w-36 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Propiedad</th>
+                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Hab.</th>
+                    <th className="w-20 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Turno</th>
+                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Entrada</th>
+                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Salida</th>
+                    <th className="w-16 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-right">Noches</th>
+                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-center">Estado</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--gray-100)]">
@@ -342,24 +377,24 @@ export default async function ReportesPage({
                     const n = noches(stay)
                     return (
                       <tr key={stay.id} className="hover:bg-[var(--gray-50)] transition-colors">
-                        <td className="px-4 py-3 text-xs text-[var(--gray-400)] font-mono">{idx+1}</td>
+                        <td className="px-3 py-3 text-xs text-[var(--gray-400)] font-mono">{idx+1}</td>
                         <td className="px-4 py-3 font-medium text-[var(--navy)] whitespace-nowrap">{g?.first_name} {g?.last_name_paterno}</td>
-                        <td className="px-4 py-3 text-xs text-[var(--gray-500)] font-mono">{g?.rut ?? '—'}</td>
+                        <td className="px-4 py-3 text-xs text-[var(--gray-500)] font-mono whitespace-nowrap">{g?.rut ?? '—'}</td>
                         <td className="px-4 py-3 text-[var(--gray-700)]">{c?.name}</td>
                         <td className="px-4 py-3 text-[var(--gray-700)]">{r?.properties?.name}</td>
-                        <td className="px-4 py-3 text-[var(--gray-600)]">
+                        <td className="px-4 py-3 text-[var(--gray-600)] whitespace-nowrap">
                           {r?.number}{r?.type ? <span className="text-xs text-[var(--gray-400)] ml-1">· {ROOM_LABELS[r.type]??r.type}</span> : ''}
                         </td>
                         <td className="px-4 py-3 text-[var(--gray-600)]">{stay.shift_type ?? '—'}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-[var(--gray-700)]">{fmt(stay.checked_in_at)}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-[var(--gray-700)]">
-                          {stay.checked_out_at ? fmt(stay.checked_out_at) : <span className="text-emerald-600 font-medium">Activo</span>}
+                          {stay.checked_out_at ? fmt(stay.checked_out_at) : <span className="text-emerald-600 font-medium">En hotel</span>}
                         </td>
                         <td className="px-4 py-3 text-right font-bold text-[var(--navy)]">{n}</td>
                         <td className="px-4 py-3 text-center">
                           {stay.checked_out_at
-                            ? <span className="text-xs bg-[var(--gray-100)] text-[var(--gray-500)] px-2 py-0.5 rounded-full">Completada</span>
-                            : <span className="text-xs bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded-full">Activa</span>}
+                            ? <span className="badge badge-gray">Salió</span>
+                            : <span className="badge badge-green">Alojado</span>}
                         </td>
                       </tr>
                     )
@@ -386,19 +421,32 @@ export default async function ReportesPage({
 }
 
 function MetricCard({ icon, label, value, sub, accent }: {
-  icon: string; label: string; value: number; sub: string; accent: string
+  icon: ReactNode; label: string; value: number; sub: string; accent: string
 }) {
-  const border = accent==='navy' ? 'border-t-[var(--navy)]' : accent==='amber' ? 'border-t-[var(--amber)]' : accent==='green' ? 'border-t-emerald-500' : 'border-t-[var(--gray-300)]'
+  const border  = accent==='navy'  ? 'border-t-[var(--navy)]'   :
+                  accent==='amber' ? 'border-t-[var(--amber)]'  :
+                  accent==='green' ? 'border-t-emerald-500'     : 'border-t-[var(--gray-300)]'
+  const iconBg  = accent==='navy'  ? 'bg-[var(--navy-5)] text-[var(--navy)]'  :
+                  accent==='amber' ? 'bg-[var(--amber)]/10 text-[var(--amber-dark)]' :
+                  accent==='green' ? 'bg-emerald-50 text-emerald-600' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
+  const valColor= accent==='navy'  ? 'text-[var(--navy)]' :
+                  accent==='amber' ? 'text-[var(--amber-dark)]' :
+                  accent==='green' ? 'text-emerald-600' : 'text-[var(--gray-700)]'
   const display = Number.isInteger(value) ? value.toLocaleString('es-CL') : value.toFixed(1)
   return (
     <div className={`bg-white rounded-xl border border-[var(--gray-200)] border-t-4 ${border} p-5`}>
-      <span className="text-2xl">{icon}</span>
-      <p className="text-2xl font-bold text-[var(--navy)] mt-2">{display}</p>
-      <p className="text-sm font-medium text-[var(--gray-700)] mt-0.5">{label}</p>
-      <p className="text-xs text-[var(--gray-500)] mt-1">{sub}</p>
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${iconBg}`}>{icon}</div>
+      <p className={`text-[1.875rem] font-bold leading-none tracking-tight ${valColor}`}>{display}</p>
+      <p className="text-sm font-semibold text-[var(--navy)] mt-2">{label}</p>
+      <p className="text-xs text-[var(--gray-500)] mt-1 leading-snug">{sub}</p>
     </div>
   )
 }
+
+const BedIcon      = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16M2 8h20v12H2M6 8v4M18 12H6"/></svg>
+const SlashIcon    = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+const BuildingIcon = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21v-6h6v6"/></svg>
+const CompanyIcon  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
 
 function SummaryTable({ title, rows }: { title: string; rows: { nombre: string; estadias: number; noches: number }[] }) {
   return (

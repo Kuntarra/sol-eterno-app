@@ -8,9 +8,9 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  admin:        'bg-[var(--navy)] text-white',
-  receptionist: 'bg-emerald-100 text-emerald-700',
-  client:       'bg-[var(--amber)]/20 text-[var(--navy)]',
+  admin:        'badge badge-navy',
+  receptionist: 'badge badge-green',
+  client:       'badge badge-amber',
 }
 
 export default async function UsuariosPage() {
@@ -46,36 +46,41 @@ export default async function UsuariosPage() {
   const roleOrder = ['admin', 'receptionist', 'client']
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div>
+      {/* ── Header ── */}
+      <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-8 flex items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--navy)]">Usuarios</h1>
+          <span className="section-label">Gestión</span>
+          <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Usuarios</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">{profiles?.length ?? 0} usuarios registrados</p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/admin/usuarios/nuevo-recepcionista" className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors">
-            + Recepcionista
+        <div className="flex gap-2 shrink-0">
+          <Link href="/admin/usuarios/nuevo-recepcionista"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all hover:-translate-y-px shadow-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Recepcionista
           </Link>
-          <Link href="/admin/usuarios/nuevo-cliente" className="px-4 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg transition-colors">
-            + Cliente
+          <Link href="/admin/usuarios/nuevo-cliente" className="btn-primary">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Cliente
           </Link>
         </div>
       </div>
 
-      <div className="space-y-8">
+      <div className="px-8 pb-8 space-y-8">
         {roleOrder.map(role => {
           const users = grouped[role]
           if (!users?.length) return null
 
           return (
             <div key={role}>
-              <div className="flex items-center gap-3 mb-3">
-                <h2 className="text-xs font-bold text-[var(--gray-600)] uppercase tracking-widest">{ROLE_LABELS[role]}s</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="section-label !mb-0">{ROLE_LABELS[role]}s</span>
                 <div className="flex-1 h-px bg-[var(--gray-200)]" />
-                <span className="text-xs text-[var(--gray-600)]">{users.length}</span>
+                <span className="text-xs text-[var(--gray-500)] font-medium">{users.length}</span>
               </div>
 
-              <div className="bg-white rounded-xl border border-[var(--gray-200)] overflow-hidden">
+              <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
                 {users.map((user, i) => {
                   const props = propsByUser[user.id] ?? []
                   const company = user.companies as { name: string } | null
@@ -84,10 +89,12 @@ export default async function UsuariosPage() {
                     <Link
                       key={user.id}
                       href={role !== 'admin' ? `/admin/usuarios/${user.id}` : '#'}
-                      className={`flex items-center gap-4 px-5 py-4 hover:bg-[var(--gray-50)] transition-colors ${i > 0 ? 'border-t border-[var(--gray-100)]' : ''} ${role === 'admin' ? 'cursor-default' : ''}`}
+                      className={`flex items-center gap-4 px-5 py-4 hover:bg-[var(--gray-50)] transition-colors ${i > 0 ? 'border-t border-[var(--gray-100)]' : ''} ${role === 'admin' ? 'pointer-events-none' : 'group'}`}
                     >
-                      <div className="w-9 h-9 rounded-xl bg-[var(--gray-100)] flex items-center justify-center shrink-0">
-                        <span className="text-xs font-bold text-[var(--navy)]">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors
+                        ${role === 'admin' ? 'bg-[var(--navy)]' : role === 'receptionist' ? 'bg-emerald-100 group-hover:bg-emerald-200' : 'bg-[var(--amber)]/15 group-hover:bg-[var(--amber)]/25'}`}>
+                        <span className={`text-xs font-bold
+                          ${role === 'admin' ? 'text-white' : role === 'receptionist' ? 'text-emerald-700' : 'text-[var(--amber-dark)]'}`}>
                           {(user.full_name ?? user.email ?? '?').slice(0, 2).toUpperCase()}
                         </span>
                       </div>
@@ -103,7 +110,7 @@ export default async function UsuariosPage() {
                           <p className="text-xs text-[var(--gray-600)] mt-0.5">{company.name}</p>
                         )}
                       </div>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${ROLE_COLORS[role]}`}>
+                      <span className={`shrink-0 ${ROLE_COLORS[role] ?? 'badge badge-gray'}`}>
                         {ROLE_LABELS[role]}
                       </span>
                     </Link>

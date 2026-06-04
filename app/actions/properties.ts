@@ -12,6 +12,7 @@ function parseServices(formData: FormData) {
     food:          formData.get('food')          === 'on',
     transport:     formData.get('transport')     === 'on',
     cleaning:      formData.get('cleaning')      === 'on',
+    cold_meals:    formData.get('cold_meals')    === 'on',
   }
 }
 

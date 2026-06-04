@@ -1,5 +1,5 @@
 export type Role = 'admin' | 'receptionist' | 'client'
-export type PropertyType = 'hotel' | 'hostal' | 'departamento' | 'oficina'
+export type PropertyType = 'hotel' | 'hostal' | 'departamento'
 export type RoomType = 'single' | 'double' | 'triple' | 'suite' | 'shared'
 
 export interface City {
@@ -15,6 +15,7 @@ export interface Services {
   food: boolean
   transport: boolean
   cleaning: boolean
+  cold_meals: boolean
 }
 
 export interface Property {
@@ -112,7 +113,6 @@ export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
   hotel: 'Hotel',
   hostal: 'Hostal',
   departamento: 'Departamento',
-  oficina: 'Oficina',
 }
 
 export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
@@ -124,11 +124,12 @@ export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
 }
 
 export const SERVICE_LABELS: Record<keyof Omit<Services, 'parking_spots'>, string> = {
-  parking: 'Estacionamiento',
-  laundry: 'Lavandería',
-  food: 'Alimentación',
-  transport: 'Transporte',
-  cleaning: 'Aseo',
+  parking:    'Estacionamiento',
+  laundry:    'Lavandería',
+  food:       'Alimentación',
+  transport:  'Transporte',
+  cleaning:   'Aseo',
+  cold_meals: 'Colaciones Frías',
 }
 
 // Servicios disponibles por tipo de propiedad
@@ -139,33 +140,30 @@ export const SERVICES_BY_TYPE: Record<PropertyType, {
   alwaysIncluded?: boolean
 }[]> = {
   hotel: [
-    { key: 'parking',   label: 'Estacionamiento', hasQuantity: true },
-    { key: 'laundry',   label: 'Lavandería' },
-    { key: 'transport', label: 'Transporte' },
-    { key: 'food',      label: 'Alimentación' },
+    { key: 'parking',    label: 'Estacionamiento',  hasQuantity: true },
+    { key: 'laundry',    label: 'Lavandería' },
+    { key: 'transport',  label: 'Transporte' },
+    { key: 'food',       label: 'Alimentación' },
+    { key: 'cold_meals', label: 'Colaciones Frías' },
   ],
   hostal: [
-    { key: 'parking',   label: 'Estacionamiento', hasQuantity: true },
-    { key: 'laundry',   label: 'Lavandería' },
-    { key: 'transport', label: 'Transporte' },
+    { key: 'parking',    label: 'Estacionamiento',  hasQuantity: true },
+    { key: 'laundry',    label: 'Lavandería' },
+    { key: 'transport',  label: 'Transporte' },
+    { key: 'cold_meals', label: 'Colaciones Frías' },
   ],
   departamento: [
-    { key: 'laundry',   label: 'Lavandería' },
-    { key: 'food',      label: 'Alimentación' },
-    { key: 'transport', label: 'Transporte' },
-    { key: 'cleaning',  label: 'Aseo' },
-    { key: 'parking',   label: 'Estacionamiento', hasQuantity: true },
-  ],
-  oficina: [
-    { key: 'parking',   label: 'Estacionamiento', hasQuantity: true },
-    { key: 'transport', label: 'Transporte' },
-    { key: 'cleaning',  label: 'Aseo' },
+    { key: 'laundry',    label: 'Lavandería' },
+    { key: 'food',       label: 'Alimentación' },
+    { key: 'cold_meals', label: 'Colaciones Frías' },
+    { key: 'transport',  label: 'Transporte' },
+    { key: 'cleaning',   label: 'Aseo' },
+    { key: 'parking',    label: 'Estacionamiento',  hasQuantity: true },
   ],
 }
 
 export const PROPERTY_TYPE_COLORS: Record<PropertyType, string> = {
-  hotel: 'bg-blue-100 text-blue-700',
-  hostal: 'bg-green-100 text-green-700',
+  hotel:        'bg-blue-100 text-blue-700',
+  hostal:       'bg-green-100 text-green-700',
   departamento: 'bg-purple-100 text-purple-700',
-  oficina: 'bg-orange-100 text-orange-700',
 }

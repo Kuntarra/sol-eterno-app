@@ -1,5 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserId } from '@/lib/effective-user'
+import Link from 'next/link'
 import { CheckoutButton } from '../_components/checkout-button'
+import { RecepcionSearchBar } from '../_components/search-bar'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString('es-CL', {
@@ -16,88 +19,226 @@ function daysAgo(iso: string) {
   return `Hace ${days} días`
 }
 
-export default async function CheckoutPage() {
-  const supabase = await createClient()
+export default async function CheckoutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ property?: string; q?: string }>
+}) {
+  const params      = await searchParams
+  const q           = params.q?.trim() ?? ''
+  const effectiveId = await getEffectiveUserId()
+  const supabase    = createAdminClient()
 
-  const { data: stays } = await supabase
+  // Propiedades asignadas al recepcionista
+  const { data: rpRows } = await supabase
+    .from('receptionist_properties')
+    .select('property_id, properties(id, name)')
+    .eq('user_id', effectiveId)
+
+  const myProperties = (rpRows ?? []).map(r => {
+    const p = r.properties as unknown as { id: string; name: string } | null
+    return { id: p?.id ?? r.property_id, name: p?.name ?? r.property_id }
+  })
+
+  const selectedPropertyId = params.property ?? null
+  const showFilter = myProperties.length > 1
+
+  // Buscar por nombre, RUT o número de habitación
+  let guestIds: string[] | null = null
+  let roomIds:  string[] | null = null
+
+  if (q) {
+    const [{ data: guests }, { data: rooms }] = await Promise.all([
+      supabase.from('guests').select('id')
+        .or(`first_name.ilike.%${q}%,last_name_paterno.ilike.%${q}%,rut.ilike.%${q}%`)
+        .limit(200),
+      supabase.from('rooms').select('id')
+        .ilike('number', `%${q}%`)
+        .limit(100),
+    ])
+    guestIds = (guests ?? []).map(g => g.id)
+    roomIds  = (rooms  ?? []).map(r => r.id)
+  }
+
+  // Estadías activas
+  let query = supabase
     .from('stays')
     .select(`
       id, shift_type, checked_in_at, estimated_checkout, notes,
-      guests(first_name, last_name_paterno, rut),
-      rooms(number, floor, properties(name)),
+      guests(id, first_name, last_name_paterno, rut, phone),
+      rooms(id, number, floor, property_id, properties(id, name)),
       companies(name)
     `)
     .is('checked_out_at', null)
     .order('checked_in_at', { ascending: true })
 
+  if (guestIds !== null) {
+    const allIds = [
+      ...guestIds.map(id => `guest_id.eq.${id}`),
+      ...(roomIds ?? []).map(id => `room_id.eq.${id}`),
+    ]
+    if (allIds.length === 0) {
+      query = query.eq('id', '00000000-0000-0000-0000-000000000000')
+    } else {
+      query = query.or(allIds.join(','))
+    }
+  }
+
+  const { data: staysRaw } = await query
+
+  // Filtrar por propiedad
+  const stays = (staysRaw ?? []).filter(s => {
+    const room = s.rooms as unknown as { property_id: string } | null
+    if (selectedPropertyId && room?.property_id !== selectedPropertyId) return false
+    return true
+  })
+
+  const nombre = (s: typeof stays[0]) => {
+    const g = s.guests as any
+    return `${g?.first_name ?? ''} ${g?.last_name_paterno ?? ''}`.trim()
+  }
+
   return (
     <div>
+      {/* ── Header premium ── */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-[var(--navy)]">Check-out</h1>
-        <p className="text-sm text-[var(--gray-600)] mt-0.5">
-          {stays?.length ?? 0} huésped{stays?.length !== 1 ? 'es' : ''} pendiente{stays?.length !== 1 ? 's' : ''}
+        <span className="section-label">Recepción</span>
+        <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Check-out</h1>
+        <p className="text-sm text-[var(--gray-600)] mt-1">
+          {stays.length} huésped{stays.length !== 1 ? 'es' : ''} pendiente{stays.length !== 1 ? 's' : ''}
+          {q && <span className="ml-1 text-[var(--navy)] font-medium">· "{q}"</span>}
         </p>
       </div>
 
-      {!stays?.length ? (
+      {/* ── Buscador + filtros ── */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <RecepcionSearchBar defaultValue={q || undefined} />
+
+        {showFilter && !q && (
+          <div className="flex gap-1.5 bg-white border border-[var(--gray-200)] rounded-xl p-1">
+            <Link href="/recepcion/checkout"
+              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                !selectedPropertyId
+                  ? 'bg-[var(--navy)] text-white shadow-[var(--shadow-xs)]'
+                  : 'text-[var(--gray-600)] hover:text-[var(--navy)] hover:bg-[var(--gray-50)]'
+              }`}>
+              Todos
+            </Link>
+            {myProperties.map(p => (
+              <Link key={p.id} href={`/recepcion/checkout?property=${p.id}`}
+                className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  selectedPropertyId === p.id
+                    ? 'bg-[var(--navy)] text-white shadow-[var(--shadow-xs)]'
+                    : 'text-[var(--gray-600)] hover:text-[var(--navy)] hover:bg-[var(--gray-50)]'
+                }`}>
+                {p.name}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {!stays.length ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
-          <p className="text-sm text-[var(--gray-600)]">No hay huéspedes activos para hacer check-out.</p>
+          <p className="text-sm text-[var(--gray-600)]">
+            {q
+              ? `No se encontró ningún huésped con "${q}".`
+              : selectedPropertyId
+                ? 'No hay huéspedes activos en esta propiedad.'
+                : 'No hay huéspedes activos para hacer check-out.'}
+          </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {stays.map(stay => {
-            const guest = stay.guests as unknown as { first_name: string; last_name_paterno: string; rut: string | null } | null
-            const room = stay.rooms as unknown as { number: string; floor: number | null; properties: { name: string } | null } | null
+            const guest   = stay.guests   as unknown as { first_name: string; last_name_paterno: string; rut: string | null; phone?: string } | null
+            const room    = stay.rooms    as unknown as { number: string; floor: number | null; property_id: string; properties: { name: string } | null } | null
             const company = stay.companies as unknown as { name: string } | null
-
+            const n       = nombre(stay)
+            const initials = n.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
             const isOverdue = stay.estimated_checkout
               ? new Date(stay.estimated_checkout) < new Date()
               : false
 
             return (
-              <div
-                key={stay.id}
-                className={`bg-white rounded-xl border p-4 flex items-start sm:items-center justify-between gap-4 ${
-                  isOverdue ? 'border-red-200 bg-red-50/40' : 'border-[var(--gray-200)]'
-                }`}
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-[var(--navy)]">
-                      {guest?.first_name} {guest?.last_name_paterno}
-                    </p>
-                    {isOverdue && (
-                      <span className="text-xs bg-red-100 text-red-700 font-medium px-2 py-0.5 rounded-full">
-                        Vencido
+              <div key={stay.id}
+                className={`bg-white rounded-2xl border overflow-hidden shadow-[var(--shadow-xs)]
+                            hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200
+                            ${isOverdue ? 'border-red-200' : 'border-[var(--gray-200)]'}`}>
+                {/* Top accent */}
+                <div className={`h-0.5 ${isOverdue ? 'bg-red-400' : 'bg-gradient-to-r from-[var(--navy)] via-[var(--amber)] to-[var(--navy)]'}`} />
+
+                <div className="p-5 flex items-start gap-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isOverdue ? 'bg-red-100' : 'bg-[var(--navy)]'}`}>
+                    <span className={`text-xs font-bold ${isOverdue ? 'text-red-700' : 'text-white'}`}>{initials || '?'}</span>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-bold text-[var(--navy)] text-sm leading-tight">
+                        {q ? <Highlight text={n} q={q} /> : n}
+                      </p>
+                      {isOverdue && <span className="badge badge-red">Vencido</span>}
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5">
+                      <span className="text-xs font-medium text-[var(--gray-700)]">
+                        Hab.&nbsp;{q && room?.number ? <Highlight text={room.number} q={q} /> : room?.number}
+                        {room?.floor != null ? ` · Piso ${room.floor}` : ''}
                       </span>
+                      {(!selectedPropertyId || q) && room?.properties?.name && (
+                        <span className="text-xs text-[var(--gray-500)]">{room.properties.name}</span>
+                      )}
+                      {company?.name && <span className="text-xs text-[var(--gray-500)]">{company.name}</span>}
+                      {stay.shift_type && <span className="text-[11px] text-[var(--gray-500)]">Turno {stay.shift_type}</span>}
+                      {guest?.rut && (
+                        <span className="text-[11px] text-[var(--gray-500)] font-mono">
+                          {q ? <Highlight text={guest.rut} q={q} /> : guest.rut}
+                        </span>
+                      )}
+                      {guest?.phone && (
+                        <span className="text-[11px] text-[var(--gray-500)] flex items-center gap-1">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                          </svg>
+                          {guest.phone}
+                        </span>
+                      )}
+                    </div>
+                    {stay.notes && (
+                      <p className="text-[11px] text-[var(--gray-500)] mt-1.5 italic truncate">{stay.notes}</p>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-                    <span className="text-xs text-[var(--gray-600)]">Hab. {room?.number}</span>
-                    <span className="text-xs text-[var(--gray-600)]">{company?.name}</span>
-                    {stay.shift_type && (
-                      <span className="text-xs text-[var(--gray-600)]">Turno {stay.shift_type}</span>
-                    )}
-                    {guest?.rut && (
-                      <span className="text-xs text-[var(--gray-500)]">RUT {guest.rut}</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-[var(--gray-500)] mt-1">
-                    Ingresó {formatDate(stay.checked_in_at)} · {daysAgo(stay.checked_in_at)}
-                    {stay.estimated_checkout && (
-                      <> · Salida estimada: {new Date(stay.estimated_checkout).toLocaleDateString('es-CL')}</>
-                    )}
-                  </p>
-                  {stay.notes && (
-                    <p className="text-xs text-[var(--gray-500)] italic mt-0.5 truncate">{stay.notes}</p>
-                  )}
                 </div>
-                <CheckoutButton stayId={stay.id} />
+
+                <div className={`px-5 py-3 border-t flex items-center justify-between gap-3 ${isOverdue ? 'border-red-100 bg-red-50/60' : 'border-[var(--gray-100)] bg-[var(--gray-50)]'}`}>
+                  <div className="flex items-center gap-1.5 text-[11px] text-[var(--gray-500)]">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    {formatDate(stay.checked_in_at)} · {daysAgo(stay.checked_in_at)}
+                    {stay.estimated_checkout && (
+                      <span className="ml-1">· Salida: {new Date(stay.estimated_checkout).toLocaleDateString('es-CL')}</span>
+                    )}
+                  </div>
+                  <CheckoutButton stayId={stay.id} />
+                </div>
               </div>
             )
           })}
         </div>
       )}
     </div>
+  )
+}
+
+function Highlight({ text, q }: { text: string; q: string }) {
+  const idx = text.toLowerCase().indexOf(q.toLowerCase())
+  if (idx === -1) return <>{text}</>
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-[var(--amber)]/40 text-[var(--navy)] rounded px-0.5">{text.slice(idx, idx + q.length)}</mark>
+      {text.slice(idx + q.length)}
+    </>
   )
 }

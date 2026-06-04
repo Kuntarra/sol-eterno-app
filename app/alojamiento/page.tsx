@@ -43,7 +43,7 @@ export default async function AlojamientoPage() {
     admin.from('companies').select('name, rut, contact_name, contact_email, contact_phone').eq('id', companyId).single(),
     admin.from('stays').select(`
       id, shift_type, checked_in_at, checked_out_at, estimated_checkout,
-      guests(first_name, last_name_paterno, rut),
+      guests(first_name, last_name_paterno, rut, phone),
       rooms(number, type, capacity, properties(name, cities(name)))
     `).eq('company_id', companyId).order('checked_in_at', { ascending: false }).limit(50),
     admin.from('allocations').select(`
@@ -57,29 +57,29 @@ export default async function AlojamientoPage() {
   const habitaciones = (allocs ?? []).length
 
   return (
-    <div className="p-8 max-w-5xl">
-      {/* Bienvenida */}
+    <div className="max-w-5xl mx-auto">
+      {/* ── Header ── */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--navy)]">{company?.name}</h1>
-        <p className="text-sm text-[var(--gray-600)] mt-1">Portal de alojamiento · Sol Eterno</p>
+        <span className="section-label">Portal de alojamiento</span>
+        <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">{company?.name}</h1>
+        <p className="text-sm text-[var(--gray-600)] mt-1">Sol Eterno · Vista de empresa</p>
       </div>
 
-      {/* KPIs */}
+      {/* ── KPIs ── */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Huéspedes activos',  value: activos.length,    accent: 'green',  icon: '🟢' },
-          { label: 'Habitaciones asig.', value: habitaciones,       accent: 'navy',   icon: '🏨' },
-          { label: 'Camas asignadas',    value: totalCamas,         accent: 'amber',  icon: '🛏️' },
-          { label: 'Estadías históricas',value: stays?.length ?? 0, accent: 'gray',   icon: '📋' },
-        ].map(k => {
-          const border = k.accent === 'navy' ? 'border-l-[var(--navy)]' : k.accent === 'amber' ? 'border-l-[var(--amber)]' : k.accent === 'green' ? 'border-l-emerald-500' : 'border-l-[var(--gray-300)]'
-          return (
-            <div key={k.label} className={`bg-white rounded-xl border border-[var(--gray-200)] border-l-4 ${border} p-5`}>
-              <p className="text-3xl font-bold text-[var(--navy)]">{k.value}</p>
-              <p className="text-sm text-[var(--gray-600)] mt-1">{k.label}</p>
-            </div>
-          )
-        })}
+          { label: 'Huéspedes activos',   value: activos.length,    dot: 'bg-emerald-500', num: 'text-emerald-600' },
+          { label: 'Habitaciones asig.',  value: habitaciones,       dot: 'bg-[var(--navy)]', num: 'text-[var(--navy)]' },
+          { label: 'Camas asignadas',     value: totalCamas,         dot: 'bg-[var(--amber)]', num: 'text-[var(--amber-dark)]' },
+          { label: 'Estadías históricas', value: stays?.length ?? 0, dot: 'bg-[var(--gray-300)]', num: 'text-[var(--gray-700)]' },
+        ].map(k => (
+          <div key={k.label} className="bg-white rounded-2xl border border-[var(--gray-200)] p-5 shadow-[var(--shadow-sm)]
+                                        hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200">
+            <div className={`w-2 h-2 rounded-full mb-3 ${k.dot}`} />
+            <p className={`text-[2.25rem] font-bold leading-none tracking-tight ${k.num}`}>{k.value}</p>
+            <p className="text-sm font-medium text-[var(--navy)] mt-2">{k.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* Huéspedes activos */}
@@ -91,29 +91,30 @@ export default async function AlojamientoPage() {
         {!activos.length ? (
           <p className="px-6 py-8 text-sm text-[var(--gray-500)] text-center">No hay huéspedes activos en este momento.</p>
         ) : (
-          <table className="w-full text-sm">
+          <table className="admin-table">
             <thead>
-              <tr className="bg-[var(--gray-50)] border-b border-[var(--gray-100)]">
-                {['Nombre','RUT','Propiedad / Hab.','Turno','Ingreso','Salida estimada'].map(h => (
-                  <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-[var(--gray-600)]">{h}</th>
+              <tr>
+                {['Nombre','RUT','Teléfono','Propiedad / Hab.','Turno','Ingreso','Salida estimada'].map(h => (
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--gray-100)]">
+            <tbody>
               {activos.map(s => {
                 const g = s.guests as any
                 const r = s.rooms  as any
                 return (
-                  <tr key={s.id} className="hover:bg-[var(--gray-50)]">
-                    <td className="px-5 py-3 font-semibold text-[var(--navy)]">{g?.first_name} {g?.last_name_paterno}</td>
-                    <td className="px-5 py-3 text-xs text-[var(--gray-500)] font-mono">{g?.rut ?? '—'}</td>
-                    <td className="px-5 py-3 text-[var(--gray-700)]">
-                      <span className="font-medium">{r?.properties?.name}</span>
+                  <tr key={s.id}>
+                    <td className="font-semibold text-[var(--navy)]">{g?.first_name} {g?.last_name_paterno}</td>
+                    <td className="text-xs text-[var(--gray-500)] font-mono">{g?.rut ?? '—'}</td>
+                    <td className="text-xs text-[var(--gray-600)] whitespace-nowrap">{g?.phone ?? '—'}</td>
+                    <td>
+                      <span className="font-medium text-[var(--navy)]">{r?.properties?.name}</span>
                       <span className="text-[var(--gray-400)] ml-1 text-xs">Hab.{r?.number}</span>
                     </td>
-                    <td className="px-5 py-3 text-[var(--gray-600)]">{s.shift_type ?? '—'}</td>
-                    <td className="px-5 py-3 text-[var(--gray-700)]">{fmt(s.checked_in_at)}</td>
-                    <td className="px-5 py-3 text-[var(--gray-700)]">{s.estimated_checkout ? fmt(s.estimated_checkout) : '—'}</td>
+                    <td>{s.shift_type ?? '—'}</td>
+                    <td className="whitespace-nowrap">{fmt(s.checked_in_at)}</td>
+                    <td className="whitespace-nowrap">{s.estimated_checkout ? fmt(s.estimated_checkout) : '—'}</td>
                   </tr>
                 )
               })}
@@ -129,28 +130,28 @@ export default async function AlojamientoPage() {
             <h2 className="text-sm font-bold text-[var(--navy)]">Últimas salidas</h2>
             <Link href="/alojamiento/historial" className="text-xs text-[var(--navy)] font-semibold hover:underline">Ver todo →</Link>
           </div>
-          <table className="w-full text-sm">
+          <table className="admin-table">
             <thead>
-              <tr className="bg-[var(--gray-50)] border-b border-[var(--gray-100)]">
+              <tr>
                 {['Nombre','Propiedad / Hab.','Turno','Ingreso','Salida'].map(h => (
-                  <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-[var(--gray-600)]">{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--gray-100)]">
+            <tbody>
               {recientes.map(s => {
                 const g = s.guests as any
                 const r = s.rooms  as any
                 return (
-                  <tr key={s.id} className="hover:bg-[var(--gray-50)]">
-                    <td className="px-5 py-3 font-medium text-[var(--navy)]">{g?.first_name} {g?.last_name_paterno}</td>
-                    <td className="px-5 py-3 text-[var(--gray-700)]">
-                      <span className="font-medium">{r?.properties?.name}</span>
+                  <tr key={s.id}>
+                    <td className="font-medium text-[var(--navy)]">{g?.first_name} {g?.last_name_paterno}</td>
+                    <td>
+                      <span className="font-medium text-[var(--navy)]">{r?.properties?.name}</span>
                       <span className="text-[var(--gray-400)] ml-1 text-xs">Hab.{r?.number}</span>
                     </td>
-                    <td className="px-5 py-3 text-[var(--gray-600)]">{s.shift_type ?? '—'}</td>
-                    <td className="px-5 py-3 text-[var(--gray-700)]">{fmt(s.checked_in_at)}</td>
-                    <td className="px-5 py-3 text-[var(--gray-700)]">{s.checked_out_at ? fmt(s.checked_out_at) : '—'}</td>
+                    <td>{s.shift_type ?? '—'}</td>
+                    <td className="whitespace-nowrap">{fmt(s.checked_in_at)}</td>
+                    <td className="whitespace-nowrap">{s.checked_out_at ? fmt(s.checked_out_at) : '—'}</td>
                   </tr>
                 )
               })}

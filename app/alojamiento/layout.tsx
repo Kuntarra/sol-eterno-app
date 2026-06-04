@@ -51,7 +51,7 @@ export default async function AlojamientoLayout({ children }: { children: React.
         fullName={targetProfile?.full_name ?? user.email ?? 'Cliente'}
         impersonating={!!impersonateId}
       />
-      <main className={`flex-1 overflow-auto bg-[var(--gray-100)] min-w-0 ${impersonateId ? 'pt-8' : ''}`}>
+      <main className={`flex-1 overflow-auto bg-[var(--gray-100)] min-w-0 px-5 sm:px-8 pb-24 md:pb-8 ${impersonateId ? 'pt-24 md:pt-10' : 'pt-20 md:pt-8'}`}>
         {children}
       </main>
     </div>

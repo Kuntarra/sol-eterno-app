@@ -9,7 +9,7 @@ const ROOM_LABELS: Record<string,string> = { single:'Individual', double:'Doble'
 const N = '#1B3A5C', A = '#F5B520', G = '#6C757D'
 
 const s = StyleSheet.create({
-  page:       { fontFamily: 'Helvetica', fontSize: 9, padding: 30, backgroundColor: '#ffffff', color: '#212529' },
+  page:       { fontFamily: 'Helvetica', fontSize: 8, padding: 36, backgroundColor: '#ffffff', color: '#212529' },
   header:     { backgroundColor: N, color: '#ffffff', padding: 14, borderRadius: 6, marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   hTitle:     { fontSize: 20, fontFamily: 'Helvetica-Bold', color: '#ffffff' },
   hSub:       { fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
@@ -65,25 +65,35 @@ export async function GET(req: NextRequest) {
   const periodoFin    = new Date(hastaStr + 'T23:59:59')
 
   const admin = createAdminClient()
+  const desdeISO = desdeStr + 'T00:00:00'
+  const hastaISO = hastaStr + 'T23:59:59'
+
   const [{ data: staysRaw }, { data: allocsRaw }] = await Promise.all([
     admin.from('stays').select(`
       id, shift_type, checked_in_at, checked_out_at,
       guests(first_name, last_name_paterno, rut),
       rooms(id, number, type, capacity, properties(id, name)),
       companies(id, name)
-    `).lte('checked_in_at', hastaStr + 'T23:59:59').order('checked_in_at', { ascending: true }),
+    `)
+    .lte('checked_in_at', hastaISO)
+    .or(`checked_out_at.gte.${desdeISO},checked_out_at.is.null`)
+    .order('checked_in_at', { ascending: true })
+    .limit(5000),
     admin.from('allocations').select(`room_id, company_id, rooms(id, capacity, properties(id, name)), companies(id, name)`),
   ])
 
-  let stays = (staysRaw ?? []).filter(s => { const co = s.checked_out_at ? new Date(s.checked_out_at) : null; return !co || co >= periodoInicio })
+  let stays = staysRaw ?? []
   let allocs = allocsRaw ?? []
   if (filtroEmpresa   !== 'todas') { stays = stays.filter(s => (s.companies as any)?.id === filtroEmpresa); allocs = allocs.filter(a => (a.companies as any)?.id === filtroEmpresa) }
   if (filtroPropiedad !== 'todas') { stays = stays.filter(s => (s.rooms as any)?.properties?.id === filtroPropiedad); allocs = allocs.filter(a => (a.rooms as any)?.properties?.id === filtroPropiedad) }
 
   function noches(s: typeof stays[0]) {
-    const ini = Math.max(new Date(s.checked_in_at).getTime(), periodoInicio.getTime())
-    const fin = Math.min((s.checked_out_at ? new Date(s.checked_out_at) : periodoFin).getTime(), periodoFin.getTime())
-    return Math.max(0, Math.round((fin - ini) / 86400000))
+    const entrada = new Date(s.checked_in_at)
+    const salida  = s.checked_out_at ? new Date(s.checked_out_at) : periodoFin
+    const ini = entrada < periodoInicio ? periodoInicio : entrada
+    const fin = salida  > periodoFin    ? periodoFin    : salida
+    if (fin <= ini) return 0
+    return Math.ceil((fin.getTime() - ini.getTime()) / 86400000)
   }
 
   const nochesH = stays.reduce((a,s) => a + noches(s), 0)
@@ -122,7 +132,7 @@ export async function GET(req: NextRequest) {
 
   const doc = (
     <Document title={`Reporte Sol Eterno — ${tituloPeriodo}`}>
-      <Page size="A4" orientation="landscape" style={s.page}>
+      <Page size="LETTER" style={s.page}>
 
         {/* Header */}
         <View style={s.header}>

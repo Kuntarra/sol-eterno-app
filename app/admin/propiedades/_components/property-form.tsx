@@ -30,7 +30,7 @@ export function PropertyForm({ action, cities, property, cancelHref, submitLabel
       <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
         <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Tipo de propiedad</h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-4">
           {(Object.keys(PROPERTY_TYPE_LABELS) as PropertyType[]).map((t) => (
             <label
               key={t}

@@ -11,12 +11,23 @@ export default async function PropiedadesPage() {
     .select('*, cities(id, name), rooms(id, capacity)')
     .order('name')
 
+  const CITY_ORDER = ['Iquique', 'Antofagasta', 'Calama']
+
   const grouped = (properties ?? []).reduce<Record<string, Property[]>>((acc, p) => {
     const city = (p.cities as { name: string } | null)?.name ?? 'Sin ciudad'
     if (!acc[city]) acc[city] = []
     acc[city].push(p as unknown as Property)
     return acc
   }, {})
+
+  const sortedCities = Object.keys(grouped).sort((a, b) => {
+    const ai = CITY_ORDER.indexOf(a)
+    const bi = CITY_ORDER.indexOf(b)
+    if (ai === -1 && bi === -1) return a.localeCompare(b)
+    if (ai === -1) return 1
+    if (bi === -1) return -1
+    return ai - bi
+  })
 
   const totalProps = properties?.length ?? 0
   const totalCapacity = (properties ?? []).reduce((sum, p) => {
@@ -25,23 +36,23 @@ export default async function PropiedadesPage() {
   }, 0)
 
   return (
-    <div className="p-8">
+    <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-8 flex items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--navy)]">Propiedades</h1>
+          <span className="section-label">Inventario</span>
+          <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Propiedades</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">
             {totalProps} propiedades · {totalCapacity} cupos totales
           </p>
         </div>
-        <Link
-          href="/admin/propiedades/nueva"
-          className="px-4 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg transition-colors"
-        >
-          + Nueva propiedad
+        <Link href="/admin/propiedades/nueva" className="btn-primary shrink-0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva propiedad
         </Link>
       </div>
 
+      <div className="px-8 pb-8">
       {Object.keys(grouped).length === 0 ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
           <div className="w-16 h-16 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -57,22 +68,43 @@ export default async function PropiedadesPage() {
         </div>
       ) : (
         <div className="space-y-10">
-          {Object.entries(grouped).map(([city, props]) => (
+          {sortedCities.map(city => { const props = grouped[city]!; return (
             <div key={city}>
-              <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-xs font-bold text-[var(--gray-600)] uppercase tracking-widest">{city}</h2>
+              <div className="flex items-center gap-3 mb-5">
+                <span className="section-label !mb-0">{city}</span>
                 <div className="flex-1 h-px bg-[var(--gray-200)]" />
-                <span className="text-xs text-[var(--gray-600)]">{props.length} propiedades</span>
+                <span className="text-xs text-[var(--gray-500)] font-medium">{props.length} {props.length === 1 ? 'propiedad' : 'propiedades'}</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {props.map((p) => (
                   <PropertyCard key={p.id} property={p} />
                 ))}
+                {/* Card "Expandir Portafolio" */}
+                <Link href="/admin/propiedades/nueva"
+                  className="rounded-2xl border-2 border-dashed border-[var(--gray-300)] hover:border-[var(--navy)]/40
+                             hover:bg-[var(--navy-5)] transition-all duration-200 group
+                             flex flex-col items-center justify-center gap-3 p-8 text-center min-h-[160px]">
+                  <div className="w-11 h-11 rounded-xl bg-[var(--gray-100)] group-hover:bg-[var(--navy)] group-hover:text-white
+                                  flex items-center justify-center text-[var(--gray-500)] transition-all duration-200">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21v-6h6v6"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--navy)] group-hover:text-[var(--navy-light)] transition-colors">
+                      Expandir Portafolio
+                    </p>
+                    <p className="text-xs text-[var(--gray-500)] mt-0.5 leading-snug">
+                      Registrar nueva propiedad en {city}
+                    </p>
+                  </div>
+                </Link>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       )}
+      </div>
     </div>
   )
 }
@@ -82,38 +114,33 @@ function PropertyCard({ property: p }: { property: Property & { rooms?: { capaci
   const capacity = rooms.reduce((s, r) => s + r.capacity, 0)
 
   return (
-    <Link
-      href={`/admin/propiedades/${p.id}`}
-      className="group bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden hover:border-[var(--navy)]/30 hover:shadow-md transition-all duration-200"
-    >
-      {/* Banner superior con icono */}
-      <div className="px-6 pt-6 pb-4 flex items-start gap-4">
+    <Link href={`/admin/propiedades/${p.id}`}
+      className="premium-card group block overflow-hidden">
+      {/* Banda superior amber si activa */}
+      {p.active && <div className="h-0.5 bg-[var(--amber)]" />}
+      <div className="px-6 pt-5 pb-4 flex items-start gap-4">
         <PropertyIcon type={p.type} size="md" />
-        <div className="flex-1 min-w-0 pt-1">
-          <p className="text-xs font-semibold text-[var(--gray-600)] uppercase tracking-wider mb-0.5">
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-bold text-[var(--gray-500)] uppercase tracking-[0.12em] mb-0.5">
             {PROPERTY_TYPE_LABELS[p.type]}
           </p>
-          <h3 className="text-base font-bold text-[var(--navy)] group-hover:text-[var(--navy-light)] leading-tight truncate transition-colors">
+          <h3 className="text-[15px] font-bold text-[var(--navy)] group-hover:text-[var(--navy-light)] leading-tight truncate transition-colors">
             {p.name}
           </h3>
           {p.address && (
-            <p className="text-xs text-[var(--gray-600)] mt-0.5 truncate">{p.address}</p>
+            <p className="text-xs text-[var(--gray-600)] mt-1 truncate leading-snug">{p.address}</p>
           )}
         </div>
-        <span className={`shrink-0 mt-1 w-2 h-2 rounded-full ${p.active ? 'bg-emerald-400' : 'bg-[var(--gray-200)]'}`} title={p.active ? 'Activa' : 'Inactiva'} />
+        <span className={`badge shrink-0 ${p.active ? 'badge-green' : 'badge-gray'}`}>
+          {p.active ? 'Activa' : 'Inactiva'}
+        </span>
       </div>
-
-      {/* Stats */}
-      <div className="px-6 py-3 border-t border-[var(--gray-100)] flex items-center gap-5">
+      <div className="px-6 py-3.5 border-t border-[var(--gray-100)] bg-[var(--gray-50)] flex items-center gap-6">
         <Stat label="Hab." value={rooms.length} />
         <Stat label="Cupos" value={capacity} />
         {p.floors ? <Stat label="Pisos" value={p.floors} /> : null}
-        <div className="ml-auto">
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-            p.active ? 'bg-emerald-50 text-emerald-700' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
-          }`}>
-            {p.active ? 'Activa' : 'Inactiva'}
-          </span>
+        <div className="ml-auto text-[var(--gray-400)] group-hover:text-[var(--navy)] transition-colors">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
       </div>
     </Link>

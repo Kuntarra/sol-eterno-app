@@ -52,22 +52,6 @@ const ICONS: Record<PropertyType, { icon: React.ReactNode; bg: string; fg: strin
       </svg>
     ),
   },
-  oficina: {
-    bg: 'bg-emerald-700',
-    fg: 'text-emerald-200',
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="6" y="8" width="36" height="36" strokeWidth="2.2" />
-        <line x1="6" y1="18" x2="42" y2="18" strokeWidth="1.6" />
-        <line x1="6" y1="28" x2="42" y2="28" strokeWidth="1.6" />
-        <line x1="6" y1="38" x2="42" y2="38" strokeWidth="1.6" />
-        <line x1="18" y1="8" x2="18" y2="44" strokeWidth="1.6" />
-        <line x1="30" y1="8" x2="30" y2="44" strokeWidth="1.6" />
-        <rect x="10" y="2" width="28" height="8" strokeWidth="2" />
-        <rect x="20" y="32" width="8" height="12" strokeWidth="1.8" />
-      </svg>
-    ),
-  },
 }
 
 interface Props {

@@ -10,21 +10,21 @@ export default async function ClientesPage() {
     .order('name')
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div>
+      <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-8 flex items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--navy)]">Clientes</h1>
+          <span className="section-label">Empresas</span>
+          <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Clientes</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">
             {companies?.length ?? 0} empresas registradas
           </p>
         </div>
-        <Link
-          href="/admin/clientes/nuevo"
-          className="px-4 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg transition-colors"
-        >
-          + Nueva empresa
+        <Link href="/admin/clientes/nuevo" className="btn-primary shrink-0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva empresa
         </Link>
       </div>
+      <div className="px-8 pb-8">
 
       {!companies?.length ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
@@ -46,11 +46,8 @@ export default async function ClientesPage() {
             const activeStays = (company.stays as { id: string }[]) ?? []
 
             return (
-              <Link
-                key={company.id}
-                href={`/admin/clientes/${company.id}`}
-                className="group bg-white rounded-2xl border border-[var(--gray-200)] p-5 hover:border-[var(--navy)]/30 hover:shadow-md transition-all duration-200"
-              >
+              <Link key={company.id} href={`/admin/clientes/${company.id}`}
+                className="premium-card group block p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-[var(--amber)] flex items-center justify-center shrink-0">
@@ -67,9 +64,7 @@ export default async function ClientesPage() {
                       )}
                     </div>
                   </div>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                    company.active ? 'bg-emerald-100 text-emerald-700' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
-                  }`}>
+                  <span className={`badge shrink-0 ${company.active ? 'badge-green' : 'badge-gray'}`}>
                     {company.active ? 'Activa' : 'Inactiva'}
                   </span>
                 </div>
@@ -90,6 +85,7 @@ export default async function ClientesPage() {
           })}
         </div>
       )}
+      </div>
     </div>
   )
 }
