@@ -65,10 +65,16 @@ function SidebarContent({ fullName, properties, onClose }: { fullName: string; p
   return (
     <>
       {/* Marca */}
-      <div className="px-4 pt-5 pb-4 border-b border-white/8 flex justify-center">
-        <div className="bg-white rounded-2xl px-5 py-4 w-full flex justify-center
-                        shadow-[0_4px_24px_rgb(0_0_0/0.35),0_1px_0_rgb(255_255_255/0.12)]">
-          <BrandLogo symbolSize={52} textSize="text-[15px]" subtitleSize="text-[9px]" />
+      <div className="px-5 pt-5 pb-4 border-b border-white/8">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-white/10 border border-white/10 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/Logo símbolo.jpg" alt="Sol Eterno" className="w-10 h-10 object-contain" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-white font-bold text-[15px] leading-tight tracking-tight">Sol Eterno</p>
+            <p className="text-white/40 text-[10px] leading-tight">Recepción</p>
+          </div>
         </div>
       </div>
 

@@ -46,10 +46,16 @@ export function ClientSidebar({ companyName, fullName, impersonating }: Props) {
     <>
       {/* ── Desktop sidebar ────────────────────────────────────── */}
       <aside className="hidden md:flex w-60 min-h-screen bg-[var(--navy)] flex-col shrink-0">
-        <div className="px-4 py-4 border-b border-white/10">
-          <div className="flex flex-col items-center gap-2">
-            <BrandCard symbolSize={28} />
-            <p className="text-white/45 text-[10px] font-medium tracking-wide truncate max-w-full">{companyName}</p>
+        <div className="px-5 py-4 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-white/10 border border-white/10 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/Logo símbolo.jpg" alt="Sol Eterno" className="w-10 h-10 object-contain" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-white font-bold text-[15px] leading-tight tracking-tight">Sol Eterno</p>
+              <p className="text-white/40 text-[10px] leading-tight truncate">{companyName}</p>
+            </div>
           </div>
         </div>
 
