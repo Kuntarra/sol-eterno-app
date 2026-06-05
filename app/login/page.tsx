@@ -86,7 +86,7 @@ export default async function LoginPage({ searchParams }: Props) {
 
           {/* Logo mobile */}
           <div className="lg:hidden flex justify-center mb-8">
-            <BrandLogo symbolSize={214} />
+            <BrandLogo symbolSize={143} />
           </div>
 
           {/* Encabezado */}
