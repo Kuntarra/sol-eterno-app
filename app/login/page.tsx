@@ -36,9 +36,9 @@ export default async function LoginPage({ searchParams }: Props) {
         <div className="relative flex flex-col items-center justify-center h-full px-14 py-16 text-center">
 
           {/* Logo — tarjeta blanca flotante */}
-          <div className="bg-white rounded-2xl px-10 py-7 mb-12
+          <div className="bg-white rounded-2xl px-12 py-9 mb-12
                           shadow-[0_12px_48px_rgb(0_0_0/0.35),0_2px_0_rgb(255_255_255/0.15)]">
-            <BrandLogo symbolSize={80} textSize="text-[22px]" subtitleSize="text-[10px]" gap="gap-2" />
+            <BrandLogo symbolSize={130} />
           </div>
 
           {/* Badge */}

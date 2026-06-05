@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
 import { BrandLogo } from '@/app/_components/brand-logo'
+import { MobileBrand } from '@/app/_components/mobile-brand'
 
 const NAV = [
   {
@@ -76,10 +77,8 @@ export function ClientSidebar({ companyName, fullName, impersonating }: Props) {
 
       {/* ── Mobile: top bar ────────────────────────────────────── */}
       <div className="md:hidden fixed top-0 inset-x-0 z-40 h-16 bg-[var(--navy)] flex items-center px-4 gap-3 shadow-lg">
-        <BrandCard symbolSize={36} />
-        <div className="flex-1 min-w-0">
-          <p className="text-white/40 text-[10px] truncate">{companyName}</p>
-        </div>
+        <MobileBrand subtitle={companyName} />
+        <div className="flex-1 min-w-0" />
         <p className="text-white/50 text-xs truncate max-w-[100px]">{fullName}</p>
       </div>
 
