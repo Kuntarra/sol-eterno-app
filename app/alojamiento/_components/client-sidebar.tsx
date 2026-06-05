@@ -48,9 +48,9 @@ export function ClientSidebar({ companyName, fullName, impersonating }: Props) {
       <aside className="hidden md:flex w-60 min-h-screen bg-[var(--navy)] flex-col shrink-0">
         <div className="px-5 py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-white/10 border border-white/10 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/Logo símbolo.jpg" alt="Sol Eterno" className="w-10 h-10 object-contain" />
+              <img src="/Logo símbolo.jpg" alt="Sol Eterno" className="w-full h-full object-cover" />
             </div>
             <div className="min-w-0">
               <p className="text-white font-bold text-[15px] leading-tight tracking-tight">Sol Eterno</p>
