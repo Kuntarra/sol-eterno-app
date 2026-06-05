@@ -10,15 +10,15 @@ import { MobileBrand } from '@/app/_components/mobile-brand'
 const NAV = [
   {
     href: '/recepcion', label: 'Huéspedes', exact: true,
-    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
   },
   {
     href: '/recepcion/checkin', label: 'Check-in', exact: false,
-    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>,
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>,
   },
   {
     href: '/recepcion/checkout', label: 'Check-out', exact: false,
-    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
   },
 ]
 
@@ -47,7 +47,7 @@ function NavItem({ href, label, exact, icon, onClick }: { href: string; label: s
 
   return (
     <Link href={href} onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group
+      className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-150 group
         ${active
           ? 'bg-[var(--amber)]/12 text-[var(--amber)]'
           : 'text-white/55 hover:text-white hover:bg-white/6'
@@ -81,7 +81,7 @@ function SidebarContent({ fullName, properties, onClose }: { fullName: string; p
       {/* Propiedades asignadas */}
       {properties.length > 0 && (
         <div className="px-4 py-3.5 border-b border-white/8">
-          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/25 mb-2">Mis propiedades</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/25 mb-2">Mis propiedades</p>
           <div className="space-y-1.5">
             {properties.map((p, i) => (
               <div key={i} className="flex items-center gap-2.5">
@@ -98,7 +98,7 @@ function SidebarContent({ fullName, properties, onClose }: { fullName: string; p
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4">
-        <p className="px-3 mb-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-white/25">Operaciones</p>
+        <p className="px-3 mb-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/25">Operaciones</p>
         <div className="space-y-0.5">
           {NAV.map(item => (
             <NavItem key={item.href} {...item} onClick={onClose} />
@@ -153,7 +153,7 @@ export function RecepcionSidebar({ fullName, properties, impersonating }: Props)
         <MobileBrand subtitle={properties.length === 1 ? properties[0].name : undefined} />
         <div className="flex-1 min-w-0" />
         <button onClick={() => setOpen(true)}
-          className="p-2 text-white/60 hover:text-white hover:bg-white/8 rounded-lg transition-all">
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/8 rounded-lg transition-all">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
@@ -167,7 +167,7 @@ export function RecepcionSidebar({ fullName, properties, impersonating }: Props)
           <aside className="relative w-[260px] max-w-[88vw] bg-[var(--navy)] flex flex-col h-full border-r border-white/8">
             <div className="absolute top-4 right-4">
               <button onClick={() => setOpen(false)}
-                className="p-2 rounded-xl text-white/40 hover:text-white hover:bg-white/8 transition-all">
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-white/40 hover:text-white hover:bg-white/8 transition-all">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M18 6 6 18M6 6l12 12"/>
                 </svg>
@@ -180,7 +180,7 @@ export function RecepcionSidebar({ fullName, properties, impersonating }: Props)
 
       {/* ── Mobile bottom nav ── */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--navy)] border-t border-white/8">
-        <div className="flex">
+        <div className="flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           {NAV.map(item => {
             const active = isActiveRoute(pathname, item.href, item.exact)
             return (

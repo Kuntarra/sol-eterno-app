@@ -85,11 +85,11 @@ export function ClientSidebar({ companyName, fullName, impersonating }: Props) {
       <div className="md:hidden fixed top-0 inset-x-0 z-40 h-16 bg-[var(--navy)] flex items-center px-4 gap-3 shadow-lg">
         <MobileBrand subtitle={companyName} />
         <div className="flex-1 min-w-0" />
-        <p className="text-white/50 text-xs truncate max-w-[100px]">{fullName}</p>
+        <p className="text-white/50 text-xs truncate max-w-[30%]">{fullName}</p>
       </div>
 
       {/* ── Mobile: bottom navigation ──────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--navy)] border-t border-white/10 flex">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--navy)] border-t border-white/10 flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {NAV.map(item => {
           const active = isActive(item)
           return (

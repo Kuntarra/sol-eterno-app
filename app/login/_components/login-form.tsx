@@ -47,7 +47,7 @@ export function LoginForm({ error }: { error?: string }) {
             Contraseña
           </label>
           <Link href="/forgot-password"
-            className="text-xs text-[var(--amber-dark)] font-medium hover:text-[var(--amber)] transition-colors">
+            className="text-xs text-[var(--amber-dark)] font-medium hover:text-[var(--amber)] transition-colors py-2 -my-2 inline-block">
             ¿Olvidaste tu contraseña?
           </Link>
         </div>

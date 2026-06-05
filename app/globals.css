@@ -171,7 +171,7 @@ a, button, [role="button"] {
 /* ── Input premium ───────────────────────────────────────── */
 .input-premium {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 14px;
   font-size: 13.5px;
   border: 1.5px solid var(--gray-200);
   border-radius: var(--radius-md);
