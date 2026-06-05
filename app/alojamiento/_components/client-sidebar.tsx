@@ -75,8 +75,8 @@ export function ClientSidebar({ companyName, fullName, impersonating }: Props) {
       </aside>
 
       {/* ── Mobile: top bar ────────────────────────────────────── */}
-      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 bg-[var(--navy)] flex items-center px-4 gap-3 shadow-lg">
-        <BrandCard symbolSize={22} />
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-16 bg-[var(--navy)] flex items-center px-4 gap-3 shadow-lg">
+        <BrandCard symbolSize={36} />
         <div className="flex-1 min-w-0">
           <p className="text-white/40 text-[10px] truncate">{companyName}</p>
         </div>

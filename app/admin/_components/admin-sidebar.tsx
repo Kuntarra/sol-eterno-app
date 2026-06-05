@@ -134,9 +134,9 @@ export function AdminSidebar({ fullName }: { fullName: string }) {
       </aside>
 
       {/* ── Mobile top bar ── */}
-      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 bg-[var(--navy)] border-b border-white/8 flex items-center px-4 gap-3">
-        <div className="bg-white rounded-xl px-3 py-1.5 shrink-0 shadow-sm">
-          <BrandLogo symbolSize={28} textSize="text-[11px]" subtitleSize="text-[8px]" gap="gap-1" />
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-16 bg-[var(--navy)] border-b border-white/8 flex items-center px-4 gap-3">
+        <div className="bg-white rounded-xl px-4 py-1.5 shrink-0 shadow-sm">
+          <BrandLogo symbolSize={38} />
         </div>
         <div className="flex-1 min-w-0" />
         <button onClick={() => setOpen(true)}
