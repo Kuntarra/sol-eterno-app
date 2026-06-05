@@ -59,7 +59,7 @@ export function ClientSidebar({ companyName, fullName, impersonating }: Props) {
           </div>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto sidebar-scroll">
           {NAV.map(item => (
             <Link key={item.href} href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
@@ -82,36 +82,41 @@ export function ClientSidebar({ companyName, fullName, impersonating }: Props) {
       </aside>
 
       {/* ── Mobile: top bar ────────────────────────────────────── */}
-      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-16 bg-[var(--navy)] flex items-center px-4 gap-3 shadow-lg">
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-16 bg-[var(--navy)]/95 backdrop-blur-md border-b border-white/10 flex items-center px-4 gap-3 shadow-lg">
         <MobileBrand subtitle={companyName} />
         <div className="flex-1 min-w-0" />
         <p className="text-white/50 text-xs truncate max-w-[30%]">{fullName}</p>
       </div>
 
       {/* ── Mobile: bottom navigation ──────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--navy)] border-t border-white/10 flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        {NAV.map(item => {
-          const active = isActive(item)
-          return (
-            <Link key={item.href} href={item.href}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors ${
-                active ? 'text-[var(--amber)]' : 'text-white/50 hover:text-white'
-              }`}>
-              {item.icon}
-              <span className="text-[10px] font-medium">{item.label}</span>
-            </Link>
-          )
-        })}
-        {!impersonating && (
-          <form action={logout} className="flex-1">
-            <button type="submit" className="w-full h-full flex flex-col items-center gap-1 py-3 text-white/50 hover:text-white transition-colors">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-              <span className="text-[10px] font-medium">Salir</span>
-            </button>
-          </form>
-        )}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--navy)]/95 backdrop-blur-md border-t border-white/10"
+           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="flex">
+          {NAV.map(item => {
+            const active = isActive(item)
+            return (
+              <Link key={item.href} href={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={`flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-200 relative ${
+                  active ? 'text-[var(--amber)]' : 'text-white/50 hover:text-white hover:bg-white/5'
+                }`}>
+                {active && <span className="absolute top-0 inset-x-3 h-0.5 bg-[var(--amber)] rounded-b-full" />}
+                {item.icon}
+                <span className="text-[11px] font-medium leading-tight">{item.label}</span>
+              </Link>
+            )
+          })}
+          {!impersonating && (
+            <form action={logout} className="flex-1">
+              <button type="submit" className="w-full h-full flex flex-col items-center gap-1 py-3 text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span className="text-[11px] font-medium leading-tight">Salir</span>
+              </button>
+            </form>
+          )}
+        </div>
       </nav>
     </>
   )

@@ -83,6 +83,11 @@ h1, h2, h3, h4 { text-wrap: balance; }
   outline-offset: 2px;
   border-radius: 4px;
 }
+/* En sidebars dark el focus ring usa amber para visibilidad */
+.bg-\[var\(--navy\)\] :focus-visible,
+aside :focus-visible {
+  outline-color: var(--amber);
+}
 
 /* ── Transición global ───────────────────────────────────── */
 a, button, [role="button"] {
@@ -231,6 +236,21 @@ a, button, [role="button"] {
 .badge-navy   { background: var(--navy-5); color: var(--navy); }
 .badge-gray   { background: var(--gray-100); color: var(--gray-600); }
 .badge-red    { background: #fee2e2; color: #991b1b; }
+
+/* ── Scrollbar custom en sidebars dark ──────────────────── */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.12) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar { width: 4px; }
+.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.15);
+  border-radius: 2px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.25);
+}
 
 /* ── Print ────────────────────────────────────────────────── */
 @page { margin: 1.5cm; size: letter portrait; }

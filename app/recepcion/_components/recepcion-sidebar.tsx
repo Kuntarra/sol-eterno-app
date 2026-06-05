@@ -97,7 +97,7 @@ function SidebarContent({ fullName, properties, onClose }: { fullName: string; p
       )}
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto sidebar-scroll">
         <p className="px-3 mb-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/25">Operaciones</p>
         <div className="space-y-0.5">
           {NAV.map(item => (
@@ -149,7 +149,7 @@ export function RecepcionSidebar({ fullName, properties, impersonating }: Props)
       </aside>
 
       {/* ── Mobile top bar ── */}
-      <div className={`md:hidden fixed ${impersonating ? 'top-8' : 'top-0'} inset-x-0 z-40 h-16 bg-[var(--navy)] border-b border-white/8 flex items-center px-4 gap-3`}>
+      <div className={`md:hidden fixed ${impersonating ? 'top-8' : 'top-0'} inset-x-0 z-40 h-16 bg-[var(--navy)]/95 backdrop-blur-md border-b border-white/8 flex items-center px-4 gap-3`}>
         <MobileBrand subtitle={properties.length === 1 ? properties[0].name : undefined} />
         <div className="flex-1 min-w-0" />
         <button onClick={() => setOpen(true)}
@@ -161,44 +161,45 @@ export function RecepcionSidebar({ fullName, properties, impersonating }: Props)
       </div>
 
       {/* ── Mobile drawer ── */}
-      {open && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <aside className="relative w-[260px] max-w-[88vw] bg-[var(--navy)] flex flex-col h-full border-r border-white/8">
-            <div className="absolute top-4 right-4">
-              <button onClick={() => setOpen(false)}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-white/40 hover:text-white hover:bg-white/8 transition-all">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M18 6 6 18M6 6l12 12"/>
-                </svg>
-              </button>
-            </div>
-            <SidebarContent fullName={fullName} properties={properties} onClose={() => setOpen(false)} />
-          </aside>
-        </div>
-      )}
+      <div className={`md:hidden fixed inset-0 z-50 flex transition-all duration-300 ${open ? 'visible opacity-100' : 'invisible opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
+        <aside className={`relative w-[260px] max-w-[88vw] bg-[var(--navy)] flex flex-col h-full border-r border-white/8 transform transition-transform duration-300 ease-out ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="absolute top-4 right-4">
+            <button onClick={() => setOpen(false)}
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-white/40 hover:text-white hover:bg-white/8 transition-all">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M18 6 6 18M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <SidebarContent fullName={fullName} properties={properties} onClose={() => setOpen(false)} />
+        </aside>
+      </div>
 
       {/* ── Mobile bottom nav ── */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--navy)] border-t border-white/8">
-        <div className="flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--navy)]/95 backdrop-blur-md border-t border-white/8"
+           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="flex">
           {NAV.map(item => {
             const active = isActiveRoute(pathname, item.href, item.exact)
             return (
               <Link key={item.href} href={item.href}
-                className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors ${
-                  active ? 'text-[var(--amber)]' : 'text-white/50 hover:text-white'
+                aria-current={active ? 'page' : undefined}
+                className={`flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-200 relative ${
+                  active ? 'text-[var(--amber)]' : 'text-white/50 hover:text-white hover:bg-white/5'
                 }`}>
-                <span className="[&>svg]:w-5 [&>svg]:h-5">{item.icon}</span>
-                <span className="text-[10px] font-medium">{item.label}</span>
+                {active && <span className="absolute top-0 inset-x-3 h-0.5 bg-[var(--amber)] rounded-b-full" />}
+                <span>{item.icon}</span>
+                <span className="text-[11px] font-medium leading-tight">{item.label}</span>
               </Link>
             )
           })}
           <form action={logout} className="flex-1">
-            <button type="submit" className="w-full h-full flex flex-col items-center gap-1 py-3 text-white/50 hover:text-white transition-colors">
+            <button type="submit" className="w-full h-full flex flex-col items-center gap-1 py-3 text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
               </svg>
-              <span className="text-[10px] font-medium">Salir</span>
+              <span className="text-[11px] font-medium leading-tight">Salir</span>
             </button>
           </form>
         </div>
