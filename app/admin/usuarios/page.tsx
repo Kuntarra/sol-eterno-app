@@ -51,7 +51,7 @@ export default async function UsuariosPage() {
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-8 flex items-end justify-between gap-6">
         <div>
           <span className="section-label">Gestión</span>
-          <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Usuarios</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Usuarios</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">{profiles?.length ?? 0} usuarios registrados</p>
         </div>
         <div className="flex gap-2 shrink-0">

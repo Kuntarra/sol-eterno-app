@@ -235,7 +235,7 @@ export default async function ReportesPage({
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold text-[var(--navy)]">{ocupacionPct}%</span>
+                <span className="font-display text-3xl font-semibold text-[var(--navy)]">{ocupacionPct}%</span>
                 <span className="text-xs text-[var(--gray-500)]">ocupado</span>
               </div>
             </div>

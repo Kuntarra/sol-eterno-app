@@ -321,8 +321,9 @@ function QuickLink({ href, label, icon }: { href: string; label: string; icon: R
       className="flex flex-col items-center gap-2.5 p-4 rounded-xl border border-[var(--gray-200)]
                  hover:border-[var(--navy)]/20 hover:bg-[var(--navy-5)]
                  hover:-translate-y-px transition-all duration-150 group text-center">
-      <div className="w-9 h-9 rounded-xl bg-[var(--gray-100)] group-hover:bg-[var(--navy)] group-hover:text-white
-                      flex items-center justify-center text-[var(--navy)] transition-all duration-150">
+      <div className="w-9 h-9 rounded-xl bg-[var(--amber)]/10 text-[var(--amber-dark)]
+                      group-hover:bg-[var(--navy)] group-hover:text-white
+                      flex items-center justify-center transition-all duration-150">
         {icon}
       </div>
       <p className="text-xs font-semibold text-[var(--navy)] leading-tight">{label}</p>

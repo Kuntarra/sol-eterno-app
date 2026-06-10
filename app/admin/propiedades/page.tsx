@@ -41,7 +41,7 @@ export default async function PropiedadesPage() {
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-8 flex items-end justify-between gap-6">
         <div>
           <span className="section-label">Inventario</span>
-          <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Propiedades</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Propiedades</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">
             {totalProps} propiedades · {totalCapacity} cupos totales
           </p>

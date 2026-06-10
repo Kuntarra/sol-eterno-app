@@ -98,14 +98,14 @@ export default async function EstadiasPage({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
             <span className="section-label">Registros</span>
-            <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Estadías</h1>
+            <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Estadías</h1>
             <p className="text-sm text-[var(--gray-600)] mt-1">Gestión y corrección de registros</p>
           </div>
           <div className="flex gap-4 shrink-0">
             {/* Check-ins hoy */}
             <div className="bg-white rounded-xl border border-[var(--gray-200)] px-5 py-3.5 shadow-[var(--shadow-xs)] min-w-[130px]">
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gray-500)] mb-1">Check-ins hoy</p>
-              <p className="text-2xl font-black text-[var(--navy)] leading-none data-number">{checkinsHoy ?? 0}</p>
+              <p className="font-display text-[1.9rem] font-semibold text-[var(--navy)] leading-none data-number">{checkinsHoy ?? 0}</p>
               {diffCheckins !== 0 && (
                 <p className={`text-[11px] mt-1 font-medium ${diffCheckins > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                   {diffCheckins > 0 ? `+${diffCheckins}` : diffCheckins} vs ayer
@@ -115,7 +115,7 @@ export default async function EstadiasPage({
             {/* Ocupación */}
             <div className="bg-white rounded-xl border border-[var(--gray-200)] px-5 py-3.5 shadow-[var(--shadow-xs)] min-w-[150px]">
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gray-500)] mb-1">Ocupación</p>
-              <p className={`text-2xl font-black leading-none data-number ${ocupacionPct >= 80 ? 'text-emerald-600' : ocupacionPct >= 50 ? 'text-[var(--amber-dark)]' : 'text-[var(--navy)]'}`}>
+              <p className={`font-display text-[1.9rem] font-semibold leading-none data-number ${ocupacionPct >= 80 ? 'text-emerald-600' : ocupacionPct >= 50 ? 'text-[var(--amber-dark)]' : 'text-[var(--navy)]'}`}>
                 {ocupacionPct}%
               </p>
               <div className="mt-2 h-1.5 bg-[var(--gray-100)] rounded-full overflow-hidden">
