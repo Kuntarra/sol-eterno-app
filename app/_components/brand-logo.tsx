@@ -1,11 +1,10 @@
-// El SVG del logo real tiene viewBox="330 420 850 740" (contenido recortado).
-// La imagen incluye: símbolo circular + wordmark "Sol Eterno" + tagline.
-// La altura del símbolo ocupa ~77% del alto total (577/740 ≈ 0.78).
+// Símbolo de marca Sol Eterno — sol dorado calado, fondo transparente.
+// (Antes era un SVG con wordmark + tagline viejo incrustados; ahora el símbolo limpio.)
 
 interface BrandLogoProps {
-  symbolSize?: number      // Controla el alto del símbolo → escala el logo completo
+  symbolSize?: number      // Lado del símbolo cuadrado en px
   className?: string
-  // Props legados — mantenidos para compatibilidad pero ignorados (texto está en el SVG)
+  // Props legados — mantenidos por compatibilidad
   textSize?: string
   subtitleSize?: string
   gap?: string
@@ -20,17 +19,14 @@ export function BrandLogo({
   gap: _g,
   showSubtitle: _sh,
 }: BrandLogoProps) {
-  // El SVG tiene ratio 850:740 ≈ 1.149:1
-  // Si el símbolo debe medir symbolSize px de alto, el logo completo mide symbolSize/0.78 px
-  const height = Math.round(symbolSize / 0.78)
-  const width  = Math.round(height * (850 / 740))
-
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/logo-sol-eterno.svg"
-      alt="Sol Eterno – Gestión Integral de Alojamientos"
-      width={width}
-      height={height}
+      src="/logo-simbolo.png"
+      alt="Sol Eterno"
+      width={symbolSize}
+      height={symbolSize}
+      style={{ width: symbolSize, height: symbolSize }}
       className={`object-contain select-none ${className}`.trim()}
       draggable={false}
     />

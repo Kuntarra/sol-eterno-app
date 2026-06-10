@@ -4,8 +4,8 @@ import { AutoPrint } from './_auto-print'
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const ROOM_LABELS: Record<string,string> = { single:'Individual', double:'Doble', triple:'Triple', suite:'Suite', shared:'Compartido' }
 
-const N = '#1B3A5C'   // navy
-const A = '#F5B520'   // amber
+const N = '#0A2C4A'   // navy
+const A = '#E0A33A'   // amber
 const G = '#6C757D'   // gray
 
 export default async function ReportePdfPage({

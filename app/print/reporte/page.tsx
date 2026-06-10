@@ -3,7 +3,7 @@ import { AutoPrint } from './_auto-print'
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const ROOM_LABELS: Record<string,string> = { single:'Individual', double:'Doble', triple:'Triple', suite:'Suite', shared:'Compartido' }
-const N = '#1B3A5C', A = '#F5B520', G = '#6C757D'
+const N = '#0A2C4A', A = '#E0A33A', G = '#6C757D'
 
 export default async function ReportePrintPage({
   searchParams,

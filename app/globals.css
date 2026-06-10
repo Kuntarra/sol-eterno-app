@@ -2,12 +2,12 @@
 
 :root {
   /* ── Paleta principal ─────────────────────────────────── */
-  --navy:        #1B3A5C;
-  --navy-dark:   #142d47;
-  --navy-light:  #2a5180;
-  --amber:       #F5B520;
-  --amber-dark:  #D99A10;
-  --amber-light: #fdd05a;
+  --navy:        #0A2C4A;
+  --navy-dark:   #06203A;
+  --navy-light:  #134d85;
+  --amber:       #E0A33A;
+  --amber-dark:  #C2872A;
+  --amber-light: #F2C879;
 
   /* ── Escala de grises ─────────────────────────────────── */
   --gray-50:     #F8F9FA;
@@ -20,17 +20,17 @@
   --gray-900:    #212529;
 
   /* ── Navy tints ──────────────────────────────────────── */
-  --navy-5:  rgb(27 58 92 / 0.05);
-  --navy-8:  rgb(27 58 92 / 0.08);
-  --navy-12: rgb(27 58 92 / 0.12);
+  --navy-5:  rgb(10 44 74 / 0.05);
+  --navy-8:  rgb(10 44 74 / 0.08);
+  --navy-12: rgb(10 44 74 / 0.12);
 
   /* ── Sombras ──────────────────────────────────────────── */
   --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-sm:    0 1px 4px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
   --shadow-md:    0 4px 16px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
   --shadow-lg:    0 12px 32px -4px rgb(0 0 0 / 0.10), 0 4px 12px -2px rgb(0 0 0 / 0.05);
-  --shadow-navy:  0 4px 16px -2px rgb(27 58 92 / 0.30);
-  --shadow-amber: 0 4px 16px -2px rgb(245 181 32 / 0.30);
+  --shadow-navy:  0 4px 16px -2px rgb(10 44 74 / 0.30);
+  --shadow-amber: 0 4px 16px -2px rgb(224 163 58 / 0.30);
 
   /* ── Radios ───────────────────────────────────────────── */
   --radius-sm: 6px;
@@ -50,6 +50,7 @@
   --color-amber-dark:  var(--amber-dark);
   --color-amber-light: var(--amber-light);
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Spectral', Georgia, serif;
 }
 
 /* ── Base ─────────────────────────────────────────────────── */
@@ -70,6 +71,7 @@ body {
 /* text-wrap: pretty en todo texto largo */
 p, li, blockquote { text-wrap: pretty; }
 h1, h2, h3, h4 { text-wrap: balance; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.01em; }
 
 /* ── Scrollbar ───────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -128,7 +130,7 @@ a, button, [role="button"] {
 .btn-primary:hover {
   background: var(--navy-light);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px -2px rgb(27 58 92 / 0.35);
+  box-shadow: 0 6px 20px -2px rgb(10 44 74 / 0.35);
 }
 .btn-primary:active { transform: translateY(0); }
 
@@ -189,7 +191,7 @@ a, button, [role="button"] {
 .input-premium:focus {
   border-color: var(--navy);
   background: #fff;
-  box-shadow: 0 0 0 3px rgb(27 58 92 / 0.08);
+  box-shadow: 0 0 0 3px rgb(10 44 74 / 0.08);
 }
 .input-premium::placeholder { color: var(--gray-500); }
 
@@ -232,7 +234,7 @@ a, button, [role="button"] {
 /* ── Badge de estado ──────────────────────────────────────── */
 .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; }
 .badge-green  { background: #d1fae5; color: #065f46; }
-.badge-amber  { background: rgb(245 181 32 / 0.12); color: var(--amber-dark); }
+.badge-amber  { background: rgb(224 163 58 / 0.12); color: var(--amber-dark); }
 .badge-navy   { background: var(--navy-5); color: var(--navy); }
 .badge-gray   { background: var(--gray-100); color: var(--gray-600); }
 .badge-red    { background: #fee2e2; color: #991b1b; }
