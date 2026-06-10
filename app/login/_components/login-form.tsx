@@ -87,11 +87,11 @@ export function LoginForm({ error }: { error?: string }) {
       </div>
 
       {/* Recordar sesión */}
-      <label className="flex items-center gap-2.5 cursor-pointer group p-2 -m-2 rounded-lg hover:bg-[var(--gray-100)] transition-colors">
+      <label className="flex items-center gap-2.5 cursor-pointer w-fit py-1">
         <input
           type="checkbox"
           name="remember"
-          className="w-5 h-5 rounded border-[var(--gray-300)] accent-[var(--navy)] cursor-pointer"
+          className="w-[18px] h-[18px] rounded border-[var(--gray-300)] accent-[var(--navy)] cursor-pointer"
         />
         <span className="text-sm text-[var(--gray-600)]">Recordar sesión</span>
       </label>
