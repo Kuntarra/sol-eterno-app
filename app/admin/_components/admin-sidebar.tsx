@@ -92,7 +92,7 @@ function SidebarContent({ fullName, onClose }: { fullName: string; onClose?: () 
           className="btn-amber-cta flex items-center justify-center gap-2 w-full py-2.5 rounded-xl
                      bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-[var(--navy)]
                      text-[13px] font-bold transition-all duration-150
-                     shadow-[0_4px_12px_rgb(245_181_32/0.35)] hover:shadow-[0_6px_18px_rgb(245_181_32/0.45)]
+                     shadow-[0_4px_12px_rgb(224_163_58/0.35)] hover:shadow-[0_6px_18px_rgb(224_163_58/0.45)]
                      hover:-translate-y-px">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
