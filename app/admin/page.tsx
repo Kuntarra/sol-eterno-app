@@ -119,7 +119,7 @@ export default async function AdminDashboard() {
       {/* ── Saludo ── */}
       <div>
         <span className="section-label">Panel de administración</span>
-        <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">{saludo}</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-[-0.01em]">{saludo}</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1 capitalize">
           Resumen operativo de hoy, {fecha}.
         </p>
@@ -283,12 +283,10 @@ export default async function AdminDashboard() {
 }
 
 /* ── KPI Card ── */
-function KpiCard({ label, value, href, color, trendLabel, trendUp, icon }: {
-  label: string; value: number; href: string; color: string
+function KpiCard({ label, value, href, trendLabel, trendUp, icon }: {
+  label: string; value: number; href: string; color?: string
   trendLabel: string; trendUp: boolean; icon: React.ReactNode
 }) {
-  const num     = color === 'green' ? 'text-emerald-600' : color === 'amber' ? 'text-[var(--amber-dark)]' : color === 'navy' ? 'text-[var(--navy)]' : 'text-[var(--gray-700)]'
-  const iconBg  = color === 'green' ? 'bg-emerald-50 text-emerald-600' : color === 'amber' ? 'bg-[var(--amber)]/10 text-[var(--amber-dark)]' : color === 'navy' ? 'bg-[var(--navy-5)] text-[var(--navy)]' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
   const isStable = trendLabel === 'Estable'
   const trendColor = isStable ? 'text-[var(--gray-500)] bg-[var(--gray-100)]' : trendUp ? 'text-emerald-700 bg-emerald-50' : 'text-red-600 bg-red-50'
 
@@ -297,18 +295,19 @@ function KpiCard({ label, value, href, color, trendLabel, trendUp, icon }: {
       className="bg-white rounded-2xl border border-[var(--gray-200)] p-5
                  shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]
                  hover:-translate-y-0.5 transition-all duration-200 group block">
-      <div className="flex items-start justify-between mb-3">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg}`}>
+      <div className="flex items-start justify-between mb-3.5">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{ background: 'rgb(224 163 58 / 0.12)', color: 'var(--amber-dark)' }}>
           {icon}
         </div>
         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${trendColor}`}>
           {!isStable && (trendUp ? '↑ ' : '↓ ')}{trendLabel}
         </span>
       </div>
-      <p className={`text-[2.5rem] font-black leading-none data-number ${num}`}>
+      <p className="font-display text-[2.6rem] font-semibold leading-none data-number text-[var(--navy)]">
         {value.toLocaleString('es-CL')}
       </p>
-      <p className="text-sm font-medium text-[var(--navy)] mt-2 group-hover:text-[var(--navy-light)] transition-colors leading-snug">
+      <p className="text-sm font-medium text-[var(--navy)] mt-2.5 group-hover:text-[var(--navy-light)] transition-colors leading-snug">
         {label}
       </p>
     </Link>
