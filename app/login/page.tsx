@@ -108,12 +108,12 @@ export default async function LoginPage({ searchParams }: Props) {
           </div>
 
           {/* Encabezado */}
-          <div className="mb-8">
+          <div className="mb-6">
             <h2 className="font-display text-[var(--navy)] font-semibold tracking-[-0.015em] leading-tight"
               style={{ fontSize: '2.1rem' }}>
               Bienvenido de nuevo
             </h2>
-            <p className="text-[15px] text-[var(--gray-600)] mt-2.5 leading-relaxed font-light">
+            <p className="text-[15px] text-[var(--gray-600)] mt-2 leading-relaxed font-light">
               Ingrese sus credenciales para acceder al panel de gestión.
             </p>
           </div>
@@ -122,7 +122,7 @@ export default async function LoginPage({ searchParams }: Props) {
           <LoginForm error={error} />
 
           {/* Footer */}
-          <div className="flex items-center justify-center gap-6 mt-9">
+          <div className="flex items-center justify-center gap-6 mt-6">
             {['Términos', 'Privacidad', 'Seguridad'].map(t => (
               <span key={t}
                 className="text-xs text-[var(--gray-500)] hover:text-[var(--navy)] cursor-pointer transition-colors">

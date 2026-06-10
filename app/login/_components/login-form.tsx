@@ -110,7 +110,7 @@ export function LoginForm({ error }: { error?: string }) {
       </button>
 
       {/* No tengo cuenta */}
-      <p className="text-center text-xs text-[var(--gray-500)] border-t border-[var(--gray-200)] pt-6 mt-1">
+      <p className="text-center text-xs text-[var(--gray-500)] border-t border-[var(--gray-200)] pt-5">
         ¿No tienes una cuenta corporativa?{' '}
         <Link href="mailto:contacto@soleterno.cl"
           className="text-[var(--amber-dark)] font-semibold hover:text-[var(--amber)] transition-colors">
