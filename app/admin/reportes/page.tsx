@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PrintButton } from './_components/print-button'
 import { ReportFilters } from './_components/report-filters'
-import { Bed, CircleSlash, Building2, Briefcase } from 'lucide-react'
+import { Bed, CircleSlash, Building2, Briefcase, FileSpreadsheet } from 'lucide-react'
 
 const MONTHS = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -214,6 +214,13 @@ export default async function ReportesPage({
               propiedades={(propiedadesRaw ?? []).map(p => ({ id: p.id, name: p.name }))}
               proyectos={(proyectosRaw ?? []).map(p => ({ id: p.id, name: p.name, company_id: p.company_id }))}
             />
+            <a
+              href={`/api/reportes/excel?periodo=${periodo}&mes=${mes}&anio=${anio}&empresa=${filtroEmpresa}&propiedad=${filtroPropiedad}`}
+              className="no-print flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20
+                         text-white text-sm font-medium rounded-lg transition-colors">
+              <FileSpreadsheet size={16} strokeWidth={1.75} />
+              Excel
+            </a>
             <PrintButton />
           </div>
         </div>
