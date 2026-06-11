@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, HelpCircle, ChevronDown, LogOut } from 'lucide-react'
+import { Search, HelpCircle, ChevronDown, LogOut, Bell, AlertTriangle, LogIn } from 'lucide-react'
 import { logout } from '@/app/actions/auth'
+
+type Notif = { title: string; detail: string; href: string; kind: 'alert' | 'info' }
 
 const PAGE_LABELS: Record<string, string> = {
   '/admin':              'Panel de Control',
@@ -25,20 +28,23 @@ function getLabel(pathname: string) {
 interface Props {
   fullName: string
   role?: string
+  notifications?: Notif[]
 }
 
-export function AdminTopBar({ fullName, role = 'Administrador' }: Props) {
+export function AdminTopBar({ fullName, role = 'Administrador', notifications = [] }: Props) {
   const pathname  = usePathname()
   const router    = useRouter()
   const label     = getLabel(pathname)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuOpen, setMenuOpen]   = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const alertCount = notifications.length
   const initials  = fullName.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
 
   function onSearch(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== 'Enter') return
     const q = (e.target as HTMLInputElement).value.trim()
     if (!q) return
-    router.push(`/admin/estadias?filter=todas&q=${encodeURIComponent(q)}`)
+    router.push(`/admin/buscar?q=${encodeURIComponent(q)}`)
   }
 
   return (
@@ -57,7 +63,7 @@ export function AdminTopBar({ fullName, role = 'Administrador' }: Props) {
           <input
             className="bg-transparent text-sm text-[var(--gray-900)] placeholder:text-[var(--gray-500)]
                        outline-none flex-1 w-full"
-            placeholder="Buscar huésped, RUT o habitación…"
+            placeholder="Buscar huésped, propiedad o empresa…"
             onKeyDown={onSearch}
           />
         </label>
@@ -65,6 +71,56 @@ export function AdminTopBar({ fullName, role = 'Administrador' }: Props) {
 
       {/* Acciones */}
       <div className="ml-auto flex items-center gap-1.5">
+        {/* Notificaciones */}
+        <div className="relative">
+          <button
+            onClick={() => setNotifOpen(v => !v)}
+            aria-expanded={notifOpen}
+            title="Notificaciones"
+            className="relative w-8 h-8 rounded-xl flex items-center justify-center text-[var(--gray-500)]
+                       hover:bg-[var(--gray-100)] hover:text-[var(--navy)] transition-colors">
+            <Bell size={16} strokeWidth={1.75} />
+            {alertCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--amber)]
+                               text-[var(--navy)] text-[10px] font-bold flex items-center justify-center">
+                {alertCount > 9 ? '9+' : alertCount}
+              </span>
+            )}
+          </button>
+
+          {notifOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+              <div className="absolute right-0 mt-2 w-80 z-50 bg-white rounded-xl border border-[var(--gray-200)]
+                              shadow-[var(--shadow-lg)] overflow-hidden">
+                <div className="px-4 py-3 border-b border-[var(--gray-100)] flex items-center justify-between">
+                  <span className="section-label !mb-0">Notificaciones</span>
+                  <span className="text-[11px] text-[var(--gray-500)]">{alertCount}</span>
+                </div>
+                {alertCount === 0 ? (
+                  <p className="px-4 py-8 text-center text-sm text-[var(--gray-500)]">Sin novedades por ahora.</p>
+                ) : (
+                  <div className="max-h-80 overflow-y-auto divide-y divide-[var(--gray-100)]">
+                    {notifications.map((n, i) => (
+                      <Link key={i} href={n.href} onClick={() => setNotifOpen(false)}
+                        className="flex items-start gap-3 px-4 py-3 hover:bg-[var(--gray-50)] transition-colors">
+                        <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5
+                          ${n.kind === 'alert' ? 'bg-red-50 text-red-600' : 'bg-[var(--amber)]/12 text-[var(--amber-dark)]'}`}>
+                          {n.kind === 'alert' ? <AlertTriangle size={14} strokeWidth={2} /> : <LogIn size={14} strokeWidth={2} />}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-[var(--navy)] leading-snug">{n.title}</p>
+                          <p className="text-[11px] text-[var(--gray-500)] mt-0.5 leading-snug">{n.detail}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
         <a
           href="https://wa.me/56982172261"
           target="_blank"
