@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Search, Bell, HelpCircle, ChevronDown } from 'lucide-react'
 
 const PAGE_LABELS: Record<string, string> = {
@@ -27,8 +27,16 @@ interface Props {
 
 export function AdminTopBar({ fullName, role = 'Administrador' }: Props) {
   const pathname  = usePathname()
+  const router    = useRouter()
   const label     = getLabel(pathname)
   const initials  = fullName.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
+
+  function onSearch(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key !== 'Enter') return
+    const q = (e.target as HTMLInputElement).value.trim()
+    if (!q) return
+    router.push(`/admin/estadias?filter=todas&q=${encodeURIComponent(q)}`)
+  }
 
   return (
     <header className="hidden md:flex h-14 bg-white border-b border-[var(--gray-200)] items-center px-6 gap-4 shrink-0 sticky top-0 z-30">
@@ -46,8 +54,8 @@ export function AdminTopBar({ fullName, role = 'Administrador' }: Props) {
           <input
             className="bg-transparent text-sm text-[var(--gray-900)] placeholder:text-[var(--gray-500)]
                        outline-none flex-1 w-full"
-            placeholder="Buscar reporte o propiedad…"
-            readOnly
+            placeholder="Buscar huésped, RUT o habitación…"
+            onKeyDown={onSearch}
           />
         </label>
       </div>
