@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { SearchBar } from './_components/search-bar'
-import { CheckCircle2, SlidersHorizontal, Download } from 'lucide-react'
+import { CheckCircle2, Download } from 'lucide-react'
 
 function formatDate(iso: string | null) {
   if (!iso) return '—'
@@ -160,18 +160,13 @@ export default async function EstadiasPage({
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <button className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--gray-200)]
-                             bg-white text-[var(--gray-600)] text-xs font-semibold hover:border-[var(--navy)]/30
-                             hover:text-[var(--navy)] transition-all">
-            <SlidersHorizontal size={13} strokeWidth={2} />
-            Filtros
-          </button>
-          <button className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--gray-200)]
-                             bg-white text-[var(--gray-600)] text-xs font-semibold hover:border-[var(--navy)]/30
-                             hover:text-[var(--navy)] transition-all">
+          <Link href="/admin/reportes"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--gray-200)]
+                       bg-white text-[var(--gray-600)] text-xs font-semibold hover:border-[var(--navy)]/30
+                       hover:text-[var(--navy)] transition-all">
             <Download size={13} strokeWidth={2} />
             Exportar
-          </button>
+          </Link>
         </div>
 
         {q && (

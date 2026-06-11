@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, Bell, HelpCircle, ChevronDown } from 'lucide-react'
+import { Search, HelpCircle, ChevronDown, LogOut } from 'lucide-react'
+import { logout } from '@/app/actions/auth'
 
 const PAGE_LABELS: Record<string, string> = {
   '/admin':              'Panel de Control',
@@ -29,6 +31,7 @@ export function AdminTopBar({ fullName, role = 'Administrador' }: Props) {
   const pathname  = usePathname()
   const router    = useRouter()
   const label     = getLabel(pathname)
+  const [menuOpen, setMenuOpen] = useState(false)
   const initials  = fullName.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
 
   function onSearch(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -62,33 +65,52 @@ export function AdminTopBar({ fullName, role = 'Administrador' }: Props) {
 
       {/* Acciones */}
       <div className="ml-auto flex items-center gap-1.5">
-        <button
+        <a
+          href="https://wa.me/56982172261"
+          target="_blank"
+          rel="noopener noreferrer"
           className="w-8 h-8 rounded-xl flex items-center justify-center text-[var(--gray-500)]
                      hover:bg-[var(--gray-100)] hover:text-[var(--navy)] transition-colors"
-          title="Notificaciones">
-          <Bell size={16} strokeWidth={1.75} />
-        </button>
-
-        <button
-          className="w-8 h-8 rounded-xl flex items-center justify-center text-[var(--gray-500)]
-                     hover:bg-[var(--gray-100)] hover:text-[var(--navy)] transition-colors"
-          title="Ayuda">
+          title="Ayuda y soporte">
           <HelpCircle size={16} strokeWidth={1.75} />
-        </button>
+        </a>
 
         <div className="w-px h-5 bg-[var(--gray-200)] mx-1.5" />
 
-        {/* Perfil */}
-        <div className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-xl
-                        hover:bg-[var(--gray-100)] transition-colors cursor-default">
-          <div className="w-7 h-7 rounded-lg bg-[var(--navy)] flex items-center justify-center shrink-0">
-            <span className="text-white text-[10px] font-bold">{initials}</span>
-          </div>
-          <div className="text-left">
-            <p className="text-xs font-semibold text-[var(--navy)] leading-tight">{fullName}</p>
-            <p className="text-[10px] text-[var(--gray-500)] leading-tight">{role}</p>
-          </div>
-          <ChevronDown size={13} strokeWidth={2} stroke="var(--gray-400)" />
+        {/* Perfil con menú */}
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen(v => !v)}
+            aria-expanded={menuOpen}
+            className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-xl
+                       hover:bg-[var(--gray-100)] transition-colors">
+            <div className="w-7 h-7 rounded-lg bg-[var(--navy)] flex items-center justify-center shrink-0">
+              <span className="text-white text-[10px] font-bold">{initials}</span>
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-semibold text-[var(--navy)] leading-tight">{fullName}</p>
+              <p className="text-[10px] text-[var(--gray-500)] leading-tight">{role}</p>
+            </div>
+            <ChevronDown size={13} strokeWidth={2} stroke="var(--gray-400)"
+              className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+              <div className="absolute right-0 mt-2 w-44 z-50 bg-white rounded-xl border border-[var(--gray-200)]
+                              shadow-[var(--shadow-lg)] overflow-hidden py-1">
+                <form action={logout}>
+                  <button type="submit"
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--gray-700)]
+                               hover:bg-[var(--gray-50)] hover:text-[var(--navy)] transition-colors">
+                    <LogOut size={15} strokeWidth={1.75} />
+                    Cerrar sesión
+                  </button>
+                </form>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>

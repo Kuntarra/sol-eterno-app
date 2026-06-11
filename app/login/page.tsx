@@ -118,14 +118,9 @@ export default async function LoginPage({ searchParams }: Props) {
           <LoginForm error={error} />
 
           {/* Footer */}
-          <div className="flex items-center justify-center gap-6 mt-6">
-            {['Términos', 'Privacidad', 'Seguridad'].map(t => (
-              <span key={t}
-                className="text-xs text-[var(--gray-500)] hover:text-[var(--navy)] cursor-pointer transition-colors">
-                {t}
-              </span>
-            ))}
-          </div>
+          <p className="text-center text-xs text-[var(--gray-500)] mt-6">
+            © {new Date().getFullYear()} Sol Eterno · Gestión de Alojamientos
+          </p>
         </div>
       </div>
 
