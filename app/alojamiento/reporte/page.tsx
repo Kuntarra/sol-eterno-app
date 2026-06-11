@@ -301,7 +301,7 @@ export default async function ClienteReportePage({
             { label:'Días del período',  value: diasPeriodo,   sub:tituloPeriodo, border:'border-t-[var(--gray-300)]' },
           ].map(k => (
             <div key={k.label} className={`bg-white rounded-xl border border-[var(--gray-200)] border-t-4 ${k.border} p-5`}>
-              <p className="font-display text-[1.875rem] font-semibold leading-none text-[var(--navy)]">{k.value.toLocaleString('es-CL')}</p>
+              <p className="font-display text-[1.875rem] font-semibold leading-none text-[var(--navy)] data-number">{k.value.toLocaleString('es-CL')}</p>
               <p className="text-sm font-medium text-[var(--gray-700)] mt-1">{k.label}</p>
               <p className="text-xs text-[var(--gray-500)] mt-1">{k.sub}</p>
             </div>

@@ -437,7 +437,7 @@ function MetricCard({ icon, label, value, sub, accent }: {
   return (
     <div className={`bg-white rounded-xl border border-[var(--gray-200)] border-t-4 ${border} p-5`}>
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${iconBg}`}>{icon}</div>
-      <p className={`font-display text-[1.875rem] font-semibold leading-none tracking-tight ${valColor}`}>{display}</p>
+      <p className={`font-display text-[1.875rem] font-semibold leading-none tracking-tight data-number ${valColor}`}>{display}</p>
       <p className="text-sm font-semibold text-[var(--navy)] mt-2">{label}</p>
       <p className="text-xs text-[var(--gray-500)] mt-1 leading-snug">{sub}</p>
     </div>
