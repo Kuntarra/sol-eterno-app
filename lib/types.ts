@@ -163,13 +163,13 @@ export const SERVICES_BY_TYPE: Record<PropertyType, {
 }
 
 export const PROPERTY_TYPE_COLORS: Record<PropertyType, string> = {
-  hotel:        'bg-blue-100 text-blue-700',
-  hostal:       'bg-green-100 text-green-700',
-  departamento: 'bg-purple-100 text-purple-700',
+  hotel:        'bg-[var(--navy-5)] text-[var(--navy)]',
+  hostal:       'bg-[var(--amber)]/12 text-[var(--amber-dark)]',
+  departamento: 'bg-[var(--gray-100)] text-[var(--gray-700)]',
 }
 
 // Roles de usuario
-export const ROLE_LABELS: Record<Role, string> = {
+export const ROLE_LABELS: Record<string, string> = {
   admin:        'Administrador',
   receptionist: 'Recepcionista',
   client:       'Cliente',

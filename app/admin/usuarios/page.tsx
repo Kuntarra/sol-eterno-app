@@ -1,12 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-
-const ROLE_LABELS: Record<string, string> = {
-  admin:        'Administrador',
-  receptionist: 'Recepcionista',
-  client:       'Cliente',
-}
+import { ROLE_LABELS } from '@/lib/types'
 
 const ROLE_COLORS: Record<string, string> = {
   admin:        'badge badge-navy',

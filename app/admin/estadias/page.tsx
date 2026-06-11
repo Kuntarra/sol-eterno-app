@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { SearchBar } from './_components/search-bar'
 import { CheckCircle2, Download } from 'lucide-react'
 import { formatDateTime as formatDate } from '@/lib/format'
+import { STAY_FILTER_LABELS as FILTER_LABELS } from '@/lib/types'
 
 export default async function EstadiasPage({
   searchParams,
@@ -91,7 +92,6 @@ export default async function EstadiasPage({
     for (const c of counts ?? []) stayCount.set(c.guest_id, (stayCount.get(c.guest_id) ?? 0) + 1)
   }
 
-  const FILTER_LABELS = { activas: 'Activas', completadas: 'Completadas', todas: 'Todas' }
 
   return (
     <div>

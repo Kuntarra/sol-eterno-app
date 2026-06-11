@@ -12,11 +12,6 @@ const VIEWS = [
   { label: 'Cliente',   href: '/alojamiento',color: 'bg-[var(--amber)] text-[var(--navy)]', dot: 'bg-[var(--amber)]', desc: 'Portal empresa' },
 ]
 
-const ROLE_LABELS: Record<string, string> = {
-  receptionist: 'Recepcionista',
-  client: 'Cliente',
-}
-
 interface User { id: string; full_name: string | null; role: string; email: string | null }
 
 export function RoleSwitcher({ users }: { users: User[] }) {
