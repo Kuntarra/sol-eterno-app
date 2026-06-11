@@ -50,7 +50,7 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
           <PropertyIcon type={property.type} size="sm" />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold text-[var(--navy)]">{property.name}</h1>
+              <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{property.name}</h1>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PROPERTY_TYPE_COLORS[property.type as keyof typeof PROPERTY_TYPE_COLORS]}`}>
                 {PROPERTY_TYPE_LABELS[property.type as keyof typeof PROPERTY_TYPE_LABELS]}
               </span>

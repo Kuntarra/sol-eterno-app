@@ -65,7 +65,7 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-[var(--navy)]">{company.name}</h1>
+              <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{company.name}</h1>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 company.active ? 'bg-emerald-100 text-emerald-700' : 'bg-[var(--gray-200)] text-[var(--gray-600)]'
               }`}>

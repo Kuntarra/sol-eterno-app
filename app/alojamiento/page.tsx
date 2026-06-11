@@ -75,8 +75,8 @@ export default async function AlojamientoPage() {
         ].map(k => (
           <div key={k.label} className="bg-white rounded-2xl border border-[var(--gray-200)] p-5 shadow-[var(--shadow-sm)]
                                         hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200">
-            <div className={`w-2 h-2 rounded-full mb-3 ${k.dot}`} />
-            <p className={`text-[2.25rem] font-bold leading-none tracking-tight ${k.num}`}>{k.value}</p>
+            <div className="w-2 h-2 rounded-full mb-3 bg-[var(--amber)]" />
+            <p className="font-display text-[2.25rem] font-semibold leading-none tracking-[-0.01em] text-[var(--navy)]">{k.value}</p>
             <p className="text-sm font-medium text-[var(--navy)] mt-2">{k.label}</p>
           </div>
         ))}

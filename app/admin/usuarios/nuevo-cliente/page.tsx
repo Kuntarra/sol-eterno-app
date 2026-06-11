@@ -27,7 +27,7 @@ export default async function NuevoClienteUserPage({ searchParams }: Props) {
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-[var(--navy)]">Nuevo usuario cliente</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Nuevo usuario cliente</h1>
           <p className="text-sm text-[var(--gray-600)]">El usuario podrá consultar el personal alojado de su empresa</p>
         </div>
       </div>

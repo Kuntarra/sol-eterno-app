@@ -27,7 +27,7 @@ export default async function NuevoRecepcionistaPage({ searchParams }: Props) {
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-[var(--navy)]">Nuevo recepcionista</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Nuevo recepcionista</h1>
           <p className="text-sm text-[var(--gray-600)]">El usuario podrá hacer check-in y check-out en las propiedades asignadas</p>
         </div>
       </div>

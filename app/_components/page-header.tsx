@@ -14,7 +14,7 @@ export function PageHeader({ label, title, subtitle, action, border = true }: Pa
       {label && <span className="section-label">{label}</span>}
       <div className="flex items-end justify-between gap-6">
         <div>
-          <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">
+          <h1 className="font-display text-[1.9rem] font-semibold text-[var(--navy)] leading-tight tracking-[-0.01em]">
             {title}
           </h1>
           {subtitle && (

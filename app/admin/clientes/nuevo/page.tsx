@@ -19,7 +19,7 @@ export default async function NuevoClientePage({ searchParams }: Props) {
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-[var(--navy)]">Nueva empresa cliente</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Nueva empresa cliente</h1>
           <p className="text-sm text-[var(--gray-600)]">Registra los datos de la empresa minera</p>
         </div>
       </div>

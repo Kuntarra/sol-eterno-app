@@ -271,17 +271,12 @@ export default async function EstadiasPage({
   )
 }
 
-// Color de avatar determinista por nombre
+// Avatar determinista por nombre — paleta de marca (navy / dorado / neutro)
 function avatarStyle(name: string): { bg: string; text: string } {
   const PALETTES = [
-    { bg: '#dcfce7', text: '#166534' },   // green
-    { bg: '#fef9c3', text: '#854d0e' },   // amber
-    { bg: '#dbeafe', text: '#1e40af' },   // blue
-    { bg: '#f3e8ff', text: '#6b21a8' },   // purple
-    { bg: '#fee2e2', text: '#991b1b' },   // red
-    { bg: '#ccfbf1', text: '#115e59' },   // teal
-    { bg: '#ffedd5', text: '#9a3412' },   // orange
-    { bg: '#e0e7ff', text: '#3730a3' },   // indigo
+    { bg: '#E9EEF4', text: '#0A2C4A' },   // tinte navy
+    { bg: '#F7EAD2', text: '#9A6A16' },   // tinte dorado
+    { bg: '#EDEFF2', text: '#46586C' },   // neutro frío
   ]
   let h = 0
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0

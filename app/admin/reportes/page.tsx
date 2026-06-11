@@ -200,7 +200,7 @@ export default async function ReportesPage({
         <div className="relative max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
             <span className="section-label">Reporte de ocupación</span>
-            <h1 className="text-[2rem] font-bold leading-tight text-white tracking-tight">{tituloperiodo}</h1>
+            <h1 className="font-display text-[2rem] font-semibold leading-tight text-white tracking-[-0.01em]">{tituloperiodo}</h1>
             <p className="text-white/45 text-sm mt-1">
               {diasPeriodo} días · {nPropiedades} propiedad{nPropiedades !== 1 ? 'es' : ''}
             </p>
@@ -437,7 +437,7 @@ function MetricCard({ icon, label, value, sub, accent }: {
   return (
     <div className={`bg-white rounded-xl border border-[var(--gray-200)] border-t-4 ${border} p-5`}>
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${iconBg}`}>{icon}</div>
-      <p className={`text-[1.875rem] font-bold leading-none tracking-tight ${valColor}`}>{display}</p>
+      <p className={`font-display text-[1.875rem] font-semibold leading-none tracking-tight ${valColor}`}>{display}</p>
       <p className="text-sm font-semibold text-[var(--navy)] mt-2">{label}</p>
       <p className="text-xs text-[var(--gray-500)] mt-1 leading-snug">{sub}</p>
     </div>

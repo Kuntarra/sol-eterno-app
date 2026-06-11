@@ -21,7 +21,7 @@ export default async function NuevaPropiedadPage({ searchParams }: Props) {
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-[var(--navy)]">Nueva propiedad</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Nueva propiedad</h1>
           <p className="text-sm text-[var(--gray-600)]">Configura los datos de la propiedad</p>
         </div>
       </div>
