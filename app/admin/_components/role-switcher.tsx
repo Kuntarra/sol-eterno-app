@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { impersonate } from '@/app/actions/impersonate'
+import { Repeat, ChevronDown } from 'lucide-react'
 
 const VIEWS = [
   { label: 'Admin',     href: '/admin',      color: 'bg-[var(--navy)] text-white',         dot: 'bg-[var(--navy)]',  desc: 'Panel administrador' },
@@ -116,14 +117,9 @@ export function RoleSwitcher({ users }: { users: User[] }) {
 
       <button onClick={() => setOpen(!open)}
         className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg text-sm font-semibold transition-all hover:shadow-xl active:scale-95 ${current.color}`}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-          <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-        </svg>
+        <Repeat size={15} strokeWidth={2} />
         {current.label}
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
+        <ChevronDown size={13} strokeWidth={2.25} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
     </div>
   )

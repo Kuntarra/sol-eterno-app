@@ -1,4 +1,5 @@
 import { LoginForm } from './_components/login-form'
+import { MapPin } from 'lucide-react'
 
 interface Props {
   searchParams: Promise<{ error?: string }>
@@ -80,12 +81,7 @@ export default async function LoginPage({ searchParams }: Props) {
           <div className="flex items-center gap-6 mt-12 pt-7 border-t border-white/12">
             {['Iquique', 'Antofagasta', 'Calama'].map(c => (
               <div key={c} className="flex items-center gap-1.5">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                  className="text-[var(--amber)] opacity-75">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
+                <MapPin size={12} strokeWidth={2} className="text-[var(--amber)] opacity-75" />
                 <span className="text-white/55 text-xs font-medium tracking-wide">{c}</span>
               </div>
             ))}

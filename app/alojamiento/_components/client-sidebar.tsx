@@ -5,19 +5,20 @@ import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
 import { BrandLogo } from '@/app/_components/brand-logo'
 import { MobileBrand } from '@/app/_components/mobile-brand'
+import { Home, History, BarChart3, LogOut } from 'lucide-react'
 
 const NAV = [
   {
     href: '/alojamiento', label: 'Inicio', exact: true,
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+    icon: <Home size={19} strokeWidth={1.75} />,
   },
   {
     href: '/alojamiento/historial', label: 'Historial', exact: false,
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+    icon: <History size={19} strokeWidth={1.75} />,
   },
   {
     href: '/alojamiento/reporte', label: 'Reportes', exact: false,
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+    icon: <BarChart3 size={19} strokeWidth={1.75} />,
   },
 ]
 
@@ -109,9 +110,7 @@ export function ClientSidebar({ companyName, fullName, impersonating }: Props) {
           {!impersonating && (
             <form action={logout} className="flex-1">
               <button type="submit" className="w-full h-full flex flex-col items-center gap-1 py-3 text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
+                <LogOut size={20} strokeWidth={2} />
                 <span className="text-[11px] font-medium leading-tight">Salir</span>
               </button>
             </form>

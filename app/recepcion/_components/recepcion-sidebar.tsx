@@ -6,19 +6,20 @@ import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { BrandLogo } from '@/app/_components/brand-logo'
 import { MobileBrand } from '@/app/_components/mobile-brand'
+import { Users, LogIn, LogOut, Menu, X } from 'lucide-react'
 
 const NAV = [
   {
     href: '/recepcion', label: 'Huéspedes', exact: true,
-    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    icon: <Users size={18} strokeWidth={1.75} />,
   },
   {
     href: '/recepcion/checkin', label: 'Check-in', exact: false,
-    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>,
+    icon: <LogIn size={18} strokeWidth={1.75} />,
   },
   {
     href: '/recepcion/checkout', label: 'Check-out', exact: false,
-    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+    icon: <LogOut size={18} strokeWidth={1.75} />,
   },
 ]
 
@@ -125,9 +126,7 @@ function SidebarContent({ fullName, properties, onClose }: { fullName: string; p
               className="w-full flex items-center gap-2 px-3 py-2 rounded-xl
                          text-white/50 hover:text-white hover:bg-white/6
                          text-xs font-medium transition-all">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
+              <LogOut size={14} strokeWidth={2} />
               Cerrar sesión
             </button>
           </form>
@@ -154,9 +153,7 @@ export function RecepcionSidebar({ fullName, properties, impersonating }: Props)
         <div className="flex-1 min-w-0" />
         <button onClick={() => setOpen(true)}
           className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/8 rounded-lg transition-all">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
+          <Menu size={18} strokeWidth={2.25} />
         </button>
       </div>
 
@@ -167,9 +164,7 @@ export function RecepcionSidebar({ fullName, properties, impersonating }: Props)
           <div className="absolute top-4 right-4">
             <button onClick={() => setOpen(false)}
               className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-white/40 hover:text-white hover:bg-white/8 transition-all">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M18 6 6 18M6 6l12 12"/>
-              </svg>
+              <X size={16} strokeWidth={2.25} />
             </button>
           </div>
           <SidebarContent fullName={fullName} properties={properties} onClose={() => setOpen(false)} />
@@ -196,9 +191,7 @@ export function RecepcionSidebar({ fullName, properties, impersonating }: Props)
           })}
           <form action={logout} className="flex-1">
             <button type="submit" className="w-full h-full flex flex-col items-center gap-1 py-3 text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
+              <LogOut size={20} strokeWidth={2} />
               <span className="text-[11px] font-medium leading-tight">Salir</span>
             </button>
           </form>
