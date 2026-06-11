@@ -1,4 +1,5 @@
 // Resumen y reportes por correo (Resend). Sistema de suscripciones programables.
+// Reconexión Git verificada.
 import { Resend } from 'resend'
 import { createAdminClient } from '@/lib/supabase/admin'
 
