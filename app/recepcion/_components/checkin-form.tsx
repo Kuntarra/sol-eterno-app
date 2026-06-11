@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { checkIn } from '@/app/actions/stays'
+import { isValidRut, formatRut } from '@/lib/rut'
 
 interface Room { id: string; number: string; type: string | null; capacity: number; floor: number | null }
 interface Company { id: string; name: string; rooms: Room[] }
@@ -38,6 +39,27 @@ export function CheckinForm({ properties, error }: Props) {
   const [propertyId, setPropertyId] = useState(properties.length === 1 ? properties[0].id : '')
   const [companyId, setCompanyId]   = useState('')
   const [shiftType, setShiftType]   = useState('')
+
+  // Documento de identidad: RUT chileno o documento extranjero
+  const [docType, setDocType] = useState<'rut' | 'foreign'>('rut')
+  const [docValue, setDocValue] = useState('')
+  const docRef = useRef<HTMLInputElement>(null)
+
+  const docInvalid =
+    docType === 'rut'
+      ? docValue.trim() !== '' && !isValidRut(docValue)
+      : false
+
+  // Mantener la validación nativa sincronizada (bloquea el submit si no cumple)
+  useEffect(() => {
+    const el = docRef.current
+    if (!el) return
+    if (docType === 'rut') {
+      el.setCustomValidity(isValidRut(docValue) ? '' : 'Ingresa un RUT chileno válido (con dígito verificador).')
+    } else {
+      el.setCustomValidity(docValue.trim() ? '' : 'Ingresa el número de documento.')
+    }
+  }, [docType, docValue])
 
   const property = properties.find(p => p.id === propertyId)
   const companies = property?.companies ?? []
@@ -115,13 +137,40 @@ export function CheckinForm({ properties, error }: Props) {
             <label className={LABEL}>Apellido materno</label>
             <input name="last_name_materno" type="text" placeholder="Pérez" className={INPUT} />
           </div>
-          <div>
-            <label className={LABEL}>RUT o identificación *</label>
-            <input name="rut" type="text" required
-              pattern=".*[0-9].*"
-              title="Obligatorio. Debe contener al menos un número (no exige formato chileno)."
-              placeholder="12.345.678-9 o pasaporte/ID"
-              className={INPUT} />
+          <div className="sm:col-span-2">
+            <label className={LABEL}>Documento de identidad *</label>
+            <div className="flex gap-1.5 mb-2 p-1 bg-[var(--gray-100)] rounded-lg w-fit">
+              {([['rut', 'RUT chileno'], ['foreign', 'Extranjero']] as const).map(([val, lbl]) => (
+                <button key={val} type="button" onClick={() => setDocType(val)}
+                  className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                    docType === val
+                      ? 'bg-white text-[var(--navy)] shadow-[var(--shadow-xs)]'
+                      : 'text-[var(--gray-600)] hover:text-[var(--navy)]'
+                  }`}>
+                  {lbl}
+                </button>
+              ))}
+            </div>
+            {/* doc_type informa al servidor qué validación aplicar */}
+            <input type="hidden" name="doc_type" value={docType} />
+            <input
+              ref={docRef}
+              name="rut"
+              type="text"
+              required
+              value={docValue}
+              onChange={e => setDocValue(e.target.value)}
+              onBlur={() => { if (docType === 'rut' && isValidRut(docValue)) setDocValue(formatRut(docValue)) }}
+              placeholder={docType === 'rut' ? '12.345.678-9' : 'N° de pasaporte o documento'}
+              aria-invalid={docInvalid}
+              className={`${INPUT} ${docInvalid ? '!border-red-300 !bg-red-50' : ''}`}
+            />
+            {docInvalid && (
+              <p className="text-xs text-red-600 mt-1.5">RUT inválido — revisa el número y el dígito verificador.</p>
+            )}
+            {docType === 'foreign' && (
+              <p className="text-xs text-[var(--gray-500)] mt-1.5">Para extranjeros: ingresa el número de pasaporte o documento de su país.</p>
+            )}
           </div>
           <div>
             <label className={LABEL}>Teléfono</label>

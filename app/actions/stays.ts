@@ -3,17 +3,29 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { isValidRut, formatRut } from '@/lib/rut'
 
 export async function checkIn(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const rut       = ((formData.get('rut') as string) ?? '').trim()
+  const docType   = (formData.get('doc_type') as string) === 'foreign' ? 'foreign' : 'rut'
+  const rutRaw    = ((formData.get('rut') as string) ?? '').trim()
   const companyId = formData.get('company_id') as string
 
-  // RUT/identificación obligatorio: debe contener al menos un número
-  if (!/[0-9]/.test(rut)) {
-    redirect('/recepcion/checkin?error=' + encodeURIComponent('El RUT o identificación es obligatorio y debe contener al menos un número.'))
+  // Documento obligatorio. RUT chileno: validar dígito verificador y normalizar.
+  // Extranjero: aceptar el número de documento (no vacío).
+  let rut: string
+  if (docType === 'rut') {
+    if (!isValidRut(rutRaw)) {
+      redirect('/recepcion/checkin?error=' + encodeURIComponent('Ingresa un RUT chileno válido (con dígito verificador) o marca "Extranjero".'))
+    }
+    rut = formatRut(rutRaw)
+  } else {
+    if (!rutRaw) {
+      redirect('/recepcion/checkin?error=' + encodeURIComponent('Ingresa el número de documento del huésped extranjero.'))
+    }
+    rut = rutRaw
   }
   const roomId    = formData.get('room_id') as string
   const projectId = (formData.get('project_id') as string) || null
