@@ -90,6 +90,14 @@ export default async function EstadiasPage({
 
   const { data: stays } = await query
 
+  // Conteo total de estadías por huésped (para marcar "Repite")
+  const guestIdsShown = [...new Set((stays ?? []).map(s => (s.guests as any)?.id).filter(Boolean))]
+  const stayCount = new Map<string, number>()
+  if (guestIdsShown.length) {
+    const { data: counts } = await admin.from('stays').select('guest_id').in('guest_id', guestIdsShown).limit(5000)
+    for (const c of counts ?? []) stayCount.set(c.guest_id, (stayCount.get(c.guest_id) ?? 0) + 1)
+  }
+
   const FILTER_LABELS = { activas: 'Activas', completadas: 'Completadas', todas: 'Todas' }
 
   return (
@@ -225,7 +233,18 @@ export default async function EstadiasPage({
                         </div>
                       </td>
                       <td className="font-semibold text-[var(--navy)] whitespace-nowrap">
-                        {q ? <Highlight text={nombre} q={q} /> : nombre}
+                        <span className="inline-flex items-center gap-2">
+                          {guest?.id
+                            ? <Link href={`/admin/huespedes/${guest.id}`} className="hover:text-[var(--amber-dark)] hover:underline underline-offset-2 transition-colors">
+                                {q ? <Highlight text={nombre} q={q} /> : nombre}
+                              </Link>
+                            : (q ? <Highlight text={nombre} q={q} /> : nombre)}
+                          {guest?.id && (stayCount.get(guest.id) ?? 0) > 1 && (
+                            <span className="badge badge-amber !text-[10px] !py-0.5" title="Esta persona tiene estadías previas">
+                              Repite · {stayCount.get(guest.id)}
+                            </span>
+                          )}
+                        </span>
                       </td>
                       <td className="text-[var(--gray-500)] font-mono text-[12px]">
                         {guest?.rut ? (q ? <Highlight text={guest.rut} q={q} /> : guest.rut) : '—'}

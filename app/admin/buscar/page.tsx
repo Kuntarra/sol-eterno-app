@@ -67,7 +67,7 @@ export default async function BuscarPage({
               const nombre = `${g.first_name ?? ''} ${g.last_name_paterno ?? ''}`.trim()
               return (
                 <ResultRow key={g.id}
-                  href={`/admin/estadias?filter=todas&q=${encodeURIComponent(g.rut || nombre)}`}
+                  href={`/admin/huespedes/${g.id}`}
                   title={nombre || '—'} meta={g.rut ?? ''} />
               )
             })}

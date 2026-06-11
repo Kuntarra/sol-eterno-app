@@ -27,6 +27,23 @@ export async function checkIn(formData: FormData) {
     if (existing) guestId = existing.id
   }
 
+  // Si la persona ya existe y tiene una estadía activa, avisar en vez de duplicar
+  if (guestId) {
+    const { data: activa } = await supabase
+      .from('stays')
+      .select('id, rooms(number, properties(name))')
+      .eq('guest_id', guestId)
+      .is('checked_out_at', null)
+      .maybeSingle()
+
+    if (activa) {
+      const r = activa.rooms as any
+      const ubic = r?.number ? `Hab. ${r.number}${r?.properties?.name ? ` · ${r.properties.name}` : ''}` : 'una habitación'
+      const msg = `Esta persona ya tiene una estadía activa (${ubic}). Haz el check-out antes de registrar un nuevo turno.`
+      redirect('/recepcion/checkin?error=' + encodeURIComponent(msg))
+    }
+  }
+
   if (!guestId) {
     const { data: newGuest, error: guestError } = await supabase
       .from('guests')
