@@ -1,3 +1,4 @@
+// Resumen y reportes por correo (Resend). Sistema de suscripciones programables.
 import { Resend } from 'resend'
 import { createAdminClient } from '@/lib/supabase/admin'
 
