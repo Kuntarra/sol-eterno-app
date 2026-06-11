@@ -145,7 +145,7 @@ export default async function ReportePdfPage({
             { label: 'Noches-huésped', value: nochesHuesped.toLocaleString('es-CL'), sub: 'Suma de noches de todos los huéspedes', color: N },
             { label: 'Camas-noche disponibles', value: camasNoche.toLocaleString('es-CL'), sub: `${camasDisp} camas × ${diasPeriodo} días`, color: A },
             { label: 'Camas-noche libres', value: camasLibres.toLocaleString('es-CL'), sub: `${100 - ocupPct}% sin ocupar`, color: '#6C757D' },
-            { label: 'Estadías totales', value: stays.length.toString(), sub: `${stays.filter(s=>!s.checked_out_at).length} activas al cierre`, color: '#059669' },
+            { label: 'Estadías totales', value: stays.length.toString(), sub: `${stays.filter(s=>!s.checked_out_at).length} activas al cierre`, color: A },
           ].map(k => (
             <div key={k.label} style={{ background: '#fff', border: `1px solid #e9ecef`, borderTop: `4px solid ${k.color}`, borderRadius: 8, padding: '12px 14px' }}>
               <div style={{ fontSize: 22, fontWeight: 700, color: N }}>{k.value}</div>
@@ -164,10 +164,10 @@ export default async function ReportePdfPage({
                 <div key={p.nombre} style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
                     <span style={{ fontWeight: 600, color: N, fontSize: 11 }}>{p.nombre}</span>
-                    <span style={{ fontSize: 11, color: G }}>{p.estadias} estadías · {p.usado}/{p.camasNoche} noches <strong style={{ color: p.pct>=80?'#059669':p.pct>=50?'#d97706':N }}>{p.pct}%</strong></span>
+                    <span style={{ fontSize: 11, color: G }}>{p.estadias} estadías · {p.usado}/{p.camasNoche} noches <strong style={{ color: p.pct>=70?N:A }}>{p.pct}%</strong></span>
                   </div>
                   <div style={{ height: 8, background: '#e9ecef', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${p.pct}%`, background: p.pct>=80?'#059669':p.pct>=50?'#f59e0b':N, borderRadius: 4 }} />
+                    <div style={{ height: '100%', width: `${p.pct}%`, background: p.pct>=70?N:A, borderRadius: 4 }} />
                   </div>
                 </div>
               ))}

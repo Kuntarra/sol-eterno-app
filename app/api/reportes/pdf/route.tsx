@@ -35,7 +35,7 @@ const s = StyleSheet.create({
   badge:      { fontSize: 7, padding: '1 5', borderRadius: 10 },
 })
 
-function barColor(pct: number) { return pct >= 80 ? '#059669' : pct >= 50 ? '#f59e0b' : N }
+function barColor(pct: number) { return pct >= 70 ? N : A }
 
 export async function GET(req: NextRequest) {
   const sp     = req.nextUrl.searchParams
@@ -153,7 +153,7 @@ export async function GET(req: NextRequest) {
             { label:'Noches-huésped',    val: nochesH.toLocaleString('es-CL'),      sub:`Suma de noches de todos los huéspedes`, color: N },
             { label:'Camas-noche disp.', val: camasNoche.toLocaleString('es-CL'),   sub:`${camasDisp} camas × ${diasPeriodo} días`, color: A },
             { label:'Camas-noche libres',val: camasLibres.toLocaleString('es-CL'),  sub:`${100-ocupPct}% sin ocupar`, color: G },
-            { label:'Estadías totales',  val: stays.length.toString(),              sub:`${stays.filter(s=>!s.checked_out_at).length} activas al cierre`, color:'#059669' },
+            { label:'Estadías totales',  val: stays.length.toString(),              sub:`${stays.filter(s=>!s.checked_out_at).length} activas al cierre`, color: A },
           ].map(k => (
             <View key={k.label} style={[s.kpiCard, { borderTopWidth: 3, borderTopColor: k.color }]}>
               <Text style={s.kpiVal}>{k.val}</Text>
@@ -229,7 +229,7 @@ export async function GET(req: NextRequest) {
                 <Text style={[s.td,{flex:1}]}>{fmt(stay.checked_in_at)}</Text>
                 <Text style={[s.td,{flex:1}]}>{stay.checked_out_at?fmt(stay.checked_out_at):'—'}</Text>
                 <Text style={[s.tdBold,{flex:0.7,textAlign:'right'}]}>{n}</Text>
-                <Text style={[s.td,{flex:0.9,color:stay.checked_out_at?G:'#059669'}]}>{stay.checked_out_at?'Completada':'Activa'}</Text>
+                <Text style={[s.td,{flex:0.9,color:stay.checked_out_at?G:A}]}>{stay.checked_out_at?'Completada':'Activa'}</Text>
               </View>
             )
           })}
