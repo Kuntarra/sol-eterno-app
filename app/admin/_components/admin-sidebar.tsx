@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
-import { BrandLogo } from '@/app/_components/brand-logo'
 import { MobileBrand } from '@/app/_components/mobile-brand'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X } from 'lucide-react'
 
 const NAV_GROUPS = [
   {
@@ -94,9 +94,7 @@ function SidebarContent({ fullName, onClose }: { fullName: string; onClose?: () 
                      text-[13px] font-bold transition-all duration-150
                      shadow-[0_4px_12px_rgb(224_163_58/0.35)] hover:shadow-[0_6px_18px_rgb(224_163_58/0.45)]
                      hover:-translate-y-px">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
+          <Plus size={15} strokeWidth={2.5} />
           Nueva propiedad
         </a>
       </div>
@@ -119,9 +117,7 @@ function SidebarContent({ fullName, onClose }: { fullName: string; onClose?: () 
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl
                        text-white/50 hover:text-white hover:bg-white/6
                        text-xs font-medium transition-all">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
+            <LogOut size={14} strokeWidth={2} />
             Cerrar sesión
           </button>
         </form>
@@ -146,9 +142,7 @@ export function AdminSidebar({ fullName }: { fullName: string }) {
         <div className="flex-1 min-w-0" />
         <button onClick={() => setOpen(true)}
           className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/8 rounded-lg transition-all">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
+          <Menu size={18} strokeWidth={2.25} />
         </button>
       </div>
 
@@ -159,9 +153,7 @@ export function AdminSidebar({ fullName }: { fullName: string }) {
           <div className="absolute top-4 right-4">
             <button onClick={() => setOpen(false)}
               className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-white/40 hover:text-white hover:bg-white/8 transition-all">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M18 6 6 18M6 6l12 12"/>
-              </svg>
+              <X size={16} strokeWidth={2.25} />
             </button>
           </div>
           <SidebarContent fullName={fullName} onClose={() => setOpen(false)} />
@@ -202,9 +194,7 @@ function BottomNav({ onOpenDrawer }: { onOpenDrawer: () => void }) {
         })}
         <button onClick={onOpenDrawer}
           className="flex-1 flex flex-col items-center gap-1 py-3 text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
+          <Menu size={20} strokeWidth={2} />
           <span className="text-[11px] font-medium leading-tight">Más</span>
         </button>
       </div>
@@ -212,10 +202,11 @@ function BottomNav({ onOpenDrawer }: { onOpenDrawer: () => void }) {
   )
 }
 
-/* ── Iconos ── */
-function DashIcon()  { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> }
-function StayIcon()  { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> }
-function ChartIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> }
-function BuildIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21v-6h6v6"/></svg> }
-function BriefIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> }
-function UserIcon()  { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> }
+/* ── Iconos (Lucide, set consistente) ── */
+const ICON = { size: 18, strokeWidth: 1.75 } as const
+function DashIcon()  { return <LayoutGrid {...ICON} /> }
+function StayIcon()  { return <CalendarDays {...ICON} /> }
+function ChartIcon() { return <BarChart3 {...ICON} /> }
+function BuildIcon() { return <Building2 {...ICON} /> }
+function BriefIcon() { return <Briefcase {...ICON} /> }
+function UserIcon()  { return <Users {...ICON} /> }
