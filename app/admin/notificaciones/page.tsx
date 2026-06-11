@@ -1,8 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { addRecipient, toggleRecipient, deleteRecipient, sendTestNow } from '@/app/actions/digest'
-import { Mail, Send, Trash2, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { toggleSubscription, deleteSubscription, sendTestSubscription } from '@/app/actions/digest'
+import { SubscriptionForm } from './_components/subscription-form'
+import { Clock, Send, Trash2, AlertTriangle, CheckCircle2, Mail } from 'lucide-react'
 
 export const metadata = { title: 'Notificaciones · Sol Eterno' }
+
+const WD: Record<number, string> = { 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb', 7: 'Dom' }
 
 export default async function NotificacionesPage({
   searchParams,
@@ -11,20 +14,36 @@ export default async function NotificacionesPage({
 }) {
   const { ok, error } = await searchParams
   const supabase = await createClient()
-  const { data: recipients, error: dbError } = await supabase
-    .from('digest_recipients')
-    .select('id, email, name, active, created_at')
-    .order('created_at', { ascending: true })
+
+  const [{ data: subs, error: dbError }, { data: companies }, { data: properties }] = await Promise.all([
+    supabase.from('report_subscriptions').select('*').order('created_at', { ascending: true }),
+    supabase.from('companies').select('id, name').eq('active', true).order('name'),
+    supabase.from('properties').select('id, name').eq('active', true).order('name'),
+  ])
+
+  const companyName = new Map((companies ?? []).map(c => [c.id, c.name]))
+  const propName = new Map((properties ?? []).map(p => [p.id, p.name]))
+
+  const scopeLabel = (s: any) =>
+    s.scope_type === 'company' ? (companyName.get(s.company_id) ?? 'Empresa')
+    : s.scope_type === 'property' ? (s.property_ids ?? []).map((id: string) => propName.get(id) ?? '—').join(', ')
+    : 'Toda la operación'
+
+  const freqLabel = (s: any) => {
+    const hora = `${String(s.send_hour).padStart(2, '0')}:00`
+    if (s.frequency === 'weekly') return `Semanal · ${(s.weekdays ?? []).map((d: number) => WD[d]).join(', ')} · ${hora}`
+    if (s.frequency === 'monthly') return `Mensual · día ${s.monthday} · ${hora}`
+    return `Diario · ${hora}`
+  }
 
   return (
     <div className="px-8 py-8 max-w-3xl">
       <span className="section-label">Configuración</span>
       <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-[-0.01em]">
-        Resumen diario por correo
+        Reportes por correo
       </h1>
-      <p className="text-sm text-[var(--gray-600)] mt-1 flex items-center gap-1.5">
-        <Clock size={14} strokeWidth={1.75} />
-        Se envía automáticamente cada día a las <strong className="text-[var(--navy)]">8:00 AM</strong> con los check-in y check-out del día anterior.
+      <p className="text-sm text-[var(--gray-600)] mt-1">
+        Programa envíos automáticos de movimientos (check-in / check-out) por destinatario, alcance y horario.
       </p>
 
       {ok && (
@@ -39,75 +58,67 @@ export default async function NotificacionesPage({
       )}
 
       {dbError ? (
-        <div className="mt-6 bg-white rounded-2xl border border-amber-200 bg-amber-50/40 p-6">
-          <p className="text-sm font-semibold text-[var(--navy)] mb-1">Falta crear la tabla de destinatarios</p>
+        <div className="mt-6 bg-amber-50/40 rounded-2xl border border-amber-200 p-6">
+          <p className="text-sm font-semibold text-[var(--navy)] mb-1">Falta crear la tabla de suscripciones</p>
           <p className="text-xs text-[var(--gray-600)]">
-            Ejecuta el script <code className="font-mono bg-[var(--gray-100)] px-1.5 py-0.5 rounded">supabase/add-digest-recipients.sql</code> en el editor SQL de Supabase y recarga.
+            Ejecuta <code className="font-mono bg-[var(--gray-100)] px-1.5 py-0.5 rounded">supabase/add-report-subscriptions.sql</code> en el editor SQL de Supabase y recarga.
           </p>
         </div>
       ) : (
         <>
-          {/* Enviar prueba */}
-          <div className="mt-6 bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-[var(--navy)]">Enviar prueba ahora</p>
-              <p className="text-xs text-[var(--gray-600)] mt-0.5">Envía el resumen de ayer a todos los destinatarios activos para verificar la configuración.</p>
-            </div>
-            <form action={sendTestNow}>
-              <button type="submit" className="btn-primary shrink-0">
-                <Send size={15} strokeWidth={2} />
-                Enviar prueba
-              </button>
-            </form>
-          </div>
-
-          {/* Agregar destinatario */}
-          <div className="mt-4 bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5">
-            <p className="text-sm font-semibold text-[var(--navy)] mb-3">Agregar destinatario</p>
-            <form action={addRecipient} className="flex flex-col sm:flex-row gap-3">
-              <input name="email" type="email" required placeholder="correo@empresa.cl" className="input-premium flex-1" />
-              <input name="name" type="text" placeholder="Nombre (opcional)" className="input-premium flex-1" />
-              <button type="submit" className="btn-primary shrink-0">
-                <Mail size={15} strokeWidth={2} />
-                Agregar
-              </button>
-            </form>
+          {/* Nueva suscripción */}
+          <div className="mt-6 bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6">
+            <p className="text-sm font-semibold text-[var(--navy)] mb-4">Nueva suscripción</p>
+            <SubscriptionForm
+              companies={(companies ?? []).map(c => ({ id: c.id, name: c.name }))}
+              properties={(properties ?? []).map(p => ({ id: p.id, name: p.name }))}
+            />
           </div>
 
           {/* Lista */}
-          <div className="mt-4">
+          <div className="mt-6">
             <div className="flex items-center gap-2 mb-3">
-              <span className="section-label !mb-0">Destinatarios</span>
-              <span className="text-xs text-[var(--gray-500)] bg-[var(--gray-100)] px-2 py-0.5 rounded-full font-medium">{recipients?.length ?? 0}</span>
+              <span className="section-label !mb-0">Suscripciones</span>
+              <span className="text-xs text-[var(--gray-500)] bg-[var(--gray-100)] px-2 py-0.5 rounded-full font-medium">{subs?.length ?? 0}</span>
             </div>
 
-            {!recipients?.length ? (
+            {!subs?.length ? (
               <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-10 text-center text-sm text-[var(--gray-500)]">
-                Aún no hay destinatarios. Agrega el primero arriba.
+                Aún no hay suscripciones. Crea la primera arriba.
               </div>
             ) : (
               <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-sm)] divide-y divide-[var(--gray-100)]">
-                {recipients.map(r => (
-                  <div key={r.id} className="flex items-center gap-3 px-5 py-3.5">
+                {subs.map((s: any) => (
+                  <div key={s.id} className="flex items-center gap-3 px-5 py-4">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: 'rgb(224 163 58 / 0.12)', color: 'var(--amber-dark)' }}>
                       <Mail size={15} strokeWidth={1.75} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-[var(--navy)] truncate">{r.email}</p>
-                      {r.name && <p className="text-xs text-[var(--gray-500)] truncate">{r.name}</p>}
+                      <p className="text-sm font-semibold text-[var(--navy)] truncate">
+                        {s.email}{s.name ? <span className="text-[var(--gray-500)] font-normal"> · {s.name}</span> : null}
+                      </p>
+                      <p className="text-xs text-[var(--gray-500)] truncate">{scopeLabel(s)}</p>
+                      <p className="text-[11px] text-[var(--gray-400)] mt-0.5 flex items-center gap-1">
+                        <Clock size={11} strokeWidth={1.75} />{freqLabel(s)}
+                      </p>
                     </div>
-                    <form action={toggleRecipient.bind(null, r.id, !r.active)}>
-                      <button type="submit"
-                        className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
-                          r.active ? 'badge badge-green' : 'badge badge-gray'
-                        }`}
-                        title={r.active ? 'Activo · clic para pausar' : 'Pausado · clic para activar'}>
-                        {r.active ? 'Activo' : 'Pausado'}
+
+                    <form action={sendTestSubscription.bind(null, s.id)}>
+                      <button type="submit" title="Enviar prueba ahora"
+                        className="text-[var(--gray-500)] hover:text-[var(--navy)] transition-colors p-1.5 rounded-lg hover:bg-[var(--gray-50)]">
+                        <Send size={15} strokeWidth={1.75} />
                       </button>
                     </form>
-                    <form action={deleteRecipient.bind(null, r.id)}>
-                      <button type="submit" className="text-[var(--gray-400)] hover:text-red-600 transition-colors p-1" title="Eliminar" aria-label="Eliminar destinatario">
+                    <form action={toggleSubscription.bind(null, s.id, !s.active)}>
+                      <button type="submit"
+                        className={`text-xs font-semibold px-2.5 py-1 rounded-full ${s.active ? 'badge badge-green' : 'badge badge-gray'}`}
+                        title={s.active ? 'Activa · clic para pausar' : 'Pausada · clic para activar'}>
+                        {s.active ? 'Activa' : 'Pausada'}
+                      </button>
+                    </form>
+                    <form action={deleteSubscription.bind(null, s.id)}>
+                      <button type="submit" className="text-[var(--gray-400)] hover:text-red-600 transition-colors p-1" title="Eliminar" aria-label="Eliminar">
                         <Trash2 size={15} strokeWidth={1.75} />
                       </button>
                     </form>
