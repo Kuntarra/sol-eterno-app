@@ -7,9 +7,11 @@ create table if not exists public.report_subscriptions (
   id            uuid primary key default uuid_generate_v4(),
   email         text not null,
   name          text,
-  scope_type    text not null default 'all',     -- 'all' | 'company' | 'property'
+  scope_type    text not null default 'all',     -- 'all' | 'company' | 'property' | 'project'
   company_id    uuid references public.companies(id) on delete set null,
   property_ids  uuid[],                            -- usado cuando scope_type='property'
+  project_id    uuid references public.projects(id) on delete set null,  -- scope_type='project'
+  report_type   text not null default 'movements', -- 'movements' | 'full'
   frequency     text not null default 'daily',    -- 'daily' | 'weekly' | 'monthly'
   weekdays      int[],                             -- semanal: ISO 1=Lun … 7=Dom
   monthday      int,                               -- mensual: 1..28
@@ -18,6 +20,10 @@ create table if not exists public.report_subscriptions (
   last_sent_at  timestamptz,
   created_at    timestamptz default now()
 );
+
+-- Si la tabla ya existía sin estas columnas, agrégalas:
+alter table public.report_subscriptions add column if not exists project_id uuid references public.projects(id) on delete set null;
+alter table public.report_subscriptions add column if not exists report_type text not null default 'movements';
 
 alter table public.report_subscriptions enable row level security;
 

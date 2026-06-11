@@ -25,7 +25,9 @@ export async function addSubscription(formData: FormData) {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) back('error=' + encodeURIComponent('Correo inválido.'))
 
   const scope_type = (formData.get('scope_type') as string) || 'all'
+  const report_type = (formData.get('report_type') as string) === 'full' ? 'full' : 'movements'
   const company_id = scope_type === 'company' ? ((formData.get('company_id') as string) || null) : null
+  const project_id = scope_type === 'project' ? ((formData.get('project_id') as string) || null) : null
   const property_ids = scope_type === 'property' ? (formData.getAll('property_ids') as string[]) : null
   const frequency = (formData.get('frequency') as string) || 'daily'
   const weekdays = frequency === 'weekly' ? (formData.getAll('weekdays') as string[]).map(Number) : null
@@ -33,11 +35,12 @@ export async function addSubscription(formData: FormData) {
   const send_hour = Number(formData.get('send_hour') || 8)
 
   if (scope_type === 'company' && !company_id) back('error=' + encodeURIComponent('Selecciona una empresa.'))
+  if (scope_type === 'project' && !project_id) back('error=' + encodeURIComponent('Selecciona un proyecto.'))
   if (scope_type === 'property' && (!property_ids || property_ids.length === 0)) back('error=' + encodeURIComponent('Selecciona al menos una propiedad.'))
   if (frequency === 'weekly' && (!weekdays || weekdays.length === 0)) back('error=' + encodeURIComponent('Selecciona al menos un día de la semana.'))
 
   const { error } = await supabase.from('report_subscriptions').insert({
-    email, name, scope_type, company_id, property_ids, frequency, weekdays, monthday, send_hour,
+    email, name, scope_type, report_type, company_id, project_id, property_ids, frequency, weekdays, monthday, send_hour,
   })
   if (error) back('error=' + encodeURIComponent(error.message))
   revalidatePath('/admin/notificaciones')

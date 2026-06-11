@@ -15,17 +15,20 @@ export default async function NotificacionesPage({
   const { ok, error } = await searchParams
   const supabase = await createClient()
 
-  const [{ data: subs, error: dbError }, { data: companies }, { data: properties }] = await Promise.all([
+  const [{ data: subs, error: dbError }, { data: companies }, { data: properties }, { data: projects }] = await Promise.all([
     supabase.from('report_subscriptions').select('*').order('created_at', { ascending: true }),
     supabase.from('companies').select('id, name').eq('active', true).order('name'),
     supabase.from('properties').select('id, name').eq('active', true).order('name'),
+    supabase.from('projects').select('id, name, companies(name)').eq('active', true).order('name'),
   ])
 
   const companyName = new Map((companies ?? []).map(c => [c.id, c.name]))
   const propName = new Map((properties ?? []).map(p => [p.id, p.name]))
+  const projectName = new Map((projects ?? []).map((p: any) => [p.id, p.name]))
 
   const scopeLabel = (s: any) =>
-    s.scope_type === 'company' ? (companyName.get(s.company_id) ?? 'Empresa')
+    s.scope_type === 'project' ? `Proyecto: ${projectName.get(s.project_id) ?? '—'}`
+    : s.scope_type === 'company' ? `Empresa: ${companyName.get(s.company_id) ?? '—'}`
     : s.scope_type === 'property' ? (s.property_ids ?? []).map((id: string) => propName.get(id) ?? '—').join(', ')
     : 'Toda la operación'
 
@@ -72,6 +75,7 @@ export default async function NotificacionesPage({
             <SubscriptionForm
               companies={(companies ?? []).map(c => ({ id: c.id, name: c.name }))}
               properties={(properties ?? []).map(p => ({ id: p.id, name: p.name }))}
+              projects={(projects ?? []).map((p: any) => ({ id: p.id, name: p.name, company: (p.companies as any)?.name ?? '' }))}
             />
           </div>
 
@@ -98,7 +102,9 @@ export default async function NotificacionesPage({
                       <p className="text-sm font-semibold text-[var(--navy)] truncate">
                         {s.email}{s.name ? <span className="text-[var(--gray-500)] font-normal"> · {s.name}</span> : null}
                       </p>
-                      <p className="text-xs text-[var(--gray-500)] truncate">{scopeLabel(s)}</p>
+                      <p className="text-xs text-[var(--gray-500)] truncate">
+                        {scopeLabel(s)} · <span className="text-[var(--amber-dark)] font-medium">{s.report_type === 'full' ? 'Completo' : 'Movimientos'}</span>
+                      </p>
                       <p className="text-[11px] text-[var(--gray-400)] mt-0.5 flex items-center gap-1">
                         <Clock size={11} strokeWidth={1.75} />{freqLabel(s)}
                       </p>

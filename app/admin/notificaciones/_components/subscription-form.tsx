@@ -11,13 +11,15 @@ const INPUT = 'input-premium'
 const LABEL = 'block text-sm font-semibold text-[var(--navy)] mb-1.5'
 
 export function SubscriptionForm({
-  companies, properties,
+  companies, properties, projects,
 }: {
   companies: { id: string; name: string }[]
   properties: { id: string; name: string }[]
+  projects: { id: string; name: string; company: string }[]
 }) {
-  const [scope, setScope] = useState<'all' | 'company' | 'property'>('all')
+  const [scope, setScope] = useState<'all' | 'company' | 'property' | 'project'>('all')
   const [freq, setFreq] = useState<'daily' | 'weekly' | 'monthly'>('daily')
+  const [reportType, setReportType] = useState<'movements' | 'full'>('movements')
 
   return (
     <form action={addSubscription} className="space-y-5">
@@ -33,18 +35,44 @@ export function SubscriptionForm({
         </div>
       </div>
 
+      {/* Tipo de reporte */}
+      <div>
+        <label className={LABEL}>Tipo de reporte</label>
+        <input type="hidden" name="report_type" value={reportType} />
+        <div className="flex gap-1.5 p-1 bg-[var(--gray-100)] rounded-lg w-fit">
+          {([['movements', 'Movimientos'], ['full', 'Completo (KPIs + ocupación)']] as const).map(([v, l]) => (
+            <button key={v} type="button" onClick={() => setReportType(v)}
+              className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                reportType === v ? 'bg-white text-[var(--navy)] shadow-[var(--shadow-xs)]' : 'text-[var(--gray-600)] hover:text-[var(--navy)]'
+              }`}>{l}</button>
+          ))}
+        </div>
+        <p className="text-xs text-[var(--gray-500)] mt-1.5">
+          {reportType === 'movements'
+            ? 'Solo check-in y check-out del período.'
+            : 'KPIs, ocupación actual por hostal (con listados) y movimientos del período.'}
+        </p>
+      </div>
+
       {/* Alcance */}
       <div>
         <label className={LABEL}>¿Qué cubre este reporte?</label>
         <input type="hidden" name="scope_type" value={scope} />
         <div className="flex flex-wrap gap-1.5 p-1 bg-[var(--gray-100)] rounded-lg w-fit">
-          {([['all', 'Toda la operación'], ['company', 'Una empresa'], ['property', 'Propiedades']] as const).map(([v, l]) => (
+          {([['all', 'Toda la operación'], ['project', 'Un proyecto'], ['company', 'Una empresa'], ['property', 'Propiedades']] as const).map(([v, l]) => (
             <button key={v} type="button" onClick={() => setScope(v)}
               className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 scope === v ? 'bg-white text-[var(--navy)] shadow-[var(--shadow-xs)]' : 'text-[var(--gray-600)] hover:text-[var(--navy)]'
               }`}>{l}</button>
           ))}
         </div>
+
+        {scope === 'project' && (
+          <select name="project_id" className={`${INPUT} mt-3`} defaultValue="">
+            <option value="" disabled>Selecciona un proyecto…</option>
+            {projects.map(p => <option key={p.id} value={p.id}>{p.name} — {p.company}</option>)}
+          </select>
+        )}
 
         {scope === 'company' && (
           <select name="company_id" className={`${INPUT} mt-3`} defaultValue="">
