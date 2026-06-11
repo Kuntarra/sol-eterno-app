@@ -17,7 +17,7 @@ export function SubscriptionForm({
   properties: { id: string; name: string }[]
   projects: { id: string; name: string; company: string }[]
 }) {
-  const [scope, setScope] = useState<'all' | 'company' | 'property' | 'project'>('all')
+  const [scope, setScope] = useState<'all' | 'company' | 'property' | 'project' | 'each_project'>('all')
   const [freq, setFreq] = useState<'daily' | 'weekly' | 'monthly'>('daily')
   const [reportType, setReportType] = useState<'movements' | 'full'>('movements')
 
@@ -59,13 +59,18 @@ export function SubscriptionForm({
         <label className={LABEL}>¿Qué cubre este reporte?</label>
         <input type="hidden" name="scope_type" value={scope} />
         <div className="flex flex-wrap gap-1.5 p-1 bg-[var(--gray-100)] rounded-lg w-fit">
-          {([['all', 'Toda la operación'], ['project', 'Un proyecto'], ['company', 'Una empresa'], ['property', 'Propiedades']] as const).map(([v, l]) => (
+          {([['all', 'Toda la operación'], ['each_project', 'Cada proyecto'], ['project', 'Un proyecto'], ['company', 'Una empresa'], ['property', 'Propiedades']] as const).map(([v, l]) => (
             <button key={v} type="button" onClick={() => setScope(v)}
               className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 scope === v ? 'bg-white text-[var(--navy)] shadow-[var(--shadow-xs)]' : 'text-[var(--gray-600)] hover:text-[var(--navy)]'
               }`}>{l}</button>
           ))}
         </div>
+        {scope === 'each_project' && (
+          <p className="text-xs text-[var(--gray-500)] mt-2">
+            Envía <strong>un correo por cada proyecto activo</strong> (3 proyectos → 3 correos), cada uno con el reporte de ese proyecto. Ideal para administración.
+          </p>
+        )}
 
         {scope === 'project' && (
           <select name="project_id" className={`${INPUT} mt-3`} defaultValue="">

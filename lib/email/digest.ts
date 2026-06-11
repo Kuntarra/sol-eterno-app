@@ -5,7 +5,7 @@ const TZ = 'America/Santiago'
 const NAVY = '#0A2C4A', GOLD = '#E0A33A', INK = '#16242F', MUTED = '#6E6E68', LINE = '#E8E3D9', CREAM = '#F5F2EC'
 
 export type Scope = {
-  scope_type: 'all' | 'company' | 'property' | 'project'
+  scope_type: 'all' | 'company' | 'property' | 'project' | 'each_project'
   company_id?: string | null
   property_ids?: string[] | null
   project_id?: string | null
@@ -290,6 +290,20 @@ const FROM = process.env.DIGEST_FROM || 'Sol Eterno <onboarding@resend.dev>'
 export async function sendSubscription(sub: Subscription, opts?: { test?: boolean; ref?: Date }): Promise<{ ok: boolean; reason?: string }> {
   const r = resend()
   if (!r) return { ok: false, reason: 'Falta RESEND_API_KEY' }
+
+  // Fan-out: una suscripción "cada proyecto" → un correo por proyecto activo.
+  if (sub.scope_type === 'each_project') {
+    const admin = createAdminClient()
+    const { data: projects } = await admin.from('projects').select('id').eq('active', true).order('name')
+    if (!projects?.length) return { ok: false, reason: 'No hay proyectos activos' }
+    let okAll = true
+    let lastReason: string | undefined
+    for (const p of projects) {
+      const res = await sendSubscription({ ...sub, scope_type: 'project', project_id: p.id }, opts)
+      if (!res.ok) { okAll = false; lastReason = res.reason }
+    }
+    return okAll ? { ok: true } : { ok: false, reason: lastReason }
+  }
 
   const freq = opts?.test ? sub.frequency : sub.frequency
   const data = await getDigestData(sub, freq, opts?.ref)

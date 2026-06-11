@@ -27,7 +27,8 @@ export default async function NotificacionesPage({
   const projectName = new Map((projects ?? []).map((p: any) => [p.id, p.name]))
 
   const scopeLabel = (s: any) =>
-    s.scope_type === 'project' ? `Proyecto: ${projectName.get(s.project_id) ?? '—'}`
+    s.scope_type === 'each_project' ? 'Cada proyecto (un correo c/u)'
+    : s.scope_type === 'project' ? `Proyecto: ${projectName.get(s.project_id) ?? '—'}`
     : s.scope_type === 'company' ? `Empresa: ${companyName.get(s.company_id) ?? '—'}`
     : s.scope_type === 'property' ? (s.property_ids ?? []).map((id: string) => propName.get(id) ?? '—').join(', ')
     : 'Toda la operación'
