@@ -3,6 +3,7 @@ import { getEffectiveUserId } from '@/lib/effective-user'
 import Link from 'next/link'
 import { CheckoutButton } from '../_components/checkout-button'
 import { RecepcionSearchBar } from '../_components/search-bar'
+import { Phone, Clock } from 'lucide-react'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString('es-CL', {
@@ -197,9 +198,7 @@ export default async function CheckoutPage({
                       )}
                       {guest?.phone && (
                         <span className="text-[11px] text-[var(--gray-500)] flex items-center gap-1">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-                          </svg>
+                          <Phone size={11} strokeWidth={2} />
                           {guest.phone}
                         </span>
                       )}
@@ -212,9 +211,7 @@ export default async function CheckoutPage({
 
                 <div className={`px-5 py-3 border-t flex items-center justify-between gap-3 ${isOverdue ? 'border-red-100 bg-red-50/60' : 'border-[var(--gray-100)] bg-[var(--gray-50)]'}`}>
                   <div className="flex items-center gap-1.5 text-[11px] text-[var(--gray-500)]">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                    </svg>
+                    <Clock size={12} strokeWidth={2} />
                     {formatDate(stay.checked_in_at)} · {daysAgo(stay.checked_in_at)}
                     {stay.estimated_checkout && (
                       <span className="ml-1">· Salida: {new Date(stay.estimated_checkout).toLocaleDateString('es-CL')}</span>

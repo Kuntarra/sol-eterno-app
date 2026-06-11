@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { Lock, Check } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -34,10 +35,7 @@ export default function ForgotPasswordPage() {
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--navy)] mb-4 shadow-lg">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
+            <Lock size={26} strokeWidth={1.75} stroke="var(--amber)" />
           </div>
           <h1 className="text-2xl font-bold text-[var(--navy)]">Recuperar contraseña</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">Sol Eterno</p>
@@ -47,9 +45,7 @@ export default function ForgotPasswordPage() {
           {sent ? (
             <div className="text-center">
               <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6L9 17l-5-5"/>
-                </svg>
+                <Check size={24} strokeWidth={2} stroke="#059669" />
               </div>
               <p className="text-sm font-semibold text-[var(--navy)] mb-2">Correo enviado</p>
               <p className="text-sm text-[var(--gray-600)] mb-6">

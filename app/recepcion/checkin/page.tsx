@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user'
 import Link from 'next/link'
 import { CheckinForm } from '../_components/checkin-form'
+import { AlertCircle } from 'lucide-react'
 
 export default async function CheckinPage({
   searchParams,
@@ -81,9 +82,7 @@ export default async function CheckinPage({
           <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
         </div>
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
-          <svg className="mx-auto mb-4" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
+          <AlertCircle className="mx-auto mb-4" size={40} strokeWidth={1.5} stroke="#d97706" />
           <p className="text-sm font-semibold text-amber-800 mb-1">Sin propiedades asignadas</p>
           <p className="text-sm text-amber-700">
             Tu cuenta no tiene propiedades asignadas. Contacta al administrador para que configure tu acceso en

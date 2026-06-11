@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
+import { Loader2, Download } from 'lucide-react'
 
 export function PrintButton() {
   const searchParams = useSearchParams()
@@ -36,17 +37,9 @@ export function PrintButton() {
       disabled={loading}
       className="no-print flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-60"
     >
-      {loading ? (
-        <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-        </svg>
-      ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      )}
+      {loading
+        ? <Loader2 size={16} strokeWidth={2} className="animate-spin" />
+        : <Download size={16} strokeWidth={2} />}
       {loading ? 'Generando PDF…' : 'Descargar PDF'}
     </button>
   )

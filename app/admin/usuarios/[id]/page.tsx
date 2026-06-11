@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { ArrowLeft } from "lucide-react"
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { updateReceptionistProperties, deleteUser } from '@/app/actions/users'
@@ -35,9 +36,7 @@ export default async function UsuarioDetailPage({ params, searchParams }: Props)
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/admin/usuarios" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 5l-7 7 7 7" />
-            </svg>
+            <ArrowLeft size={18} strokeWidth={2} />
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-[var(--navy)]">{profile.full_name ?? '—'}</h1>

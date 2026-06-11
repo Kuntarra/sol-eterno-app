@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { City, Property, PropertyType, PROPERTY_TYPE_LABELS, SERVICES_BY_TYPE, Services } from '@/lib/types'
 import { PropertyIcon } from '@/app/admin/_components/property-icon'
+import { Check } from 'lucide-react'
 
 interface Props {
   action: (formData: FormData) => Promise<void>
@@ -124,9 +125,7 @@ export function PropertyForm({ action, cities, property, cancelHref, submitLabel
                 <div key={svc.key} className="flex items-center gap-3 px-4 py-3 bg-[var(--gray-50)] rounded-lg">
                   <input type="hidden" name={svc.key} value="on" />
                   <div className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center shrink-0">
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <Check size={11} strokeWidth={2.5} className="text-white" />
                   </div>
                   <span className="text-sm text-[var(--gray-900)]">{svc.label}</span>
                   <span className="ml-auto text-xs text-emerald-600 font-medium">Siempre incluido</span>

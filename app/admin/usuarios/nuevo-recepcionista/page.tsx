@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { ArrowLeft } from "lucide-react"
 import { createReceptionist } from '@/app/actions/users'
 import Link from 'next/link'
 
@@ -23,9 +24,7 @@ export default async function NuevoRecepcionistaPage({ searchParams }: Props) {
     <div className="p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-8">
         <Link href="/admin/usuarios" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
+          <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-[var(--navy)]">Nuevo recepcionista</h1>
