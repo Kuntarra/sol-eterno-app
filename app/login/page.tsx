@@ -118,9 +118,15 @@ export default async function LoginPage({ searchParams }: Props) {
           <LoginForm error={error} />
 
           {/* Footer */}
-          <p className="text-center text-xs text-[var(--gray-500)] mt-6">
-            © {new Date().getFullYear()} Sol Eterno · Gestión de Alojamientos
-          </p>
+          <div className="mt-6 text-center">
+            <div className="flex items-center justify-center gap-5 text-xs">
+              <a href="/terminos" className="text-[var(--gray-500)] hover:text-[var(--navy)] transition-colors">Términos</a>
+              <a href="/privacidad" className="text-[var(--gray-500)] hover:text-[var(--navy)] transition-colors">Privacidad</a>
+            </div>
+            <p className="text-xs text-[var(--gray-500)] mt-3">
+              © {new Date().getFullYear()} Sol Eterno · Gestión de Alojamientos
+            </p>
+          </div>
         </div>
       </div>
 

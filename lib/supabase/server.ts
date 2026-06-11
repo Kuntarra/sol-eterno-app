@@ -14,9 +14,14 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
+            const sessionOnly = cookieStore.get('se_remember')?.value === '0'
+            cookiesToSet.forEach(({ name, value, options }) => {
+              const opts =
+                sessionOnly && name.startsWith('sb-')
+                  ? { ...options, maxAge: undefined, expires: undefined }
+                  : options
+              cookieStore.set(name, value, opts)
+            })
           } catch {
             // En Server Components las cookies son de solo lectura; el middleware las actualiza
           }

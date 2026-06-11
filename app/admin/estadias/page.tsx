@@ -160,13 +160,13 @@ export default async function EstadiasPage({
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <Link href="/admin/reportes"
+          <a href={`/api/estadias/export?filter=${filter}${q ? `&q=${encodeURIComponent(q)}` : ''}`}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--gray-200)]
                        bg-white text-[var(--gray-600)] text-xs font-semibold hover:border-[var(--navy)]/30
                        hover:text-[var(--navy)] transition-all">
             <Download size={13} strokeWidth={2} />
-            Exportar
-          </Link>
+            Exportar CSV
+          </a>
         </div>
 
         {q && (

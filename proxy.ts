@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/login', '/forgot-password', '/reset-password']
+const PUBLIC_ROUTES = ['/login', '/forgot-password', '/reset-password', '/terminos', '/privacidad']
 
 const ROLE_HOME: Record<string, string> = {
   admin: '/admin',
@@ -21,13 +21,18 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
+          const sessionOnly = request.cookies.get('se_remember')?.value === '0'
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
           supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const opts =
+              sessionOnly && name.startsWith('sb-')
+                ? { ...options, maxAge: undefined, expires: undefined }
+                : options
+            supabaseResponse.cookies.set(name, value, opts)
+          })
         },
       },
     }
