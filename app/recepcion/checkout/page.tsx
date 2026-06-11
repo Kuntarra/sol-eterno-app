@@ -103,7 +103,7 @@ export default async function CheckoutPage({
       {/* ── Header premium ── */}
       <div className="mb-6">
         <span className="section-label">Recepción</span>
-        <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Check-out</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Check-out</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">
           {stays.length} huésped{stays.length !== 1 ? 'es' : ''} pendiente{stays.length !== 1 ? 's' : ''}
           {q && <span className="ml-1 text-[var(--navy)] font-medium">· "{q}"</span>}

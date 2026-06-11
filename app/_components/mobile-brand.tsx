@@ -12,7 +12,7 @@ export function MobileBrand({ subtitle }: MobileBrandProps) {
       <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/Logo símbolo.jpg"
+          src="/logo-simbolo.png"
           alt="Sol Eterno"
           className="w-8 h-8 object-contain"
         />
@@ -20,7 +20,7 @@ export function MobileBrand({ subtitle }: MobileBrandProps) {
 
       {/* Nombre */}
       <div className="min-w-0">
-        <p className="text-white text-sm font-bold leading-tight tracking-tight">Sol Eterno</p>
+        <p className="text-white font-display font-semibold text-sm leading-tight tracking-tight">Sol Eterno</p>
         {subtitle && (
           <p className="text-white/45 text-[10px] leading-tight truncate max-w-[140px]">{subtitle}</p>
         )}

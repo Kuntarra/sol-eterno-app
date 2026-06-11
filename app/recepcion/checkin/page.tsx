@@ -78,7 +78,7 @@ export default async function CheckinPage({
       <div>
         <div className="mb-6">
           <span className="section-label">Recepción</span>
-          <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
         </div>
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
           <svg className="mx-auto mb-4" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -99,7 +99,7 @@ export default async function CheckinPage({
       <div>
         <div className="mb-6">
           <span className="section-label">Recepción</span>
-          <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
         </div>
         <div className="bg-[var(--gray-50)] border border-[var(--gray-200)] rounded-2xl p-8 text-center">
           <p className="text-sm font-semibold text-[var(--navy)] mb-1">Sin habitaciones configuradas</p>
@@ -116,7 +116,7 @@ export default async function CheckinPage({
     <div>
       <div className="mb-6">
         <span className="section-label">Recepción</span>
-        <h1 className="text-[1.75rem] font-bold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">Registrar ingreso de huésped</p>
       </div>
       <CheckinForm properties={properties} error={params.error} />
