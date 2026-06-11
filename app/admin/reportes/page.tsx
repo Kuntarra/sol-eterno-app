@@ -228,9 +228,9 @@ export default async function ReportesPage({
             <p className="text-xs font-semibold text-[var(--gray-600)] uppercase tracking-widest mb-4">Ocupación del período</p>
             <div className="relative w-36 h-36">
               <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" strokeWidth="10"/>
+                <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" strokeWidth="10"/>
                 <circle cx="60" cy="60" r="54" fill="none"
-                  stroke={ocupacionPct >= 80 ? '#059669' : ocupacionPct >= 50 ? '#f59e0b' : '#3b82f6'}
+                  stroke={ocupacionPct >= 70 ? '#0A2C4A' : '#E0A33A'}
                   strokeWidth="10" strokeLinecap="round"
                   strokeDasharray={`${dash} ${circ}`}
                 />
@@ -247,7 +247,7 @@ export default async function ReportesPage({
               </div>
               <div className="flex justify-between">
                 <span>Camas-{periodo === 'anual' ? 'año' : 'mes'} usadas</span>
-                <span className="font-semibold text-emerald-600">{nochesHuesped.toLocaleString('es-CL')}</span>
+                <span className="font-semibold text-[var(--amber-dark)]">{nochesHuesped.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between">
                 <span>Camas-{periodo === 'anual' ? 'año' : 'mes'} sin usar</span>
@@ -280,13 +280,13 @@ export default async function ReportesPage({
                     <span className="text-sm font-medium text-[var(--navy)]">{p.nombre}</span>
                     <div className="flex items-center gap-4 text-xs text-[var(--gray-600)]">
                       <span>{p.estadias} estadías · {p.nochesUsadas} camas usadas / {p.camasNoche} disponibles</span>
-                      <span className={`font-bold text-base ${p.pct >= 80 ? 'text-emerald-600' : p.pct >= 50 ? 'text-amber-600' : 'text-[var(--navy)]'}`}>
+                      <span className={`font-bold text-base ${p.pct >= 70 ? 'text-[var(--navy)]' : 'text-[var(--amber-dark)]'}`}>
                         {p.pct}%
                       </span>
                     </div>
                   </div>
-                  <div className="h-3 bg-[var(--gray-100)] rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${p.pct >= 80 ? 'bg-emerald-500' : p.pct >= 50 ? 'bg-amber-400' : 'bg-[var(--navy)]'}`}
+                  <div className="h-3 bg-[var(--gray-200)] rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full ${p.pct >= 70 ? 'bg-[var(--navy)]' : 'bg-[var(--amber)]'}`}
                       style={{ width: `${p.pct}%` }} />
                   </div>
                 </div>
@@ -426,13 +426,13 @@ function MetricCard({ icon, label, value, sub, accent }: {
 }) {
   const border  = accent==='navy'  ? 'border-t-[var(--navy)]'   :
                   accent==='amber' ? 'border-t-[var(--amber)]'  :
-                  accent==='green' ? 'border-t-emerald-500'     : 'border-t-[var(--gray-300)]'
+                  accent==='green' ? 'border-t-[var(--navy-light)]' : 'border-t-[var(--gray-300)]'
   const iconBg  = accent==='navy'  ? 'bg-[var(--navy-5)] text-[var(--navy)]'  :
                   accent==='amber' ? 'bg-[var(--amber)]/10 text-[var(--amber-dark)]' :
-                  accent==='green' ? 'bg-emerald-50 text-emerald-600' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
+                  accent==='green' ? 'bg-[var(--navy-5)] text-[var(--navy-light)]' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
   const valColor= accent==='navy'  ? 'text-[var(--navy)]' :
                   accent==='amber' ? 'text-[var(--amber-dark)]' :
-                  accent==='green' ? 'text-emerald-600' : 'text-[var(--gray-700)]'
+                  accent==='green' ? 'text-[var(--navy-light)]' : 'text-[var(--gray-700)]'
   const display = Number.isInteger(value) ? value.toLocaleString('es-CL') : value.toFixed(1)
   return (
     <div className={`bg-white rounded-xl border border-[var(--gray-200)] border-t-4 ${border} p-5`}>

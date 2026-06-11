@@ -9,15 +9,16 @@
   --amber-dark:  #C2872A;
   --amber-light: #F2C879;
 
-  /* ── Escala de grises ─────────────────────────────────── */
-  --gray-50:     #F8F9FA;
-  --gray-100:    #F1F3F5;
-  --gray-200:    #E9ECEF;
-  --gray-300:    #DEE2E6;
-  --gray-500:    #ADB5BD;
-  --gray-600:    #6C757D;
-  --gray-700:    #495057;
-  --gray-900:    #212529;
+  /* ── Escala neutra cálida (alineada al crema del brochure) ─ */
+  --cream:       #F7F5F0;   /* --off del brochure */
+  --gray-50:     #FBFAF6;   /* superficies muy claras (inputs, thead) */
+  --gray-100:    #F5F2EC;   /* fondo de página — crema editorial */
+  --gray-200:    #E8E3D9;   /* hairline cálido (≈ --line #E4E0D8) */
+  --gray-300:    #DBD5C9;
+  --gray-500:    #A8A89F;   /* gris cálido neutro */
+  --gray-600:    #6E6E68;   /* ≈ --muted del brochure */
+  --gray-700:    #4A4E52;   /* ≈ --ink-soft */
+  --gray-900:    #16242F;   /* tinta navy cálida (--text del brochure) */
 
   /* ── Navy tints ──────────────────────────────────────── */
   --navy-5:  rgb(10 44 74 / 0.05);
@@ -106,9 +107,9 @@ a, button, [role="button"] {
   display: block;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--amber);
+  color: var(--amber-dark);
   margin-bottom: 5px;
 }
 

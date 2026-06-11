@@ -266,9 +266,9 @@ export default async function ClienteReportePage({
           </p>
           <div className="relative w-32 h-32">
             <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="8"/>
+              <circle cx="50" cy="50" r="45" fill="none" stroke="var(--gray-200)" strokeWidth="8"/>
               <circle cx="50" cy="50" r="45" fill="none"
-                stroke={ocupPct >= 80 ? '#059669' : ocupPct >= 50 ? '#f59e0b' : '#0A2C4A'}
+                stroke={ocupPct >= 70 ? '#0A2C4A' : '#E0A33A'}
                 strokeWidth="8" strokeLinecap="round"
                 strokeDasharray={`${dash} ${circ}`}/>
             </svg>
@@ -284,7 +284,7 @@ export default async function ClienteReportePage({
             </div>
             <div className="flex justify-between">
               <span>Camas usadas</span>
-              <span className="font-semibold text-emerald-600">{camasUsadas.toLocaleString('es-CL')}</span>
+              <span className="font-semibold text-[var(--amber-dark)]">{camasUsadas.toLocaleString('es-CL')}</span>
             </div>
             <div className="flex justify-between">
               <span>Camas sin usar</span>
@@ -297,7 +297,7 @@ export default async function ClienteReportePage({
           {[
             { label:'Camas usadas',      value: camasUsadas,   sub:`${camasDisp} camas × ${diasPeriodo} días = ${camasTotal.toLocaleString('es-CL')} disponibles`, border:'border-t-[var(--navy)]' },
             { label:'Camas sin usar',    value: camasLibres,   sub:`${100-ocupPct}% de capacidad libre`, border:'border-t-[var(--amber)]' },
-            { label:'Estadías del período', value: stays.length, sub:`${stays.filter(s=>!s.checked_out_at).length} activas al cierre`, border:'border-t-emerald-500' },
+            { label:'Estadías del período', value: stays.length, sub:`${stays.filter(s=>!s.checked_out_at).length} activas al cierre`, border:'border-t-[var(--navy-light)]' },
             { label:'Días del período',  value: diasPeriodo,   sub:tituloPeriodo, border:'border-t-[var(--gray-300)]' },
           ].map(k => (
             <div key={k.label} className={`bg-white rounded-xl border border-[var(--gray-200)] border-t-4 ${k.border} p-5`}>
@@ -320,13 +320,13 @@ export default async function ClienteReportePage({
                   <span className="text-sm font-medium text-[var(--navy)]">{p.nombre}</span>
                   <div className="flex items-center gap-4 text-xs text-[var(--gray-600)]">
                     <span>{p.estadias} estadías · {p.usadas} / {p.camas * diasPeriodo} camas-{periodo === 'anual' ? 'año' : 'mes'}</span>
-                    <span className={`font-bold text-base ${p.pct >= 80 ? 'text-emerald-600' : p.pct >= 50 ? 'text-amber-600' : 'text-[var(--navy)]'}`}>
+                    <span className={`font-bold text-base ${p.pct >= 70 ? 'text-[var(--navy)]' : 'text-[var(--amber-dark)]'}`}>
                       {p.pct}%
                     </span>
                   </div>
                 </div>
                 <div className="h-2.5 bg-[var(--gray-100)] rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${p.pct >= 80 ? 'bg-emerald-500' : p.pct >= 50 ? 'bg-amber-400' : 'bg-[var(--navy)]'}`}
+                  <div className={`h-full rounded-full ${p.pct >= 70 ? 'bg-[var(--navy)]' : 'bg-[var(--amber)]'}`}
                     style={{ width: `${p.pct}%` }} />
                 </div>
               </div>

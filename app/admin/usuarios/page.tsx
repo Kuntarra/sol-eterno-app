@@ -57,7 +57,7 @@ export default async function UsuariosPage() {
         </div>
         <div className="flex gap-2 shrink-0">
           <Link href="/admin/usuarios/nuevo-recepcionista"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all hover:-translate-y-px shadow-sm">
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-[var(--gray-300)] hover:border-[var(--navy)] text-[var(--navy)] text-sm font-semibold rounded-xl transition-all hover:-translate-y-px shadow-[var(--shadow-xs)]">
             <Plus size={15} strokeWidth={2.25} />
             Recepcionista
           </Link>

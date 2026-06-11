@@ -84,7 +84,7 @@ export default async function NuevoRecepcionistaPage({ searchParams }: Props) {
         </div>
 
         <div className="flex gap-3">
-          <button type="submit" className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors">
+          <button type="submit" className="px-6 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-light)] text-white text-sm font-semibold rounded-lg transition-colors">
             Crear recepcionista
           </button>
           <Link href="/admin/usuarios" className="px-6 py-2.5 bg-white hover:bg-[var(--gray-100)] text-[var(--navy)] text-sm font-medium rounded-lg border border-[var(--gray-200)] transition-colors">

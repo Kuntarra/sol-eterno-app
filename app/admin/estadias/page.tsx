@@ -116,12 +116,12 @@ export default async function EstadiasPage({
             {/* Ocupación */}
             <div className="bg-white rounded-xl border border-[var(--gray-200)] px-5 py-3.5 shadow-[var(--shadow-xs)] min-w-[150px]">
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gray-500)] mb-1">Ocupación</p>
-              <p className={`font-display text-[1.9rem] font-semibold leading-none data-number ${ocupacionPct >= 80 ? 'text-emerald-600' : ocupacionPct >= 50 ? 'text-[var(--amber-dark)]' : 'text-[var(--navy)]'}`}>
+              <p className={`font-display text-[1.9rem] font-semibold leading-none data-number ${ocupacionPct >= 70 ? 'text-[var(--navy)]' : 'text-[var(--amber-dark)]'}`}>
                 {ocupacionPct}%
               </p>
-              <div className="mt-2 h-1.5 bg-[var(--gray-100)] rounded-full overflow-hidden">
+              <div className="mt-2 h-1.5 bg-[var(--gray-200)] rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${ocupacionPct >= 80 ? 'bg-emerald-500' : ocupacionPct >= 50 ? 'bg-[var(--amber)]' : 'bg-[var(--navy)]'}`}
+                  className={`h-full rounded-full transition-all ${ocupacionPct >= 70 ? 'bg-[var(--navy)]' : 'bg-[var(--amber)]'}`}
                   style={{ width: `${ocupacionPct}%` }}
                 />
               </div>
