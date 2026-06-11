@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { SearchBar } from './_components/search-bar'
+import { CheckCircle2, SlidersHorizontal, Download } from 'lucide-react'
 
 function formatDate(iso: string | null) {
   if (!iso) return '—'
@@ -134,7 +135,7 @@ export default async function EstadiasPage({
 
       {params.success === '1' && (
         <div className="mb-5 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-700 font-medium flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <CheckCircle2 size={15} strokeWidth={2.25} className="shrink-0" />
           Estadía actualizada correctamente.
         </div>
       )}
@@ -162,18 +163,13 @@ export default async function EstadiasPage({
           <button className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--gray-200)]
                              bg-white text-[var(--gray-600)] text-xs font-semibold hover:border-[var(--navy)]/30
                              hover:text-[var(--navy)] transition-all">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/>
-            </svg>
+            <SlidersHorizontal size={13} strokeWidth={2} />
             Filtros
           </button>
           <button className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--gray-200)]
                              bg-white text-[var(--gray-600)] text-xs font-semibold hover:border-[var(--navy)]/30
                              hover:text-[var(--navy)] transition-all">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
+            <Download size={13} strokeWidth={2} />
             Exportar
           </button>
         </div>

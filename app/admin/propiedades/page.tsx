@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Property, PROPERTY_TYPE_LABELS } from '@/lib/types'
 import { PropertyIcon } from '@/app/admin/_components/property-icon'
+import { Plus, Building2, ArrowRight } from 'lucide-react'
 
 export default async function PropiedadesPage() {
   const supabase = await createClient()
@@ -47,7 +48,7 @@ export default async function PropiedadesPage() {
           </p>
         </div>
         <Link href="/admin/propiedades/nueva" className="btn-primary shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <Plus size={16} strokeWidth={2.25} />
           Nueva propiedad
         </Link>
       </div>
@@ -56,9 +57,7 @@ export default async function PropiedadesPage() {
       {Object.keys(grouped).length === 0 ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
           <div className="w-16 h-16 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gray-600)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21v-6h6v6" />
-            </svg>
+            <Building2 size={28} strokeWidth={1.5} stroke="var(--gray-600)" />
           </div>
           <p className="text-[var(--gray-600)] text-sm font-medium mb-1">No hay propiedades registradas</p>
           <p className="text-[var(--gray-600)] text-xs mb-4">Comienza agregando tu primera propiedad</p>
@@ -86,9 +85,7 @@ export default async function PropiedadesPage() {
                              flex flex-col items-center justify-center gap-3 p-8 text-center min-h-[160px]">
                   <div className="w-11 h-11 rounded-xl bg-[var(--gray-100)] group-hover:bg-[var(--navy)] group-hover:text-white
                                   flex items-center justify-center text-[var(--gray-500)] transition-all duration-200">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21v-6h6v6"/>
-                    </svg>
+                    <Building2 size={18} strokeWidth={1.75} />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-[var(--navy)] group-hover:text-[var(--navy-light)] transition-colors">
@@ -140,7 +137,7 @@ function PropertyCard({ property: p }: { property: Property & { rooms?: { capaci
         <Stat label="Cupos" value={capacity} />
         {p.floors ? <Stat label="Pisos" value={p.floors} /> : null}
         <div className="ml-auto text-[var(--gray-400)] group-hover:text-[var(--navy)] transition-colors">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <ArrowRight size={14} strokeWidth={2} />
         </div>
       </div>
     </Link>

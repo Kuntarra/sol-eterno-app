@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { Plus, Users } from 'lucide-react'
 
 export default async function ClientesPage() {
   const supabase = await createClient()
@@ -20,7 +21,7 @@ export default async function ClientesPage() {
           </p>
         </div>
         <Link href="/admin/clientes/nuevo" className="btn-primary shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <Plus size={16} strokeWidth={2.25} />
           Nueva empresa
         </Link>
       </div>
@@ -29,10 +30,7 @@ export default async function ClientesPage() {
       {!companies?.length ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
           <div className="w-16 h-16 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gray-600)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
+            <Users size={28} strokeWidth={1.5} stroke="var(--gray-600)" />
           </div>
           <p className="text-sm font-medium text-[var(--gray-600)] mb-1">No hay empresas registradas</p>
           <Link href="/admin/clientes/nuevo" className="text-[var(--navy)] text-sm font-semibold hover:underline">

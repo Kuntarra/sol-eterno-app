@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PrintButton } from './_components/print-button'
 import { ReportFilters } from './_components/report-filters'
+import { Bed, CircleSlash, Building2, Briefcase } from 'lucide-react'
 
 const MONTHS = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -443,10 +444,11 @@ function MetricCard({ icon, label, value, sub, accent }: {
   )
 }
 
-const BedIcon      = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16M2 8h20v12H2M6 8v4M18 12H6"/></svg>
-const SlashIcon    = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-const BuildingIcon = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21v-6h6v6"/></svg>
-const CompanyIcon  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+const RPT_ICON     = { size: 16, strokeWidth: 1.75 } as const
+const BedIcon      = () => <Bed {...RPT_ICON} />
+const SlashIcon    = () => <CircleSlash {...RPT_ICON} />
+const BuildingIcon = () => <Building2 {...RPT_ICON} />
+const CompanyIcon  = () => <Briefcase {...RPT_ICON} />
 
 function SummaryTable({ title, rows }: { title: string; rows: { nombre: string; estadias: number; noches: number }[] }) {
   return (

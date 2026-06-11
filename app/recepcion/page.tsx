@@ -3,6 +3,7 @@ import { getEffectiveUserId } from '@/lib/effective-user'
 import Link from 'next/link'
 import { CheckoutButton } from './_components/checkout-button'
 import { RecepcionSearchBar } from './_components/search-bar'
+import { Plus, CheckCircle2, Users, Phone, Clock } from 'lucide-react'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString('es-CL', {
@@ -101,9 +102,7 @@ export default async function RecepcionPage({
           </p>
         </div>
         <Link href="/recepcion/checkin" className="btn-primary shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
+          <Plus size={16} strokeWidth={2.25} />
           Nuevo check-in
         </Link>
       </div>
@@ -111,9 +110,7 @@ export default async function RecepcionPage({
       {/* ── Alertas de éxito ── */}
       {(params.success === '1' || params.success === 'checkout') && (
         <div className="mb-5 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-700 font-medium flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-          </svg>
+          <CheckCircle2 size={15} strokeWidth={2.25} className="shrink-0" />
           {params.success === '1' ? 'Check-in registrado correctamente.' : 'Check-out completado.'}
         </div>
       )}
@@ -150,10 +147,7 @@ export default async function RecepcionPage({
       {!filtered.length ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
           <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-500)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
+            <Users size={24} strokeWidth={1.5} stroke="var(--gray-500)" />
           </div>
           <p className="text-sm font-semibold text-[var(--navy)] mb-1">
             {q ? `Sin resultados para "${q}"` : selectedPropertyId ? 'Sin huéspedes en esta propiedad' : 'Sin huéspedes activos'}
@@ -220,9 +214,7 @@ export default async function RecepcionPage({
                       )}
                       {guest?.phone && (
                         <span className="text-[11px] text-[var(--gray-500)] flex items-center gap-1">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-                          </svg>
+                          <Phone size={11} strokeWidth={2} />
                           {guest.phone}
                         </span>
                       )}
@@ -238,9 +230,7 @@ export default async function RecepcionPage({
                 <div className="px-5 py-3 border-t border-[var(--gray-100)] bg-[var(--gray-50)]
                                 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-1.5 text-[11px] text-[var(--gray-500)]">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                    </svg>
+                    <Clock size={12} strokeWidth={2} />
                     {formatDate(stay.checked_in_at)}
                   </div>
                   <CheckoutButton stayId={stay.id} />
