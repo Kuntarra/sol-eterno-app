@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell } from 'lucide-react'
 
 const NAV_GROUPS = [
   {
@@ -19,9 +19,10 @@ const NAV_GROUPS = [
   {
     label: 'Configuración',
     items: [
-      { href: '/admin/propiedades', label: 'Propiedades', exact: false, icon: <BuildIcon /> },
-      { href: '/admin/clientes',    label: 'Clientes',    exact: false, icon: <BriefIcon /> },
-      { href: '/admin/usuarios',    label: 'Usuarios',    exact: false, icon: <UserIcon /> },
+      { href: '/admin/propiedades',   label: 'Propiedades',   exact: false, icon: <BuildIcon /> },
+      { href: '/admin/clientes',      label: 'Clientes',      exact: false, icon: <BriefIcon /> },
+      { href: '/admin/usuarios',      label: 'Usuarios',      exact: false, icon: <UserIcon /> },
+      { href: '/admin/notificaciones', label: 'Notificaciones', exact: false, icon: <BellSideIcon /> },
     ],
   },
 ]
@@ -210,3 +211,4 @@ function ChartIcon() { return <BarChart3 {...ICON} /> }
 function BuildIcon() { return <Building2 {...ICON} /> }
 function BriefIcon() { return <Briefcase {...ICON} /> }
 function UserIcon()  { return <Users {...ICON} /> }
+function BellSideIcon() { return <Bell {...ICON} /> }
