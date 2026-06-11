@@ -116,8 +116,12 @@ export function CheckinForm({ properties, error }: Props) {
             <input name="last_name_materno" type="text" placeholder="Pérez" className={INPUT} />
           </div>
           <div>
-            <label className={LABEL}>RUT</label>
-            <input name="rut" type="text" placeholder="12.345.678-9" className={INPUT} />
+            <label className={LABEL}>RUT o identificación *</label>
+            <input name="rut" type="text" required
+              pattern=".*[0-9].*"
+              title="Obligatorio. Debe contener al menos un número (no exige formato chileno)."
+              placeholder="12.345.678-9 o pasaporte/ID"
+              className={INPUT} />
           </div>
           <div>
             <label className={LABEL}>Teléfono</label>

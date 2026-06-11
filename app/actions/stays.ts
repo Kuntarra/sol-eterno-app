@@ -8,8 +8,13 @@ export async function checkIn(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const rut       = (formData.get('rut') as string).trim() || null
+  const rut       = ((formData.get('rut') as string) ?? '').trim()
   const companyId = formData.get('company_id') as string
+
+  // RUT/identificación obligatorio: debe contener al menos un número
+  if (!/[0-9]/.test(rut)) {
+    redirect('/recepcion/checkin?error=' + encodeURIComponent('El RUT o identificación es obligatorio y debe contener al menos un número.'))
+  }
   const roomId    = formData.get('room_id') as string
   const projectId = (formData.get('project_id') as string) || null
 
