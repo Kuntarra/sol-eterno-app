@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { PrintButton } from './_components/print-button'
 import { ReportFilters } from './_components/report-filters'
 import { Bed, CircleSlash, Building2, Briefcase, FileSpreadsheet } from 'lucide-react'
+import { formatDateShort as fmt } from '@/lib/format'
 
 const MONTHS = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -176,8 +177,6 @@ export default async function ReportesPage({
   }
   const porEmpresa = [...empMap.values()].sort((a, b) => b.noches - a.noches)
 
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: '2-digit' })
 
   const circ = 2 * Math.PI * 54
   const dash = (ocupacionPct / 100) * circ

@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { formatDate as fmt } from "@/lib/format"
 import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { AutoPrint } from './_auto-print'
 
@@ -87,7 +88,6 @@ export default async function ReportePrintPage({
   }
   const porEmpresa = [...empMap.values()].sort((a,b)=>b.noches-a.noches)
 
-  const fmt = (iso:string) => new Date(iso).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'})
   const hoy = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'})
 
   const css = `

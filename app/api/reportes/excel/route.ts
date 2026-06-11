@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { formatDate as fmt } from "@/lib/format"
 import { ROOM_TYPE_LABELS } from "@/lib/types"
 import ExcelJS from 'exceljs'
 import { createClient } from '@/lib/supabase/server'
@@ -106,7 +107,6 @@ export async function GET(req: NextRequest) {
   }
   const porEmpresa = [...empMap.values()].sort((a,b)=>b.noches-a.noches)
 
-  const fmt = (iso:string) => new Date(iso).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'})
 
   // ── Construcción del workbook ──
   const wb = new ExcelJS.Workbook()

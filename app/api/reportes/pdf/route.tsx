@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { formatDate as fmt } from "@/lib/format"
 import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { createAdminClient } from '@/lib/supabase/admin'
 import React from 'react'
@@ -125,7 +126,6 @@ export async function GET(req: NextRequest) {
   }
   const porEmpresa = [...empMap.values()].sort((a,b)=>b.noches-a.noches)
 
-  const fmt = (iso:string) => new Date(iso).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'})
   const hoy = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'})
 
   const COLS: [string, number][] = [['#',0.4],['Huésped',2],['RUT',1.2],['Empresa',1.5],['Propiedad',1.5],['Hab.',0.6],['Tipo',0.9],['Turno',0.8],['Entrada',1],['Salida',1],['Noches',0.7],['Estado',0.9]]
