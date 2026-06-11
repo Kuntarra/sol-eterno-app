@@ -179,7 +179,7 @@ export default async function ReportesPage({
   const porEmpresa = [...empMap.values()].sort((a, b) => b.noches - a.noches)
 
   const fmt = (iso: string) =>
-    new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: '2-digit' })
 
   const circ = 2 * Math.PI * 54
   const dash = (ocupacionPct / 100) * circ
@@ -354,45 +354,43 @@ export default async function ReportesPage({
             <p className="px-6 py-10 text-center text-sm text-[var(--gray-500)]">No hay estadías para este período.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[1100px]">
+              <table className="w-full text-sm table-fixed">
                 <thead>
                   <tr className="bg-[var(--gray-50)] border-b border-[var(--gray-100)]">
-                    <th className="w-8 px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">#</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Huésped</th>
-                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">RUT</th>
-                    <th className="w-36 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Empresa</th>
-                    <th className="w-36 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Propiedad</th>
-                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Hab.</th>
-                    <th className="w-20 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Turno</th>
-                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Entrada</th>
-                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Salida</th>
-                    <th className="w-16 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-right">Noches</th>
-                    <th className="w-28 px-4 py-3 text-xs font-semibold text-[var(--gray-600)] text-center">Estado</th>
+                    <th className="w-[17%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Huésped</th>
+                    <th className="w-[10%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">RUT</th>
+                    <th className="w-[14%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Empresa</th>
+                    <th className="w-[13%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Propiedad</th>
+                    <th className="w-[11%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Hab.</th>
+                    <th className="w-[7%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Turno</th>
+                    <th className="w-[8%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Entrada</th>
+                    <th className="w-[8%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-left">Salida</th>
+                    <th className="w-[6%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-right">Noches</th>
+                    <th className="w-[6%] px-3 py-3 text-xs font-semibold text-[var(--gray-600)] text-center">Estado</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--gray-100)]">
-                  {stays.map((stay, idx) => {
+                  {stays.map((stay) => {
                     const g = stay.guests    as any
                     const r = stay.rooms     as any
                     const c = stay.companies as any
                     const n = noches(stay)
                     return (
-                      <tr key={stay.id} className="hover:bg-[var(--gray-50)] transition-colors">
-                        <td className="px-3 py-3 text-xs text-[var(--gray-400)] font-mono">{idx+1}</td>
-                        <td className="px-4 py-3 font-medium text-[var(--navy)] whitespace-nowrap">{g?.first_name} {g?.last_name_paterno}</td>
-                        <td className="px-4 py-3 text-xs text-[var(--gray-500)] font-mono whitespace-nowrap">{g?.rut ?? '—'}</td>
-                        <td className="px-4 py-3 text-[var(--gray-700)]">{c?.name}</td>
-                        <td className="px-4 py-3 text-[var(--gray-700)]">{r?.properties?.name}</td>
-                        <td className="px-4 py-3 text-[var(--gray-600)] whitespace-nowrap">
-                          {r?.number}{r?.type ? <span className="text-xs text-[var(--gray-400)] ml-1">· {ROOM_LABELS[r.type]??r.type}</span> : ''}
+                      <tr key={stay.id} className="hover:bg-[var(--gray-50)] transition-colors align-top">
+                        <td className="px-3 py-3 font-medium text-[var(--navy)] leading-snug">{g?.first_name} {g?.last_name_paterno}</td>
+                        <td className="px-3 py-3 text-xs text-[var(--gray-500)] font-mono whitespace-nowrap">{g?.rut ?? '—'}</td>
+                        <td className="px-3 py-3 text-[var(--gray-700)] leading-snug">{c?.name}</td>
+                        <td className="px-3 py-3 text-[var(--gray-700)] leading-snug">{r?.properties?.name}</td>
+                        <td className="px-3 py-3 text-[var(--gray-600)] leading-snug">
+                          {r?.number}{r?.type ? <span className="text-xs text-[var(--gray-400)]"> · {ROOM_LABELS[r.type]??r.type}</span> : ''}
                         </td>
-                        <td className="px-4 py-3 text-[var(--gray-600)]">{stay.shift_type ?? '—'}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-[var(--gray-700)]">{fmt(stay.checked_in_at)}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-[var(--gray-700)]">
-                          {stay.checked_out_at ? fmt(stay.checked_out_at) : <span className="text-emerald-600 font-medium">En hotel</span>}
+                        <td className="px-3 py-3 text-[var(--gray-600)] whitespace-nowrap">{stay.shift_type ?? '—'}</td>
+                        <td className="px-3 py-3 whitespace-nowrap text-[var(--gray-700)] tabular-nums">{fmt(stay.checked_in_at)}</td>
+                        <td className="px-3 py-3 whitespace-nowrap text-[var(--gray-700)] tabular-nums">
+                          {stay.checked_out_at ? fmt(stay.checked_out_at) : <span className="text-[var(--amber-dark)] font-medium">En hotel</span>}
                         </td>
-                        <td className="px-4 py-3 text-right font-bold text-[var(--navy)]">{n}</td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-3 py-3 text-right font-bold text-[var(--navy)] tabular-nums">{n}</td>
+                        <td className="px-3 py-3 text-center">
                           {stay.checked_out_at
                             ? <span className="badge badge-gray">Salió</span>
                             : <span className="badge badge-green">Alojado</span>}
@@ -403,8 +401,8 @@ export default async function ReportesPage({
                 </tbody>
                 <tfoot>
                   <tr className="border-t-2 border-[var(--gray-200)] bg-[var(--gray-50)]">
-                    <td colSpan={9} className="px-4 py-3 text-xs font-semibold text-[var(--gray-600)]">Total</td>
-                    <td className="px-4 py-3 text-right font-bold text-[var(--navy)]">{nochesHuesped}</td>
+                    <td colSpan={8} className="px-3 py-3 text-xs font-semibold text-[var(--gray-600)]">Total</td>
+                    <td className="px-3 py-3 text-right font-bold text-[var(--navy)] tabular-nums">{nochesHuesped}</td>
                     <td />
                   </tr>
                 </tfoot>

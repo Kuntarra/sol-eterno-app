@@ -164,7 +164,7 @@ export default async function ClienteReportePage({
   // ── Datos empresa ───────────────────────────────────────────────────────────
   const { data: company } = await admin.from('companies').select('name').eq('id', companyId).single()
 
-  const fmt  = (iso: string) => new Date(iso).toLocaleDateString('es-CL', { day:'2-digit', month:'2-digit', year:'numeric' })
+  const fmt  = (iso: string) => new Date(iso).toLocaleDateString('es-CL', { day:'2-digit', month:'2-digit', year:'2-digit' })
   const years = Array.from({ length: now.getFullYear() - 2023 }, (_, i) => 2024 + i)
   const circ  = 2 * Math.PI * 45
   const dash  = (ocupPct / 100) * circ
@@ -350,11 +350,15 @@ export default async function ClienteReportePage({
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[700px]">
+            <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="bg-[var(--gray-50)] border-b border-[var(--gray-100)]">
-                  {['Nombre','RUT','Hostal','Hab.','Turno','Ingreso','Salida','Noches','Estado'].map((h,i) => (
-                    <th key={h} className={`px-4 py-3 text-xs font-semibold text-[var(--gray-600)] ${i===7?'text-right':'text-left'}`}>{h}</th>
+                  {[
+                    ['Nombre','w-[20%]','text-left'],['RUT','w-[12%]','text-left'],['Hostal','w-[16%]','text-left'],
+                    ['Hab.','w-[9%]','text-left'],['Turno','w-[9%]','text-left'],['Ingreso','w-[9%]','text-left'],
+                    ['Salida','w-[10%]','text-left'],['Noches','w-[7%]','text-right'],['Estado','w-[8%]','text-left'],
+                  ].map(([h,w,a]) => (
+                    <th key={h} className={`${w} ${a} px-3 py-3 text-xs font-semibold text-[var(--gray-600)]`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -364,18 +368,18 @@ export default async function ClienteReportePage({
                   const r = s.rooms  as any
                   const n = noches(s)
                   return (
-                    <tr key={s.id} className="hover:bg-[var(--gray-50)] transition-colors">
-                      <td className="px-4 py-3 font-semibold text-[var(--navy)] whitespace-nowrap">{g?.first_name} {g?.last_name_paterno}</td>
-                      <td className="px-4 py-3 text-xs text-[var(--gray-500)] font-mono">{g?.rut ?? '—'}</td>
-                      <td className="px-4 py-3 font-medium text-[var(--gray-700)]">{r?.properties?.name}</td>
-                      <td className="px-4 py-3 text-[var(--gray-600)]">{r?.number}</td>
-                      <td className="px-4 py-3 text-[var(--gray-600)]">{s.shift_type ?? '—'}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-[var(--gray-700)]">{fmt(s.checked_in_at)}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-[var(--gray-700)]">
-                        {s.checked_out_at ? fmt(s.checked_out_at) : <span className="text-emerald-600 font-medium">Activo</span>}
+                    <tr key={s.id} className="hover:bg-[var(--gray-50)] transition-colors align-top">
+                      <td className="px-3 py-3 font-semibold text-[var(--navy)] leading-snug">{g?.first_name} {g?.last_name_paterno}</td>
+                      <td className="px-3 py-3 text-xs text-[var(--gray-500)] font-mono whitespace-nowrap">{g?.rut ?? '—'}</td>
+                      <td className="px-3 py-3 font-medium text-[var(--gray-700)] leading-snug">{r?.properties?.name}</td>
+                      <td className="px-3 py-3 text-[var(--gray-600)]">{r?.number}</td>
+                      <td className="px-3 py-3 text-[var(--gray-600)] whitespace-nowrap">{s.shift_type ?? '—'}</td>
+                      <td className="px-3 py-3 whitespace-nowrap text-[var(--gray-700)] tabular-nums">{fmt(s.checked_in_at)}</td>
+                      <td className="px-3 py-3 whitespace-nowrap text-[var(--gray-700)] tabular-nums">
+                        {s.checked_out_at ? fmt(s.checked_out_at) : <span className="text-[var(--amber-dark)] font-medium">Activo</span>}
                       </td>
-                      <td className="px-4 py-3 text-right font-bold text-[var(--navy)]">{n}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-3 text-right font-bold text-[var(--navy)] tabular-nums">{n}</td>
+                      <td className="px-3 py-3">
                         {s.checked_out_at
                           ? <span className="text-xs bg-[var(--gray-100)] text-[var(--gray-500)] px-2 py-0.5 rounded-full">Completada</span>
                           : <span className="text-xs bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded-full">Activa</span>}
