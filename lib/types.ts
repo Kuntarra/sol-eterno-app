@@ -115,7 +115,7 @@ export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
   departamento: 'Departamento',
 }
 
-export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
+export const ROOM_TYPE_LABELS: Record<string, string> = {
   single: 'Individual',
   double: 'Doble',
   triple: 'Triple',
@@ -167,3 +167,27 @@ export const PROPERTY_TYPE_COLORS: Record<PropertyType, string> = {
   hostal:       'bg-green-100 text-green-700',
   departamento: 'bg-purple-100 text-purple-700',
 }
+
+// Roles de usuario
+export const ROLE_LABELS: Record<Role, string> = {
+  admin:        'Administrador',
+  receptionist: 'Recepcionista',
+  client:       'Cliente',
+}
+
+// Turnos de faena (check-in)
+export const SHIFT_OPTIONS: { value: string; label: string }[] = [
+  { value: 'dia',   label: 'Día' },
+  { value: 'noche', label: 'Noche' },
+  { value: '7x7',   label: '7x7' },
+  { value: '14x14', label: '14x14' },
+  { value: '4x3',   label: '4x3' },
+  { value: 'otro',  label: 'Otro…' },
+]
+
+// Filtros de estado de estadías
+export const STAY_FILTER_LABELS = {
+  activas:     'Activas',
+  completadas: 'Completadas',
+  todas:       'Todas',
+} as const

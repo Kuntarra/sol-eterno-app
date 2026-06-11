@@ -3,14 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { SearchBar } from './_components/search-bar'
 import { CheckCircle2, Download } from 'lucide-react'
-
-function formatDate(iso: string | null) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString('es-CL', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  })
-}
+import { formatDateTime as formatDate } from '@/lib/format'
 
 export default async function EstadiasPage({
   searchParams,

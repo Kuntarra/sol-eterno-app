@@ -1,11 +1,11 @@
 import Link from 'next/link'
+import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ArrowLeft, Phone, Building2, CalendarDays, Moon, MapPin } from 'lucide-react'
 
 export const metadata = { title: 'Huésped · Sol Eterno' }
 
-const ROOM_LABELS: Record<string, string> = { single: 'Individual', double: 'Doble', triple: 'Triple', suite: 'Suite', shared: 'Compartido' }
 
 function fmt(iso: string | null) {
   if (!iso) return '—'
@@ -104,7 +104,7 @@ export default async function HuespedPage({ params }: { params: Promise<{ id: st
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-[var(--navy)] truncate">
                       {r?.properties?.name ?? '—'} · Hab. {r?.number ?? '—'}
-                      {r?.type && <span className="text-xs font-normal text-[var(--gray-500)]"> · {ROOM_LABELS[r.type] ?? r.type}</span>}
+                      {r?.type && <span className="text-xs font-normal text-[var(--gray-500)]"> · {ROOM_TYPE_LABELS[r.type] ?? r.type}</span>}
                     </p>
                     <p className="text-xs text-[var(--gray-500)] mt-0.5">
                       {fmt(s.checked_in_at)} → {s.checked_out_at ? fmt(s.checked_out_at) : 'En curso'}

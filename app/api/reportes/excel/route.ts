@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { ROOM_TYPE_LABELS } from "@/lib/types"
 import ExcelJS from 'exceljs'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -7,7 +8,6 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-const ROOM_LABELS: Record<string,string> = { single:'Individual', double:'Doble', triple:'Triple', suite:'Suite', shared:'Compartido' }
 
 const NAVY = 'FF0A2C4A', GOLD = 'FFE0A33A', LIGHT = 'FFF1F3F5'
 
@@ -199,7 +199,7 @@ export async function GET(req: NextRequest) {
     row.getCell(4).value = c?.name ?? ''
     row.getCell(5).value = r?.properties?.name ?? ''
     row.getCell(6).value = r?.number ?? ''
-    row.getCell(7).value = r?.type ? (ROOM_LABELS[r.type] ?? r.type) : '—'
+    row.getCell(7).value = r?.type ? (ROOM_TYPE_LABELS[r.type] ?? r.type) : '—'
     row.getCell(8).value = stay.shift_type ?? '—'
     row.getCell(9).value = fmt(stay.checked_in_at)
     row.getCell(10).value = stay.checked_out_at ? fmt(stay.checked_out_at) : '—'

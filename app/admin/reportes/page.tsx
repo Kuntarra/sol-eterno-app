@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PrintButton } from './_components/print-button'
 import { ReportFilters } from './_components/report-filters'
@@ -8,9 +9,6 @@ const MONTHS = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
 ]
-const ROOM_LABELS: Record<string, string> = {
-  single:'Individual', double:'Doble', triple:'Triple', suite:'Suite', shared:'Compartido',
-}
 
 export default async function ReportesPage({
   searchParams,
@@ -389,7 +387,7 @@ export default async function ReportesPage({
                         <td className="px-3 py-3 text-[var(--gray-700)] leading-snug">{c?.name}</td>
                         <td className="px-3 py-3 text-[var(--gray-700)] leading-snug">{r?.properties?.name}</td>
                         <td className="px-3 py-3 text-[var(--gray-600)] leading-snug">
-                          {r?.number}{r?.type ? <span className="text-xs text-[var(--gray-400)]"> · {ROOM_LABELS[r.type]??r.type}</span> : ''}
+                          {r?.number}{r?.type ? <span className="text-xs text-[var(--gray-400)]"> · {ROOM_TYPE_LABELS[r.type]??r.type}</span> : ''}
                         </td>
                         <td className="px-3 py-3 text-[var(--gray-600)] whitespace-nowrap">{stay.shift_type ?? '—'}</td>
                         <td className="px-3 py-3 whitespace-nowrap text-[var(--gray-700)] tabular-nums">{fmt(stay.checked_in_at)}</td>

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { createAdminClient } from '@/lib/supabase/admin'
 import React from 'react'
 import { renderToBuffer, Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-const ROOM_LABELS: Record<string,string> = { single:'Individual', double:'Doble', triple:'Triple', suite:'Suite', shared:'Compartido' }
 
 const N = '#0A2C4A', A = '#E0A33A', G = '#6C757D'
 
@@ -224,7 +224,7 @@ export async function GET(req: NextRequest) {
                 <Text style={[s.td,{flex:1.5}]}>{c?.name}</Text>
                 <Text style={[s.td,{flex:1.5,fontFamily:'Helvetica-Bold'}]}>{r?.properties?.name}</Text>
                 <Text style={[s.td,{flex:0.6}]}>{r?.number}</Text>
-                <Text style={[s.td,{flex:0.9,color:G}]}>{r?.type?ROOM_LABELS[r.type]??r.type:'—'}</Text>
+                <Text style={[s.td,{flex:0.9,color:G}]}>{r?.type?ROOM_TYPE_LABELS[r.type]??r.type:'—'}</Text>
                 <Text style={[s.td,{flex:0.8,color:G}]}>{stay.shift_type??'—'}</Text>
                 <Text style={[s.td,{flex:1}]}>{fmt(stay.checked_in_at)}</Text>
                 <Text style={[s.td,{flex:1}]}>{stay.checked_out_at?fmt(stay.checked_out_at):'—'}</Text>

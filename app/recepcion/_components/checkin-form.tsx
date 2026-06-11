@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { ROOM_TYPE_LABELS, SHIFT_OPTIONS } from "@/lib/types"
 import { checkIn } from '@/app/actions/stays'
 import { isValidRut, formatRut } from '@/lib/rut'
 
@@ -21,19 +22,6 @@ interface Props {
 
 const INPUT = 'input-premium disabled:opacity-40'
 const LABEL = 'block text-sm font-semibold text-[var(--navy)] mb-1.5'
-
-const ROOM_LABELS: Record<string, string> = {
-  single: 'Individual', double: 'Doble', triple: 'Triple', suite: 'Suite', shared: 'Compartido'
-}
-
-const SHIFT_OPTIONS = [
-  { value: 'dia',   label: 'Día' },
-  { value: 'noche', label: 'Noche' },
-  { value: '7x7',   label: '7x7' },
-  { value: '14x14', label: '14x14' },
-  { value: '4x3',   label: '4x3' },
-  { value: 'otro',  label: 'Otro…' },
-]
 
 export function CheckinForm({ properties, error }: Props) {
   const [propertyId, setPropertyId] = useState(properties.length === 1 ? properties[0].id : '')
@@ -112,7 +100,7 @@ export function CheckinForm({ properties, error }: Props) {
               {rooms.map(r => (
                 <option key={r.id} value={r.id}>
                   Hab. {r.number}
-                  {r.type ? ` — ${ROOM_LABELS[r.type] ?? r.type}` : ''}
+                  {r.type ? ` — ${ROOM_TYPE_LABELS[r.type] ?? r.type}` : ''}
                   {` · ${r.capacity} cupo${r.capacity !== 1 ? 's' : ''}`}
                 </option>
               ))}

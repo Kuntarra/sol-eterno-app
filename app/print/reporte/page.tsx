@@ -1,8 +1,8 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { AutoPrint } from './_auto-print'
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-const ROOM_LABELS: Record<string,string> = { single:'Individual', double:'Doble', triple:'Triple', suite:'Suite', shared:'Compartido' }
 const N = '#0A2C4A', A = '#E0A33A', G = '#6C757D'
 
 export default async function ReportePrintPage({
@@ -196,7 +196,7 @@ export default async function ReportePrintPage({
                   <td>{c?.name}</td>
                   <td style={{fontWeight:600}}>{r?.properties?.name}</td>
                   <td>{r?.number}</td>
-                  <td style={{color:G}}>{r?.type?ROOM_LABELS[r.type]??r.type:'—'}</td>
+                  <td style={{color:G}}>{r?.type?ROOM_TYPE_LABELS[r.type]??r.type:'—'}</td>
                   <td style={{color:G}}>{s.shift_type??'—'}</td>
                   <td style={{whiteSpace:'nowrap'}}>{fmt(s.checked_in_at)}</td>
                   <td style={{whiteSpace:'nowrap'}}>{s.checked_out_at?fmt(s.checked_out_at):'—'}</td>
