@@ -1,35 +1,48 @@
-import { renderToBuffer, Document, Page, View, Text, StyleSheet, Svg, Circle } from '@react-pdf/renderer'
+import { renderToBuffer, Document, Page, View, Text, StyleSheet, Svg, Circle, Polygon } from '@react-pdf/renderer'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { buildScopeFilter, scopeLabel, type Scope, type Subscription } from '@/lib/email/digest'
 import { ROOM_TYPE_LABELS } from '@/lib/types'
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const N = '#0A2C4A', A = '#E0A33A', G = '#6C757D', CREAM = '#F5F2EC', LINEW = '#E8E3D9'
-const UP = '#0F8B6C', DOWN = '#C0392B'
+const TRACK = '#21456B' // navy claro para el track del gauge sobre fondo navy
+const UP = '#46C28A', DOWN = '#E8836B' // tonos legibles sobre navy y sobre blanco
 
 function deltaColor(v: number | null, positiveGood = true) {
   if (v === null || v === 0) return G
   return (v > 0) === positiveGood ? UP : DOWN
 }
-function deltaText(v: number | null, suffix: string) {
-  if (v === null) return '—'
-  const arrow = v > 0 ? '▲' : v < 0 ? '▼' : '•'
-  return `${arrow} ${v > 0 ? '+' : ''}${v}${suffix}`
+
+// Chip de tendencia con triángulo vectorial (sin glifos unicode que rompen en PDF).
+function DeltaChip({ v, suffix, positiveGood = true }: { v: number | null; suffix: string; positiveGood?: boolean }) {
+  if (v === null) return null
+  const color = deltaColor(v, positiveGood)
+  const flat = v === 0, up = v > 0
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      {!flat && (
+        <Svg width={5} height={5} viewBox="0 0 6 6" style={{ marginRight: 3 }}>
+          <Polygon points={up ? '3,0 6,6 0,6' : '0,0 6,0 3,6'} fill={color} />
+        </Svg>
+      )}
+      <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', color }}>{`${up ? '+' : ''}${v}${suffix}`}</Text>
+    </View>
+  )
 }
 
 function Gauge({ pct }: { pct: number }) {
-  const SIZE = 86, R = 33, SW = 9, CX = SIZE / 2
+  const SIZE = 84, R = 33, SW = 8, CX = SIZE / 2
   const C = 2 * Math.PI * R
   const dash = Math.min(pct, 100) / 100 * C
   return (
     <View style={{ width: SIZE, height: SIZE, position: 'relative' }}>
       <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-        <Circle cx={CX} cy={CX} r={R} stroke="rgba(255,255,255,0.16)" strokeWidth={SW} fill="none" />
+        <Circle cx={CX} cy={CX} r={R} stroke={TRACK} strokeWidth={SW} fill="none" />
         <Circle cx={CX} cy={CX} r={R} stroke={A} strokeWidth={SW} fill="none"
           strokeDasharray={`${dash} ${C - dash}`} strokeLinecap="round" transform={`rotate(-90 ${CX} ${CX})`} />
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 22, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>{pct}%</Text>
+        <Text style={{ fontSize: 21, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>{pct}%</Text>
       </View>
     </View>
   )
@@ -177,9 +190,7 @@ export async function renderReportPdf(scope: Scope, freq: Subscription['frequenc
           <View style={{ alignItems: 'center' }}>
             <Gauge pct={ocupPct} />
             <Text style={s.hGaugeLabel}>Ocupación del período</Text>
-            <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', marginTop: 2, color: deltaColor(deltaOcupPts) }}>
-              {deltaText(deltaOcupPts, ` pts vs ${unidad}`)}
-            </Text>
+            <View style={{ marginTop: 3 }}><DeltaChip v={deltaOcupPts} suffix={` pts vs ${unidad}`} /></View>
           </View>
         </View>
 
@@ -198,11 +209,7 @@ export async function renderReportPdf(scope: Scope, freq: Subscription['frequenc
             <View key={k.label} style={[s.kpiCard, { borderTopWidth: 3, borderTopColor: k.color }]}>
               <Text style={s.kpiVal}>{k.val}</Text>
               <Text style={s.kpiLabel}>{k.label}</Text>
-              {k.delta !== null && (
-                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', marginTop: 1, color: deltaColor(k.delta) }}>
-                  {deltaText(k.delta, k.dSuffix)}
-                </Text>
-              )}
+              {k.delta !== null && <View style={{ marginTop: 2 }}><DeltaChip v={k.delta} suffix={k.dSuffix} /></View>}
               <Text style={s.kpiSub}>{k.sub}</Text>
             </View>
           ))}
