@@ -202,7 +202,7 @@ export default async function ReportesPage({
   const porEmpresa = [...empMap.values()].sort((a, b) => b.noches - a.noches)
 
 
-  const circ = 2 * Math.PI * 54
+  const circ = 2 * Math.PI * 52
   const dash = (ocupacionPct / 100) * circ
 
   return (
@@ -218,7 +218,7 @@ export default async function ReportesPage({
           </defs>
           <rect width="100%" height="100%" fill="url(#rp)"/>
         </svg>
-        <div className="relative max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+        <div className="relative max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
             <span className="section-label">Reporte de ocupación</span>
             <h1 className="font-display text-[2rem] font-semibold leading-tight text-white tracking-[-0.01em]">{tituloperiodo}</h1>
@@ -247,55 +247,61 @@ export default async function ReportesPage({
         </div>
       </div>
 
-      <div id="reporte-contenido" className="max-w-6xl mx-auto px-8 py-8 space-y-8">
+      <div id="reporte-contenido" className="max-w-7xl mx-auto px-8 py-8 space-y-7">
 
-        {/* ── Héroe: ocupación + KPIs operativos ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Gauge */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6 flex flex-col items-center">
-            <span className="section-label">Ocupación del período</span>
-            <div className="relative w-40 h-40 mt-1">
-              <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--gray-200)" strokeWidth="9"/>
-                <circle cx="60" cy="60" r="52" fill="none"
-                  stroke={ocupacionPct >= 70 ? '#0A2C4A' : '#E0A33A'}
-                  strokeWidth="9" strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-display text-[2.6rem] font-semibold leading-none text-[var(--navy)] data-number">{ocupacionPct}%</span>
-                <span className="text-xs text-[var(--gray-500)] mt-1">ocupado</span>
+        {/* ── Héroe unificado: ocupación + KPIs operativos ── */}
+        <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12">
+
+            {/* Gauge + desglose */}
+            <div className="lg:col-span-4 p-7 flex flex-col items-center text-center
+                            bg-gradient-to-b from-[var(--gray-50)] to-white lg:border-r border-[var(--gray-200)]">
+              <span className="section-label">Ocupación del período</span>
+              <div className="relative w-44 h-44 mt-2">
+                <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="var(--gray-200)" strokeWidth="10"/>
+                  <circle cx="60" cy="60" r="52" fill="none"
+                    stroke={ocupacionPct >= 70 ? 'var(--navy)' : 'var(--amber)'}
+                    strokeWidth="10" strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="font-display text-[3rem] font-semibold leading-none text-[var(--navy)] data-number">{ocupacionPct}%</span>
+                  <span className="text-xs text-[var(--gray-500)] mt-1.5">ocupado</span>
+                </div>
+              </div>
+              {tieneComparacion && <div className="mt-4"><Delta value={deltaOcupPts} kind="pts" suffix=" pts vs ant." /></div>}
+              <div className="mt-6 w-full space-y-3 text-xs">
+                <BarRow label={`Camas-${unidad} usadas`}   value={nochesHuesped}    total={camasNocheTotal} color="amber" />
+                <BarRow label={`Camas-${unidad} sin usar`}  value={camasNocheLibres} total={camasNocheTotal} color="gray" />
+                <div className="flex justify-between pt-3 border-t border-[var(--gray-100)]">
+                  <span className="text-[var(--gray-600)]">Camas ocupadas/día (prom.)</span>
+                  <span className="font-semibold tabular-nums text-[var(--navy)]">{camasOcupadas}</span>
+                </div>
               </div>
             </div>
-            {tieneComparacion && <div className="mt-3"><Delta value={deltaOcupPts} kind="pts" suffix=" pts vs ant." /></div>}
-            <div className="mt-5 w-full space-y-2 text-xs">
-              <Row label={`Camas-${unidad} disponibles`} value={camasNocheTotal} color="navy" />
-              <Row label={`Camas-${unidad} usadas`} value={nochesHuesped} color="amber" />
-              <Row label={`Camas-${unidad} sin usar`} value={camasNocheLibres} color="gray" />
-              <div className="pt-2 border-t border-[var(--gray-100)]">
-                <Row label="Camas ocupadas/día (prom.)" value={camasOcupadas} color="navy" />
-              </div>
-            </div>
-          </div>
 
-          {/* KPIs operativos */}
-          <div className="lg:col-span-3 grid grid-cols-2 gap-4">
-            <Kpi icon={<Bed {...RPT_ICON}/>} label="Noches-huésped" value={nochesHuesped} accent="navy"
-              delta={tieneComparacion ? deltaNochesPc : null} deltaKind="pct"
-              sub={`vs ${nochesPrev.toLocaleString('es-CL')} período anterior`} />
-            <Kpi icon={<Moon {...RPT_ICON}/>} label="Estadía promedio" value={estadiaPromedio} unit=" días" accent="amber"
-              sub={`${stays.length.toLocaleString('es-CL')} estadías en el período`} />
-            <Kpi icon={<Users {...RPT_ICON}/>} label="Huéspedes únicos" value={huespedesUnicos} accent="navy"
-              sub={`${nPropiedades} propiedad${nPropiedades !== 1 ? 'es' : ''} · ${porEmpresa.length} empresa${porEmpresa.length !== 1 ? 's' : ''}`} />
-            <Kpi icon={<CalendarDays {...RPT_ICON}/>} label="Estadías" value={stays.length} accent="amber"
-              delta={tieneComparacion ? deltaEstadias : null} deltaKind="count"
-              sub={`${activosAlCierre} activas al cierre`} />
+            {/* KPIs operativos */}
+            <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 divide-x divide-y divide-[var(--gray-200)]">
+              <Kpi bare icon={<Bed {...RPT_ICON}/>} label="Noches-huésped" value={nochesHuesped} accent="navy"
+                delta={tieneComparacion ? deltaNochesPc : null} deltaKind="pct"
+                sub={`vs ${nochesPrev.toLocaleString('es-CL')} período anterior`} />
+              <Kpi bare icon={<Moon {...RPT_ICON}/>} label="Estadía promedio" value={estadiaPromedio} unit=" días" accent="amber"
+                sub={`${stays.length.toLocaleString('es-CL')} estadías en el período`} />
+              <Kpi bare icon={<Users {...RPT_ICON}/>} label="Huéspedes únicos" value={huespedesUnicos} accent="navy"
+                sub={`${nPropiedades} propiedad${nPropiedades !== 1 ? 'es' : ''} · ${porEmpresa.length} empresa${porEmpresa.length !== 1 ? 's' : ''}`} />
+              <Kpi bare icon={<CalendarDays {...RPT_ICON}/>} label="Estadías" value={stays.length} accent="amber"
+                delta={tieneComparacion ? deltaEstadias : null} deltaKind="count"
+                sub={`${activosAlCierre} activas al cierre`} />
+            </div>
           </div>
         </div>
 
         {/* ── Ocupación por propiedad ── */}
         {porPropiedad.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6">
-            <h2 className="text-sm font-bold text-[var(--navy)] mb-5">Ocupación por propiedad</h2>
+          <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6">
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--navy)] mb-5">
+              <span className="w-1 h-4 rounded-full bg-[var(--amber)]" />Ocupación por propiedad
+            </h2>
             <div className="space-y-5">
               {porPropiedad.map(p => (
                 <div key={p.nombre}>
@@ -320,9 +326,11 @@ export default async function ReportesPage({
 
         {/* ── Por empresa ── */}
         {porEmpresa.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+          <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
             <div className="px-6 py-4 border-b border-[var(--gray-100)]">
-              <h2 className="text-sm font-bold text-[var(--navy)]">Resumen por empresa</h2>
+              <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--navy)]">
+                <span className="w-1 h-4 rounded-full bg-[var(--amber)]" />Resumen por empresa
+              </h2>
             </div>
             <table className="w-full text-sm">
               <thead>
@@ -366,9 +374,11 @@ export default async function ReportesPage({
         )}
 
         {/* ── Listado completo ── */}
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+        <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
           <div className="px-6 py-4 border-b border-[var(--gray-100)] flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[var(--navy)]">Listado completo de huéspedes</h2>
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--navy)]">
+              <span className="w-1 h-4 rounded-full bg-[var(--amber)]" />Listado completo de huéspedes
+            </h2>
             <span className="text-xs text-[var(--gray-500)] bg-[var(--gray-100)] px-2.5 py-1 rounded-full font-medium">
               {stays.length} registros
             </span>
@@ -462,30 +472,40 @@ function Delta({ value, kind = 'pts', positiveGood = true, suffix = '' }: {
   )
 }
 
-function Row({ label, value, color }: { label: string; value: number; color: 'navy' | 'amber' | 'gray' }) {
-  const c = color === 'navy' ? 'text-[var(--navy)]' : color === 'amber' ? 'text-[var(--amber-dark)]' : 'text-[var(--gray-500)]'
+// Fila con micro-barra de proporción (desglose del gauge).
+function BarRow({ label, value, total, color }: { label: string; value: number; total: number; color: 'amber' | 'gray' }) {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0
+  const bar = color === 'amber' ? 'bg-[var(--amber)]' : 'bg-[var(--gray-300)]'
+  const txt = color === 'amber' ? 'text-[var(--amber-dark)]' : 'text-[var(--gray-500)]'
   return (
-    <div className="flex justify-between">
-      <span className="text-[var(--gray-600)]">{label}</span>
-      <span className={`font-semibold tabular-nums ${c}`}>{value.toLocaleString('es-CL')}</span>
+    <div>
+      <div className="flex justify-between mb-1">
+        <span className="text-[var(--gray-600)]">{label}</span>
+        <span className={`font-semibold tabular-nums ${txt}`}>{value.toLocaleString('es-CL')}</span>
+      </div>
+      <div className="h-1.5 bg-[var(--gray-100)] rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${bar}`} style={{ width: `${pct}%` }} />
+      </div>
     </div>
   )
 }
 
-function Kpi({ icon, label, value, unit = '', sub, accent = 'navy', delta = null, deltaKind = 'pts' }: {
+function Kpi({ icon, label, value, unit = '', sub, accent = 'navy', delta = null, deltaKind = 'pts', bare = false }: {
   icon: ReactNode; label: string; value: number; unit?: string; sub: string
-  accent?: 'navy' | 'amber'; delta?: number | null; deltaKind?: 'pts' | 'pct' | 'count'
+  accent?: 'navy' | 'amber'; delta?: number | null; deltaKind?: 'pts' | 'pct' | 'count'; bare?: boolean
 }) {
   const iconBg = accent === 'amber' ? 'bg-[var(--amber)]/12 text-[var(--amber-dark)]' : 'bg-[var(--navy-5)] text-[var(--navy)]'
   const display = Number.isInteger(value) ? value.toLocaleString('es-CL') : value.toFixed(1)
+  const wrap = bare
+    ? 'p-6 hover:bg-[var(--gray-50)]/60 transition-colors'
+    : 'bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200'
   return (
-    <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5
-                    hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200">
+    <div className={wrap}>
       <div className="flex items-start justify-between mb-3.5">
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg}`}>{icon}</div>
         {delta != null && <Delta value={delta} kind={deltaKind} />}
       </div>
-      <p className="font-display text-[2rem] font-semibold leading-none text-[var(--navy)] data-number">
+      <p className="font-display text-[2.15rem] font-semibold leading-none text-[var(--navy)] data-number">
         {display}{unit && <span className="text-base font-medium text-[var(--gray-500)]">{unit}</span>}
       </p>
       <p className="text-sm font-semibold text-[var(--navy)] mt-2.5">{label}</p>
