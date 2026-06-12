@@ -26,7 +26,7 @@ export type Subscription = Scope & {
   last_sent_at: string | null
 }
 
-type Movimiento = {
+export type Movimiento = {
   nombre: string; rut: string; telefono: string
   empresa: string; propiedad: string; habitacion: string; turno: string; hora: string
 }
@@ -213,30 +213,8 @@ function sectionLabel(text: string): string {
   </div>`
 }
 
-// Tabla compacta de movimientos dentro de un desplegable (sin columna propiedad).
-function movTable(rows: Movimiento[], accent: string): string {
-  const head = ['Hora', 'Nombre', 'RUT', 'Teléfono', 'Empresa', 'Hab.', 'Turno']
-  const td = 'padding:8px 12px'
-  const body = rows.map((m, i) => `
-    <tr style="background:${i % 2 ? '#FBFAF6' : '#ffffff'}">
-      <td style="${td};color:${MUTED};white-space:nowrap;font-variant-numeric:tabular-nums">${m.hora}</td>
-      <td style="${td};color:${INK};font-weight:600">${m.nombre}</td>
-      <td style="${td};color:${MUTED};font-family:'SFMono-Regular',Consolas,monospace;font-size:12px">${m.rut}</td>
-      <td style="${td};color:${MUTED}">${m.telefono}</td>
-      <td style="${td};color:${INK}">${m.empresa}</td>
-      <td style="${td};color:${MUTED}">${m.habitacion}</td>
-      <td style="${td};color:${MUTED}">${m.turno}</td>
-    </tr>`).join('')
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0;border:1px solid ${LINE};border-top:2px solid ${accent};border-radius:8px;overflow:hidden;font-size:12.5px">
-    <tr style="background:${CREAM}">
-      ${head.map(h => `<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${MUTED};border-bottom:1px solid ${LINE}">${h}</th>`).join('')}
-    </tr>
-    ${body}
-  </table>`
-}
-
 // Agrupa movimientos por propiedad (cada uno con sus check-ins y check-outs).
-function propertyGroups(checkins: Movimiento[], checkouts: Movimiento[]) {
+export function propertyGroups(checkins: Movimiento[], checkouts: Movimiento[]) {
   const map = new Map<string, { ins: Movimiento[]; outs: Movimiento[] }>()
   for (const m of checkins)  { const e = map.get(m.propiedad) ?? { ins: [], outs: [] }; e.ins.push(m);  map.set(m.propiedad, e) }
   for (const m of checkouts) { const e = map.get(m.propiedad) ?? { ins: [], outs: [] }; e.outs.push(m); map.set(m.propiedad, e) }
@@ -245,33 +223,25 @@ function propertyGroups(checkins: Movimiento[], checkouts: Movimiento[]) {
     .sort((a, b) => (b.ins.length + b.outs.length) - (a.ins.length + a.outs.length) || a.propiedad.localeCompare(b.propiedad))
 }
 
-// Fila desplegable: "Check-in · N" → al abrir muestra la tabla de nombres.
-function disclosure(label: string, accent: string, rows: Movimiento[], last: boolean): string {
-  const n = rows.length
+// Fila de conteo (comprimida): "● Check-in   N"
+function countRow(label: string, accent: string, n: number, last: boolean): string {
   const border = last ? '' : `border-bottom:1px solid ${LINE};`
-  const head = `
+  return `<div style="padding:11px 6px;${border}">
     <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${n ? accent : '#D6D1C6'};margin-right:10px;vertical-align:middle"></span>
     <span style="font-size:13px;font-weight:700;color:${NAVY};vertical-align:middle">${label}</span>
-    <span style="font-family:${SERIF};font-size:16px;font-weight:700;color:${n ? accent : '#C9C4B8'};vertical-align:middle;margin-left:9px">${n}</span>`
-  if (!n) return `<div style="padding:12px 6px;${border}">${head}</div>`
-  return `<details style="${border}">
-    <summary style="list-style:none;cursor:pointer;padding:12px 6px">
-      ${head}<span style="float:right;font-size:11px;font-weight:600;color:${MUTED}">ver ▾</span>
-    </summary>
-    <div style="padding:6px 0 14px">${movTable(rows, accent)}</div>
-  </details>`
+    <span style="float:right;font-family:${SERIF};font-size:18px;font-weight:700;color:${n ? accent : '#C9C4B8'};line-height:1">${n}</span>
+  </div>`
 }
 
-// Tarjeta por propiedad: nombre + check-in/check-out desplegables.
+// Tarjeta por propiedad: nombre + conteos check-in/check-out (comprimido).
 function propertyCard(g: { propiedad: string; ins: Movimiento[]; outs: Movimiento[] }): string {
   return `<div style="border:1px solid ${LINE};border-radius:12px;overflow:hidden;margin:0 0 12px">
     <div style="background:${CREAM};padding:13px 16px;border-bottom:1px solid ${LINE}">
       <span style="font-family:${SERIF};font-size:15px;font-weight:700;color:${NAVY}">${g.propiedad}</span>
-      <span style="float:right;font-size:11px;color:${MUTED};padding-top:3px">${g.ins.length} in · ${g.outs.length} out</span>
     </div>
     <div style="padding:6px 14px">
-      ${disclosure('Check-in', NAVY, g.ins, false)}
-      ${disclosure('Check-out', GOLDD, g.outs, true)}
+      ${countRow('Check-in', NAVY, g.ins.length, false)}
+      ${countRow('Check-out', GOLDD, g.outs.length, true)}
     </div>
   </div>`
 }
@@ -279,6 +249,7 @@ function propertyCard(g: { propiedad: string; ins: Movimiento[]; outs: Movimient
 export function renderDigestHtml(data: DigestData): string {
   const eyebrow = `Movimientos · ${data.scopeText}`
   const groups = propertyGroups(data.checkins, data.checkouts)
+  const total = data.checkins.length + data.checkouts.length
   const body = `
     ${reportTitle(`Movimientos ${data.periodWord}`, data.periodLabel)}
     ${statBand([
@@ -290,6 +261,15 @@ export function renderDigestHtml(data: DigestData): string {
       ${groups.length
         ? groups.map(propertyCard).join('')
         : `<p style="color:${MUTED};font-size:13px;font-style:italic;margin:0">Sin movimientos en este período.</p>`}
+      ${total ? `<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${LINE};border-radius:12px;background:${CREAM};margin-top:6px"><tr>
+        <td style="padding:14px 18px;width:1px;vertical-align:middle">
+          <div style="font-family:${SERIF};font-size:11px;font-weight:700;letter-spacing:.1em;color:#ffffff;background:${NAVY};padding:8px 11px;border-radius:7px">PDF</div>
+        </td>
+        <td style="padding:14px 18px 14px 6px;vertical-align:middle">
+          <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${MUTED}">Detalle de huéspedes</div>
+          <div style="font-size:13px;color:${INK};margin-top:2px">Nombres, RUT y teléfono por hotel en el <strong style="color:${NAVY}">PDF adjunto</strong>.</div>
+        </td>
+      </tr></table>` : ''}
     </div>
     ${mailFooter()}`
   const pre = `${data.checkins.length} check-in · ${data.checkouts.length} check-out — ${data.periodLabel}`
@@ -365,6 +345,13 @@ export async function sendSubscription(sub: Subscription, opts?: { test?: boolea
   } else {
     subject = `Sol Eterno · Movimientos ${data.periodWord} (${data.scopeText}) — ${data.checkins.length} in / ${data.checkouts.length} out`
     html = renderDigestHtml(data)
+    // Detalle de nombres por hotel en PDF adjunto (Gmail no permite colapsar inline).
+    if (data.checkins.length + data.checkouts.length > 0) {
+      const { renderMovementsPdf } = await import('@/lib/email/movements-pdf')
+      const pdf = await renderMovementsPdf(data)
+      const fechaArchivo = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, day: '2-digit', month: '2-digit', year: 'numeric' }).format(opts?.ref ?? new Date()).replace(/\//g, '-')
+      attachments = [{ filename: `movimientos_sol_eterno_${fechaArchivo}.pdf`, content: pdf }]
+    }
   }
 
   const { error } = await r.emails.send({ from: FROM, to: [sub.email], subject, html, attachments })
