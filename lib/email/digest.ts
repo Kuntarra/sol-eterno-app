@@ -140,167 +140,141 @@ export async function getDigestData(scope: Scope, freq: Subscription['frequency'
   }
 }
 
-// Ocupación actual (estadías activas) dentro del alcance, agrupada por propiedad.
-export async function getOccupancy(scope: Scope): Promise<{ propiedad: string; rows: (Movimiento & { desde: string })[] }[]> {
-  const admin = createAdminClient()
-  const applyScope = await buildScopeFilter(scope)
-  const { data } = await applyScope(admin.from('stays').select(SEL).is('checked_out_at', null)).order('checked_in_at')
+// ── Sistema visual del correo (letterhead editorial) ──────────────
+const SERIF = "Georgia, 'Times New Roman', Times, serif"
 
-  const byProp = new Map<string, (Movimiento & { desde: string })[]>()
-  for (const s of (data ?? []) as any[]) {
-    const m = mapMov(s, s.checked_in_at)
-    const row = { ...m, desde: new Date(s.checked_in_at).toLocaleDateString('es-CL', { timeZone: TZ, day: '2-digit', month: '2-digit', year: '2-digit' }) }
-    const arr = byProp.get(m.propiedad) ?? []
-    arr.push(row)
-    byProp.set(m.propiedad, arr)
-  }
-  return [...byProp.entries()].map(([propiedad, rows]) => ({ propiedad, rows })).sort((a, b) => a.propiedad.localeCompare(b.propiedad))
+function preheader(text: string): string {
+  return `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;opacity:0;font-size:1px;line-height:1px;color:${CREAM}">${text}</div>`
+}
+
+// Membrete: eyebrow (alcance) + wordmark serif + filete dorado + bajada.
+function letterhead(eyebrow: string): string {
+  return `<tr><td style="background:${NAVY};padding:32px 36px 28px;border-radius:18px 18px 0 0">
+    <div style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:${GOLD};font-weight:700">${eyebrow}</div>
+    <div style="font-family:${SERIF};font-size:26px;letter-spacing:.16em;color:#ffffff;margin-top:12px">SOL&nbsp;ETERNO</div>
+    <div style="width:36px;height:2px;background:${GOLD};margin:14px 0 11px;font-size:0;line-height:0">&nbsp;</div>
+    <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55)">Gestión de Alojamientos</div>
+  </td></tr>`
+}
+
+// Título del reporte dentro del cuerpo blanco (serif, capitalizado).
+function reportTitle(title: string, periodLabel: string): string {
+  return `<div style="padding:26px 36px 0">
+    <div style="font-family:${SERIF};font-size:23px;color:${NAVY};text-transform:capitalize">${title}</div>
+    <div style="font-size:13px;color:${MUTED};margin-top:3px">${periodLabel}</div>
+  </div>`
+}
+
+// Banda de indicadores (pills serif).
+function statBand(items: { value: number | string; label: string; accent: string }[]): string {
+  return `<div style="padding:18px 36px 2px">
+    <table cellpadding="0" cellspacing="0" style="border-collapse:separate"><tr>
+      ${items.map(it => `<td style="padding-right:10px">
+        <table cellpadding="0" cellspacing="0" style="border:1px solid ${LINE};border-radius:12px"><tr>
+          <td style="padding:12px 18px">
+            <div style="font-family:${SERIF};font-size:24px;color:${it.accent};line-height:1">${it.value}</div>
+            <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${MUTED};margin-top:5px">${it.label}</div>
+          </td></tr></table></td>`).join('')}
+    </tr></table>
+  </div>`
+}
+
+// Pie de marca con filete superior.
+function mailFooter(): string {
+  return `<div style="padding:24px 36px 30px">
+    <div style="height:1px;background:${LINE};margin:0 0 16px;font-size:0;line-height:0">&nbsp;</div>
+    <div style="font-family:${SERIF};font-size:13px;letter-spacing:.16em;color:${NAVY}">SOL ETERNO</div>
+    <div style="font-size:11px;color:${MUTED};margin-top:5px">Reporte generado automáticamente · ${fmtDate(new Date())} · Sistema de Gestión de Alojamientos</div>
+  </div>`
+}
+
+// Envoltorio común: fondo cálido, contenedor centrado, membrete + cuerpo blanco + pie.
+function shell(eyebrow: string, preheaderText: string, body: string, width = 660): string {
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+  <body style="margin:0;padding:0;background:${CREAM};-webkit-font-smoothing:antialiased;font-family:-apple-system,Helvetica,Arial,sans-serif">
+    ${preheader(preheaderText)}
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};padding:28px 12px"><tr><td align="center">
+      <table width="${width}" cellpadding="0" cellspacing="0" style="max-width:${width}px;width:100%">
+        ${letterhead(eyebrow)}
+        <tr><td style="background:#ffffff;border:1px solid ${LINE};border-top:none;border-radius:0 0 18px 18px">
+          ${body}
+        </td></tr>
+      </table>
+    </td></tr></table>
+  </body></html>`
 }
 
 function table(title: string, accent: string, rows: Movimiento[]): string {
   const head = ['Hora', 'Nombre', 'RUT', 'Teléfono', 'Empresa', 'Propiedad', 'Hab.', 'Turno']
   const body = rows.length
-    ? rows.map(m => `
-      <tr>
-        <td style="padding:8px 10px;border-bottom:1px solid ${LINE};color:${MUTED};white-space:nowrap">${m.hora}</td>
-        <td style="padding:8px 10px;border-bottom:1px solid ${LINE};color:${INK};font-weight:600">${m.nombre}</td>
-        <td style="padding:8px 10px;border-bottom:1px solid ${LINE};color:${MUTED};font-family:monospace">${m.rut}</td>
-        <td style="padding:8px 10px;border-bottom:1px solid ${LINE};color:${MUTED}">${m.telefono}</td>
-        <td style="padding:8px 10px;border-bottom:1px solid ${LINE};color:${INK}">${m.empresa}</td>
-        <td style="padding:8px 10px;border-bottom:1px solid ${LINE};color:${INK}">${m.propiedad}</td>
-        <td style="padding:8px 10px;border-bottom:1px solid ${LINE};color:${MUTED}">${m.habitacion}</td>
-        <td style="padding:8px 10px;border-bottom:1px solid ${LINE};color:${MUTED}">${m.turno}</td>
+    ? rows.map((m, i) => `
+      <tr style="background:${i % 2 ? '#FBFAF6' : '#ffffff'}">
+        <td style="padding:9px 12px;color:${MUTED};white-space:nowrap;font-variant-numeric:tabular-nums">${m.hora}</td>
+        <td style="padding:9px 12px;color:${INK};font-weight:600">${m.nombre}</td>
+        <td style="padding:9px 12px;color:${MUTED};font-family:'SFMono-Regular',Consolas,monospace;font-size:12px">${m.rut}</td>
+        <td style="padding:9px 12px;color:${MUTED}">${m.telefono}</td>
+        <td style="padding:9px 12px;color:${INK}">${m.empresa}</td>
+        <td style="padding:9px 12px;color:${INK}">${m.propiedad}</td>
+        <td style="padding:9px 12px;color:${MUTED}">${m.habitacion}</td>
+        <td style="padding:9px 12px;color:${MUTED}">${m.turno}</td>
       </tr>`).join('')
-    : `<tr><td colspan="8" style="padding:18px;text-align:center;color:${MUTED}">Sin movimientos en este período.</td></tr>`
+    : `<tr><td colspan="8" style="padding:22px;text-align:center;color:${MUTED};font-style:italic">Sin movimientos en este período.</td></tr>`
 
   return `
-    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 26px">
-      <tr><td style="padding:0 0 10px">
-        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${accent};vertical-align:middle"></span>
-        <span style="font-size:15px;font-weight:700;color:${NAVY};vertical-align:middle;margin-left:8px">${title}</span>
-        <span style="font-size:12px;color:${MUTED};margin-left:8px">(${rows.length})</span>
-      </td></tr>
-      <tr><td>
-        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid ${LINE};border-radius:8px;overflow:hidden">
-          <tr style="background:${CREAM}">
-            ${head.map(h => `<th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:${MUTED};border-bottom:1px solid ${LINE}">${h}</th>`).join('')}
-          </tr>
-          ${body}
-        </table>
-      </td></tr>
-    </table>`
+    <div style="margin:0 0 24px">
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 11px"><tr>
+        <td style="width:3px;height:15px;background:${accent};font-size:0;line-height:0">&nbsp;</td>
+        <td style="padding-left:11px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${NAVY}">${title}</td>
+        <td style="padding-left:9px;font-size:12px;color:${MUTED}">${rows.length}</td>
+      </tr></table>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0;border:1px solid ${LINE};border-radius:10px;overflow:hidden;font-size:13px">
+        <tr style="background:${CREAM}">
+          ${head.map(h => `<th style="text-align:left;padding:9px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${MUTED};border-bottom:1px solid ${LINE}">${h}</th>`).join('')}
+        </tr>
+        ${body}
+      </table>
+    </div>`
 }
 
 export function renderDigestHtml(data: DigestData): string {
-  return `<!doctype html><html><body style="margin:0;background:${CREAM};font-family:Helvetica,Arial,sans-serif">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};padding:24px 0"><tr><td align="center">
-      <table width="660" cellpadding="0" cellspacing="0" style="max-width:660px;width:100%">
-        <tr><td style="background:${NAVY};padding:26px 30px;border-radius:14px 14px 0 0">
-          <div style="font-size:18px;font-weight:700;color:#fff">Sol Eterno</div>
-          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:${GOLD};margin-top:4px">Resumen de movimientos · ${data.scopeText}</div>
-          <div style="font-size:22px;color:#fff;margin-top:14px;text-transform:capitalize">${data.periodWord} · ${data.periodLabel}</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">${data.checkins.length} check-in · ${data.checkouts.length} check-out</div>
-        </td></tr>
-        <tr><td style="background:#fff;padding:26px 30px;border:1px solid ${LINE};border-top:none;border-radius:0 0 14px 14px">
-          ${table('Check-ins', NAVY, data.checkins)}
-          ${table('Check-outs', GOLD, data.checkouts)}
-          <p style="font-size:11px;color:${MUTED};text-align:center;margin:6px 0 0">Generado automáticamente · Sol Eterno · Gestión de Alojamientos</p>
-        </td></tr>
-      </table>
-    </td></tr></table>
-  </body></html>`
+  const eyebrow = `Movimientos · ${data.scopeText}`
+  const body = `
+    ${reportTitle(`Movimientos ${data.periodWord}`, data.periodLabel)}
+    ${statBand([
+      { value: data.checkins.length, label: 'Check-ins', accent: NAVY },
+      { value: data.checkouts.length, label: 'Check-outs', accent: GOLD },
+    ])}
+    <div style="padding:20px 36px 0">
+      ${table('Check-ins', NAVY, data.checkins)}
+      ${table('Check-outs', GOLD, data.checkouts)}
+    </div>
+    ${mailFooter()}`
+  const pre = `${data.checkins.length} check-in · ${data.checkouts.length} check-out — ${data.periodLabel}`
+  return shell(eyebrow, pre, body)
 }
 
-// Tarjeta KPI para el reporte completo.
-function kpiCard(value: number | string, label: string, accent = NAVY): string {
-  return `<td style="padding:0 6px" width="25%">
-    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${LINE};border-top:3px solid ${accent};border-radius:8px">
-      <tr><td style="padding:12px 14px">
-        <div style="font-size:24px;font-weight:700;color:${NAVY}">${value}</div>
-        <div style="font-size:11px;color:${MUTED};margin-top:2px">${label}</div>
-      </td></tr>
-    </table>
-  </td>`
-}
-
-// Tabla de ocupación actual de una propiedad.
-function occBlock(propiedad: string, rows: (Movimiento & { desde: string })[]): string {
-  const head = ['Desde', 'Nombre', 'RUT', 'Teléfono', 'Empresa', 'Hab.', 'Turno']
-  const body = rows.map(m => `
-    <tr>
-      <td style="padding:7px 10px;border-bottom:1px solid ${LINE};color:${MUTED};white-space:nowrap">${m.desde}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid ${LINE};color:${INK};font-weight:600">${m.nombre}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid ${LINE};color:${MUTED};font-family:monospace">${m.rut}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid ${LINE};color:${MUTED}">${m.telefono}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid ${LINE};color:${INK}">${m.empresa}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid ${LINE};color:${MUTED}">${m.habitacion}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid ${LINE};color:${MUTED}">${m.turno}</td>
-    </tr>`).join('')
-  return `
-    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 18px">
-      <tr><td style="padding:0 0 8px;font-size:14px;font-weight:700;color:${NAVY}">${propiedad}
-        <span style="font-size:12px;color:${MUTED};font-weight:400">· ${rows.length} alojado${rows.length !== 1 ? 's' : ''}</span></td></tr>
-      <tr><td>
-        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid ${LINE};border-radius:8px;overflow:hidden">
-          <tr style="background:${CREAM}">${head.map(h => `<th style="text-align:left;padding:7px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:${MUTED};border-bottom:1px solid ${LINE}">${h}</th>`).join('')}</tr>
-          ${body}
-        </table>
-      </td></tr>
-    </table>`
-}
-
-function renderFullHtml(data: DigestData, occupancy: { propiedad: string; rows: (Movimiento & { desde: string })[] }[]): string {
-  const activos = occupancy.reduce((a, g) => a + g.rows.length, 0)
-  return `<!doctype html><html><body style="margin:0;background:${CREAM};font-family:Helvetica,Arial,sans-serif">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};padding:24px 0"><tr><td align="center">
-      <table width="680" cellpadding="0" cellspacing="0" style="max-width:680px;width:100%">
-        <tr><td style="background:${NAVY};padding:26px 30px;border-radius:14px 14px 0 0">
-          <div style="font-size:18px;font-weight:700;color:#fff">Sol Eterno</div>
-          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:${GOLD};margin-top:4px">Reporte completo · ${data.scopeText}</div>
-          <div style="font-size:22px;color:#fff;margin-top:14px;text-transform:capitalize">Resumen ${data.periodWord} · ${data.periodLabel}</div>
-        </td></tr>
-        <tr><td style="background:#fff;padding:24px 30px;border:1px solid ${LINE};border-top:none;border-radius:0 0 14px 14px">
-          <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 -6px 24px"><tr>
-            ${kpiCard(activos, 'Alojados ahora', NAVY)}
-            ${kpiCard(occupancy.length, 'Propiedades', GOLD)}
-            ${kpiCard(data.checkins.length, 'Check-ins del período', NAVY)}
-            ${kpiCard(data.checkouts.length, 'Check-outs del período', GOLD)}
-          </tr></table>
-
-          <div style="font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:${GOLD};margin:0 0 14px">Ocupación actual por hostal</div>
-          ${occupancy.length ? occupancy.map(g => occBlock(g.propiedad, g.rows)).join('') : `<p style="color:${MUTED};font-size:13px">Sin huéspedes alojados actualmente.</p>`}
-
-          <div style="font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:${GOLD};margin:18px 0 14px">Movimientos ${data.periodWord}</div>
-          ${table('Check-ins', NAVY, data.checkins)}
-          ${table('Check-outs', GOLD, data.checkouts)}
-
-          <p style="font-size:11px;color:${MUTED};text-align:center;margin:6px 0 0">Generado automáticamente · Sol Eterno · Gestión de Alojamientos</p>
-        </td></tr>
-      </table>
-    </td></tr></table>
-  </body></html>`
-}
-
-// Cuerpo corto de presentación para el reporte completo (el detalle va en el PDF adjunto).
+// Cuerpo de presentación para el reporte completo (el detalle va en el PDF adjunto).
 function renderIntroHtml(data: DigestData): string {
-  return `<!doctype html><html><body style="margin:0;background:${CREAM};font-family:Helvetica,Arial,sans-serif">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};padding:24px 0"><tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%">
-        <tr><td style="background:${NAVY};padding:26px 30px;border-radius:14px 14px 0 0">
-          <div style="font-size:18px;font-weight:700;color:#fff">Sol Eterno</div>
-          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:${GOLD};margin-top:4px">Reporte de ocupación · ${data.scopeText}</div>
-          <div style="font-size:22px;color:#fff;margin-top:14px;text-transform:capitalize">${data.periodWord} · ${data.periodLabel}</div>
-        </td></tr>
-        <tr><td style="background:#fff;padding:28px 30px;border:1px solid ${LINE};border-top:none;border-radius:0 0 14px 14px">
-          <p style="font-size:15px;color:${INK};line-height:1.6;margin:0 0 16px">
-            Adjuntamos el <strong>reporte completo de ocupación</strong> en PDF, con los indicadores del período, el desglose por propiedad y por empresa, y el listado de huéspedes.
-          </p>
-          <p style="font-size:13px;color:${MUTED};margin:0 0 6px">📎 <strong>reporte-sol-eterno.pdf</strong> adjunto a este correo.</p>
-          <p style="font-size:11px;color:${MUTED};text-align:center;margin:22px 0 0">Generado automáticamente · Sol Eterno · Gestión de Alojamientos</p>
-        </td></tr>
-      </table>
-    </td></tr></table>
-  </body></html>`
+  const eyebrow = `Reporte de ocupación · ${data.scopeText}`
+  const body = `
+    ${reportTitle(`Reporte ${data.periodWord}`, data.periodLabel)}
+    <div style="padding:22px 36px 0">
+      <p style="font-size:15px;color:${INK};line-height:1.65;margin:0 0 20px">
+        Adjuntamos el <strong style="color:${NAVY}">reporte completo de ocupación</strong> en PDF: los indicadores del período con su comparación, el desglose por propiedad y por empresa, y el listado íntegro de huéspedes.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${LINE};border-radius:12px;background:${CREAM}"><tr>
+        <td style="padding:16px 18px;width:1px;vertical-align:middle">
+          <div style="font-family:${SERIF};font-size:11px;font-weight:700;letter-spacing:.1em;color:#ffffff;background:${NAVY};padding:8px 11px;border-radius:7px">PDF</div>
+        </td>
+        <td style="padding:16px 18px 16px 6px;vertical-align:middle">
+          <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${MUTED}">Documento adjunto</div>
+          <div style="font-family:${SERIF};font-size:15px;color:${NAVY};margin-top:3px">reporte-sol-eterno.pdf</div>
+        </td>
+      </tr></table>
+    </div>
+    ${mailFooter()}`
+  const pre = `Reporte ${data.periodWord} de ocupación — ${data.periodLabel} (PDF adjunto)`
+  return shell(eyebrow, pre, body, 560)
 }
 
 function resend() {
