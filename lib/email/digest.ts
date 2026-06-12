@@ -327,12 +327,14 @@ export async function sendSubscription(sub: Subscription, opts?: { test?: boolea
   return { ok: true }
 }
 
-// Recorre las suscripciones activas y envía las que "tocan" esta hora/día (Chile).
+// Recorre las suscripciones activas y envía las que "tocan" hoy (Chile).
+// El plan Hobby solo permite UN cron diario, así que no filtramos por hora:
+// a la corrida diaria salen todas las suscripciones cuyo día corresponde.
+// (El campo send_hour queda para cuando se pase a Pro con cron horario.)
 export async function runDueSubscriptions(ref = new Date()): Promise<{ checked: number; sent: number; details: any[] }> {
   const admin = createAdminClient()
   const { data: subs } = await admin.from('report_subscriptions').select('*').eq('active', true)
 
-  const H = +new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', hour12: false }).format(ref)
   const D = +new Intl.DateTimeFormat('en-GB', { timeZone: TZ, day: '2-digit' }).format(ref)
   const wd = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(ref)
   const W = ({ Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 } as Record<string, number>)[wd]
@@ -340,7 +342,6 @@ export async function runDueSubscriptions(ref = new Date()): Promise<{ checked: 
   const details: any[] = []
   let sent = 0
   for (const s of (subs ?? []) as Subscription[]) {
-    if (s.send_hour !== H) continue
     if (s.frequency === 'weekly' && !(s.weekdays ?? []).includes(W)) continue
     if (s.frequency === 'monthly' && s.monthday !== D) continue
     if (s.last_sent_at && ref.getTime() - new Date(s.last_sent_at).getTime() < 12 * 3600 * 1000) continue
