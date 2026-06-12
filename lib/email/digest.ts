@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 const TZ = 'America/Santiago'
 const NAVY = '#0A2C4A', GOLD = '#E0A33A', INK = '#16242F', MUTED = '#6E6E68', LINE = '#E8E3D9', CREAM = '#F5F2EC'
+const GOLDD = '#9A7016' // oro oscuro, legible como texto sobre blanco
 
 export type Scope = {
   scope_type: 'all' | 'company' | 'property' | 'project' | 'each_project'
@@ -236,17 +237,70 @@ function table(title: string, accent: string, rows: Movimiento[]): string {
     </div>`
 }
 
+// Etiqueta de sección con marca dorada.
+function sectionLabel(text: string): string {
+  return `<div style="margin:0 0 12px">
+    <span style="display:inline-block;width:14px;height:3px;border-radius:2px;background:${GOLD};vertical-align:middle;margin-right:9px"></span>
+    <span style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:${NAVY};vertical-align:middle">${text}</span>
+  </div>`
+}
+
+// Agrupa los movimientos por propiedad y cuenta in/out (vista comprimida).
+function summaryByProperty(checkins: Movimiento[], checkouts: Movimiento[]) {
+  const map = new Map<string, { in: number; out: number }>()
+  for (const m of checkins)  { const e = map.get(m.propiedad) ?? { in: 0, out: 0 }; e.in++;  map.set(m.propiedad, e) }
+  for (const m of checkouts) { const e = map.get(m.propiedad) ?? { in: 0, out: 0 }; e.out++; map.set(m.propiedad, e) }
+  return [...map.entries()]
+    .map(([propiedad, c]) => ({ propiedad, ...c }))
+    .sort((a, b) => (b.in + b.out) - (a.in + a.out) || a.propiedad.localeCompare(b.propiedad))
+}
+
+// Tabla compacta: propiedad · check-in · check-out (un vistazo).
+function propSummaryTable(rows: { propiedad: string; in: number; out: number }[], totIn: number, totOut: number): string {
+  if (!rows.length) return `<p style="color:${MUTED};font-size:13px;font-style:italic;margin:0">Sin movimientos en este período.</p>`
+  const th = (txt: string, align: string) =>
+    `<th style="text-align:${align};padding:9px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${MUTED};border-bottom:1px solid ${LINE}">${txt}</th>`
+  const body = rows.map((r, i) => `
+    <tr style="background:${i % 2 ? '#FBFAF6' : '#ffffff'}">
+      <td style="padding:11px 16px;color:${INK};font-weight:600">${r.propiedad}</td>
+      <td style="padding:11px 16px;text-align:center;font-family:${SERIF};font-size:17px;font-weight:700;color:${r.in ? NAVY : '#C9C4B8'}">${r.in}</td>
+      <td style="padding:11px 16px;text-align:center;font-family:${SERIF};font-size:17px;font-weight:700;color:${r.out ? GOLDD : '#C9C4B8'}">${r.out}</td>
+    </tr>`).join('')
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0;border:1px solid ${LINE};border-radius:10px;overflow:hidden">
+    <tr style="background:${CREAM}">${th('Propiedad', 'left')}${th('Check-in', 'center')}${th('Check-out', 'center')}</tr>
+    ${body}
+    <tr style="background:${CREAM}">
+      <td style="padding:10px 16px;border-top:2px solid ${LINE};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${MUTED}">Total</td>
+      <td style="padding:10px 16px;border-top:2px solid ${LINE};text-align:center;font-weight:700;color:${NAVY}">${totIn}</td>
+      <td style="padding:10px 16px;border-top:2px solid ${LINE};text-align:center;font-weight:700;color:${GOLDD}">${totOut}</td>
+    </tr>
+  </table>`
+}
+
 export function renderDigestHtml(data: DigestData): string {
   const eyebrow = `Movimientos · ${data.scopeText}`
+  const rows = summaryByProperty(data.checkins, data.checkouts)
+  const total = data.checkins.length + data.checkouts.length
   const body = `
     ${reportTitle(`Movimientos ${data.periodWord}`, data.periodLabel)}
     ${statBand([
       { value: data.checkins.length, label: 'Check-ins', accent: NAVY },
       { value: data.checkouts.length, label: 'Check-outs', accent: GOLD },
     ])}
-    <div style="padding:20px 36px 0">
-      ${table('Check-ins', NAVY, data.checkins)}
-      ${table('Check-outs', GOLD, data.checkouts)}
+    <div style="padding:24px 36px 0">
+      ${sectionLabel('Resumen por propiedad')}
+      ${propSummaryTable(rows, data.checkins.length, data.checkouts.length)}
+    </div>
+    <div style="padding:20px 36px 4px">
+      <details>
+        <summary style="list-style:none;cursor:pointer;padding:12px 16px;border:1px solid ${LINE};border-radius:10px;background:#ffffff;font-size:12px;font-weight:700;letter-spacing:.04em;color:${NAVY}">
+          Ver detalle de huéspedes · ${total} movimiento${total !== 1 ? 's' : ''}
+        </summary>
+        <div style="padding:20px 0 0">
+          ${table('Check-ins', NAVY, data.checkins)}
+          ${table('Check-outs', GOLD, data.checkouts)}
+        </div>
+      </details>
     </div>
     ${mailFooter()}`
   const pre = `${data.checkins.length} check-in · ${data.checkouts.length} check-out — ${data.periodLabel}`
