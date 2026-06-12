@@ -20,10 +20,13 @@ export function PrintButton() {
       })
       const res  = await fetch('/api/reportes/pdf?' + params.toString())
       const blob = await res.blob()
+      const cd   = res.headers.get('Content-Disposition') ?? ''
+      const match = cd.match(/filename="?([^"]+)"?/)
+      const fecha = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date()).replace(/\//g, '-')
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href     = url
-      a.download = `reporte-sol-eterno.pdf`
+      a.download = match?.[1] ?? `reporte_sol_eterno_${fecha}.pdf`
       a.click()
       URL.revokeObjectURL(url)
     } finally {
