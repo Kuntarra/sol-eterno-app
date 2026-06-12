@@ -77,7 +77,7 @@ function mapMov(s: any, iso: string): Movimiento {
   }
 }
 
-async function scopeLabel(scope: Scope): Promise<string> {
+export async function scopeLabel(scope: Scope): Promise<string> {
   const admin = createAdminClient()
   if (scope.scope_type === 'project' && scope.project_id) {
     const { data } = await admin.from('projects').select('name, companies(name)').eq('id', scope.project_id).single()
@@ -97,7 +97,7 @@ async function scopeLabel(scope: Scope): Promise<string> {
 }
 
 // Aplica el filtro de alcance a una query de stays.
-async function buildScopeFilter(scope: Scope) {
+export async function buildScopeFilter(scope: Scope) {
   const admin = createAdminClient()
   let roomIds: string[] | null = null
   if (scope.scope_type === 'property' && scope.property_ids?.length) {
@@ -281,6 +281,28 @@ function renderFullHtml(data: DigestData, occupancy: { propiedad: string; rows: 
   </body></html>`
 }
 
+// Cuerpo corto de presentación para el reporte completo (el detalle va en el PDF adjunto).
+function renderIntroHtml(data: DigestData): string {
+  return `<!doctype html><html><body style="margin:0;background:${CREAM};font-family:Helvetica,Arial,sans-serif">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};padding:24px 0"><tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%">
+        <tr><td style="background:${NAVY};padding:26px 30px;border-radius:14px 14px 0 0">
+          <div style="font-size:18px;font-weight:700;color:#fff">Sol Eterno</div>
+          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:${GOLD};margin-top:4px">Reporte de ocupación · ${data.scopeText}</div>
+          <div style="font-size:22px;color:#fff;margin-top:14px;text-transform:capitalize">${data.periodWord} · ${data.periodLabel}</div>
+        </td></tr>
+        <tr><td style="background:#fff;padding:28px 30px;border:1px solid ${LINE};border-top:none;border-radius:0 0 14px 14px">
+          <p style="font-size:15px;color:${INK};line-height:1.6;margin:0 0 16px">
+            Adjuntamos el <strong>reporte completo de ocupación</strong> en PDF, con los indicadores del período, el desglose por propiedad y por empresa, y el listado de huéspedes.
+          </p>
+          <p style="font-size:13px;color:${MUTED};margin:0 0 6px">📎 <strong>reporte-sol-eterno.pdf</strong> adjunto a este correo.</p>
+          <p style="font-size:11px;color:${MUTED};text-align:center;margin:22px 0 0">Generado automáticamente · Sol Eterno · Gestión de Alojamientos</p>
+        </td></tr>
+      </table>
+    </td></tr></table>
+  </body></html>`
+}
+
 function resend() {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return null
@@ -307,22 +329,27 @@ export async function sendSubscription(sub: Subscription, opts?: { test?: boolea
     return okAll ? { ok: true } : { ok: false, reason: lastReason }
   }
 
-  const freq = opts?.test ? sub.frequency : sub.frequency
+  const freq = sub.frequency
   const data = await getDigestData(sub, freq, opts?.ref)
 
   let subject: string
   let html: string
+  let attachments: { filename: string; content: Buffer }[] | undefined
+
   if (sub.report_type === 'full') {
-    const occupancy = await getOccupancy(sub)
-    const activos = occupancy.reduce((a, g) => a + g.rows.length, 0)
-    subject = `Sol Eterno · Reporte completo ${data.periodWord} (${data.scopeText}) — ${activos} alojados`
-    html = renderFullHtml(data, occupancy)
+    // Reporte completo → PDF gráfico adjunto + correo de presentación corto.
+    const { renderReportPdf } = await import('@/lib/email/report-pdf')
+    const pdf = await renderReportPdf(sub, freq, opts?.ref)
+    const slug = data.scopeText.toLowerCase().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'reporte'
+    subject = `Sol Eterno · Reporte ${data.periodWord} — ${data.scopeText}`
+    html = renderIntroHtml(data)
+    attachments = [{ filename: `reporte-sol-eterno-${slug}.pdf`, content: pdf }]
   } else {
     subject = `Sol Eterno · Movimientos ${data.periodWord} (${data.scopeText}) — ${data.checkins.length} in / ${data.checkouts.length} out`
     html = renderDigestHtml(data)
   }
 
-  const { error } = await r.emails.send({ from: FROM, to: [sub.email], subject, html })
+  const { error } = await r.emails.send({ from: FROM, to: [sub.email], subject, html, attachments })
   if (error) return { ok: false, reason: error.message }
   return { ok: true }
 }
