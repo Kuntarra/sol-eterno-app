@@ -38,6 +38,17 @@ const s = StyleSheet.create({
 
 function barColor(pct: number) { return pct >= 70 ? N : A }
 
+const UP = '#0F8B6C', DOWN = '#C0392B'
+function deltaColor(v: number | null, positiveGood = true) {
+  if (v === null || v === 0) return G
+  return (v > 0) === positiveGood ? UP : DOWN
+}
+function deltaText(v: number | null, suffix: string) {
+  if (v === null) return '—'
+  const arrow = v > 0 ? '▲' : v < 0 ? '▼' : '•'
+  return `${arrow} ${v > 0 ? '+' : ''}${v}${suffix}`
+}
+
 export async function GET(req: NextRequest) {
   const sp     = req.nextUrl.searchParams
   const now    = new Date()
@@ -65,19 +76,27 @@ export async function GET(req: NextRequest) {
   const periodoInicio = new Date(desdeStr + 'T00:00:00')
   const periodoFin    = new Date(hastaStr + 'T23:59:59')
 
+  // Período anterior (para comparación)
+  const prevInicio = new Date(periodoInicio)
+  const prevFin    = new Date(periodoInicio.getTime() - 1000)
+  if (periodo === 'mensual')    prevInicio.setMonth(prevInicio.getMonth() - 1)
+  else if (periodo === 'anual') prevInicio.setFullYear(prevInicio.getFullYear() - 1)
+  else                          prevInicio.setTime(periodoInicio.getTime() - (periodoFin.getTime() - periodoInicio.getTime()))
+  const diasPrev = Math.max(1, Math.round((prevFin.getTime() - prevInicio.getTime()) / 86400000))
+  const tieneComp = periodo !== 'todo'
+
   const admin = createAdminClient()
-  const desdeISO = desdeStr + 'T00:00:00'
   const hastaISO = hastaStr + 'T23:59:59'
 
   const [{ data: staysRaw }, { data: allocsRaw }] = await Promise.all([
     admin.from('stays').select(`
-      id, shift_type, checked_in_at, checked_out_at,
+      id, guest_id, shift_type, checked_in_at, checked_out_at,
       guests(first_name, last_name_paterno, rut),
       rooms(id, number, type, capacity, properties(id, name)),
       companies(id, name)
     `)
     .lte('checked_in_at', hastaISO)
-    .or(`checked_out_at.gte.${desdeISO},checked_out_at.is.null`)
+    .or(`checked_out_at.gte.${prevInicio.toISOString()},checked_out_at.is.null`)
     .order('checked_in_at', { ascending: true })
     .limit(5000),
     admin.from('allocations').select(`room_id, company_id, rooms(id, capacity, properties(id, name)), companies(id, name)`),
@@ -88,22 +107,39 @@ export async function GET(req: NextRequest) {
   if (filtroEmpresa   !== 'todas') { stays = stays.filter(s => (s.companies as any)?.id === filtroEmpresa); allocs = allocs.filter(a => (a.companies as any)?.id === filtroEmpresa) }
   if (filtroPropiedad !== 'todas') { stays = stays.filter(s => (s.rooms as any)?.properties?.id === filtroPropiedad); allocs = allocs.filter(a => (a.rooms as any)?.properties?.id === filtroPropiedad) }
 
-  function noches(s: typeof stays[0]) {
+  function nochesEn(s: typeof stays[0], pIni: Date, pFin: Date) {
     const entrada = new Date(s.checked_in_at)
-    const salida  = s.checked_out_at ? new Date(s.checked_out_at) : periodoFin
-    const ini = entrada < periodoInicio ? periodoInicio : entrada
-    const fin = salida  > periodoFin    ? periodoFin    : salida
+    const salida  = s.checked_out_at ? new Date(s.checked_out_at) : pFin
+    const ini = entrada < pIni ? pIni : entrada
+    const fin = salida  > pFin ? pFin : salida
     if (fin <= ini) return 0
     return Math.ceil((fin.getTime() - ini.getTime()) / 86400000)
   }
+  const noches = (s: typeof stays[0]) => nochesEn(s, periodoInicio, periodoFin)
 
-  const nochesH = stays.reduce((a,s) => a + noches(s), 0)
   const habMap  = new Map<string,number>()
   for (const a of allocs) { const r = a.rooms as any; if (r?.id) habMap.set(r.id, r.capacity ?? 1) }
   const camasDisp  = [...habMap.values()].reduce((a,c) => a+c, 0)
+
+  // Período anterior (sobre la ventana ampliada, antes de filtrar)
+  const nochesPrev = stays.reduce((a,s) => a + nochesEn(s, prevInicio, prevFin), 0)
+  const estadiasPrev = stays.filter(s => nochesEn(s, prevInicio, prevFin) > 0).length
+  const ocupPctPrev = camasDisp > 0 ? Math.round((nochesPrev / (camasDisp * diasPrev)) * 100) : 0
+
+  // Narrow al período actual
+  stays = stays.filter(s => noches(s) > 0)
+
+  const nochesH = stays.reduce((a,s) => a + noches(s), 0)
   const camasNoche = camasDisp * diasPeriodo
   const camasLibres = Math.max(0, camasNoche - nochesH)
   const ocupPct    = camasNoche > 0 ? Math.round((nochesH / camasNoche) * 100) : 0
+  const estadiaPromedio = stays.length > 0 ? Math.round((nochesH / stays.length) * 10) / 10 : 0
+  const huespedesUnicos = new Set(stays.map(s => (s as any).guest_id).filter(Boolean)).size
+  const activosAlCierre = stays.filter(s => !s.checked_out_at).length
+  const deltaOcupPts = ocupPct - ocupPctPrev
+  const deltaNochesPc = nochesPrev > 0 ? Math.round(((nochesH - nochesPrev) / nochesPrev) * 100) : null
+  const deltaEstadias = stays.length - estadiasPrev
+  const unidad = periodo === 'anual' ? 'año ant.' : periodo === 'mensual' ? 'mes ant.' : 'período ant.'
 
   const propMap = new Map<string,{nombre:string;camasNoche:number;usado:number;estadias:number}>()
   for (const a of allocs) {
@@ -141,23 +177,33 @@ export async function GET(req: NextRequest) {
             <Text style={s.hTitle}>{tituloPeriodo}</Text>
             <Text style={s.hSub}>{diasPeriodo} días · {porPropiedad.length} propiedad{porPropiedad.length!==1?'es':''} · Generado el {hoy}</Text>
           </View>
-          <View>
+          <View style={{ alignItems: 'flex-end' }}>
             <Text style={s.hPct}>{ocupPct}%</Text>
             <Text style={s.hSub}>Ocupación del período</Text>
+            {tieneComp && (
+              <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', marginTop: 3, color: deltaColor(deltaOcupPts) }}>
+                {deltaText(deltaOcupPts, ` pts vs ${unidad}`)}
+              </Text>
+            )}
           </View>
         </View>
 
-        {/* KPIs */}
+        {/* KPIs operativos */}
         <View style={s.kpiGrid}>
           {[
-            { label:'Noches-huésped',    val: nochesH.toLocaleString('es-CL'),      sub:`Suma de noches de todos los huéspedes`, color: N },
-            { label:'Camas-noche disp.', val: camasNoche.toLocaleString('es-CL'),   sub:`${camasDisp} camas × ${diasPeriodo} días`, color: A },
-            { label:'Camas-noche libres',val: camasLibres.toLocaleString('es-CL'),  sub:`${100-ocupPct}% sin ocupar`, color: G },
-            { label:'Estadías totales',  val: stays.length.toString(),              sub:`${stays.filter(s=>!s.checked_out_at).length} activas al cierre`, color: A },
+            { label:'Noches-huésped',  val: nochesH.toLocaleString('es-CL'), sub:`${camasLibres.toLocaleString('es-CL')} camas-noche libres`, color: N, delta: deltaNochesPc, dSuffix:'% vs ant.', dGood:true },
+            { label:'Estadía promedio',val: `${estadiaPromedio} d`,          sub:`${huespedesUnicos} huéspedes únicos`, color: A, delta: null, dSuffix:'', dGood:true },
+            { label:'Estadías',        val: stays.length.toString(),         sub:`${activosAlCierre} activas al cierre`, color: A, delta: deltaEstadias, dSuffix:` vs ant.`, dGood:true },
+            { label:'Capacidad',       val: `${camasDisp}`,                  sub:`${camasNoche.toLocaleString('es-CL')} camas-noche · ${diasPeriodo} días`, color: G, delta: null, dSuffix:'', dGood:true },
           ].map(k => (
             <View key={k.label} style={[s.kpiCard, { borderTopWidth: 3, borderTopColor: k.color }]}>
               <Text style={s.kpiVal}>{k.val}</Text>
               <Text style={s.kpiLabel}>{k.label}</Text>
+              {tieneComp && k.delta !== null && (
+                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', marginTop: 1, color: deltaColor(k.delta, k.dGood) }}>
+                  {deltaText(k.delta, k.dSuffix)}
+                </Text>
+              )}
               <Text style={s.kpiSub}>{k.sub}</Text>
             </View>
           ))}
