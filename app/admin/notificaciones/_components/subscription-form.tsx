@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useActionState } from 'react'
 import { addSubscription } from '@/app/actions/digest'
-import { Plus } from 'lucide-react'
+import { Plus, CheckCircle2, AlertTriangle } from 'lucide-react'
 
 const HOURS = [6, 7, 8, 9, 12, 13, 18, 20, 21]
 const WEEKDAYS: [number, string][] = [[1, 'Lun'], [2, 'Mar'], [3, 'Mié'], [4, 'Jue'], [5, 'Vie'], [6, 'Sáb'], [7, 'Dom']]
@@ -20,9 +20,21 @@ export function SubscriptionForm({
   const [scope, setScope] = useState<'all' | 'company' | 'property' | 'project' | 'each_project'>('all')
   const [freq, setFreq] = useState<'daily' | 'weekly' | 'monthly'>('daily')
   const [reportType, setReportType] = useState<'movements' | 'full'>('movements')
+  const [state, formAction, pending] = useActionState(addSubscription, null)
 
   return (
-    <form action={addSubscription} className="space-y-5">
+    <form action={formAction} className="space-y-5">
+      {state?.ok && (
+        <div className="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-700 font-medium flex items-center gap-2">
+          <CheckCircle2 size={15} strokeWidth={2.25} className="shrink-0" />{state.ok} Puedes crear otra ajustando los campos.
+        </div>
+      )}
+      {state?.error && (
+        <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 font-medium flex items-center gap-2">
+          <AlertTriangle size={15} strokeWidth={2} className="shrink-0" />{state.error}
+        </div>
+      )}
+
       {/* Destinatario */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -141,9 +153,9 @@ export function SubscriptionForm({
         </div>
       )}
 
-      <button type="submit" className="btn-primary">
+      <button type="submit" className="btn-primary disabled:opacity-60" disabled={pending}>
         <Plus size={15} strokeWidth={2} />
-        Crear suscripción
+        {pending ? 'Creando…' : 'Crear suscripción'}
       </button>
     </form>
   )

@@ -17,12 +17,15 @@ async function requireAdmin() {
 
 const back = (q: string) => redirect('/admin/notificaciones?' + q)
 
-export async function addSubscription(formData: FormData) {
+export type SubResult = { ok?: string; error?: string } | null
+
+// Usada con useActionState → devuelve resultado SIN recargar (no pierde el formulario).
+export async function addSubscription(_prev: SubResult, formData: FormData): Promise<SubResult> {
   const supabase = await requireAdmin()
 
   const email = ((formData.get('email') as string) ?? '').trim().toLowerCase()
   const name  = ((formData.get('name') as string) ?? '').trim() || null
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) back('error=' + encodeURIComponent('Correo inválido.'))
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Correo inválido.' }
 
   const scope_type = (formData.get('scope_type') as string) || 'all'
   const report_type = (formData.get('report_type') as string) === 'full' ? 'full' : 'movements'
@@ -34,17 +37,17 @@ export async function addSubscription(formData: FormData) {
   const monthday = frequency === 'monthly' ? Number(formData.get('monthday') || 1) : null
   const send_hour = Number(formData.get('send_hour') || 8)
 
-  if (scope_type === 'company' && !company_id) back('error=' + encodeURIComponent('Selecciona una empresa.'))
-  if (scope_type === 'project' && !project_id) back('error=' + encodeURIComponent('Selecciona un proyecto.'))
-  if (scope_type === 'property' && (!property_ids || property_ids.length === 0)) back('error=' + encodeURIComponent('Selecciona al menos una propiedad.'))
-  if (frequency === 'weekly' && (!weekdays || weekdays.length === 0)) back('error=' + encodeURIComponent('Selecciona al menos un día de la semana.'))
+  if (scope_type === 'company' && !company_id) return { error: 'Selecciona una empresa.' }
+  if (scope_type === 'project' && !project_id) return { error: 'Selecciona un proyecto.' }
+  if (scope_type === 'property' && (!property_ids || property_ids.length === 0)) return { error: 'Selecciona al menos una propiedad.' }
+  if (frequency === 'weekly' && (!weekdays || weekdays.length === 0)) return { error: 'Selecciona al menos un día de la semana.' }
 
   const { error } = await supabase.from('report_subscriptions').insert({
     email, name, scope_type, report_type, company_id, project_id, property_ids, frequency, weekdays, monthday, send_hour,
   })
-  if (error) back('error=' + encodeURIComponent(error.message))
+  if (error) return { error: error.message }
   revalidatePath('/admin/notificaciones')
-  back('ok=' + encodeURIComponent('Suscripción creada.'))
+  return { ok: `Suscripción creada para ${email}.` }
 }
 
 export async function toggleSubscription(id: string, active: boolean) {
