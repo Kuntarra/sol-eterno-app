@@ -268,7 +268,7 @@ function renderIntroHtml(data: DigestData): string {
         </td>
         <td style="padding:16px 18px 16px 6px;vertical-align:middle">
           <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${MUTED}">Documento adjunto</div>
-          <div style="font-family:${SERIF};font-size:15px;color:${NAVY};margin-top:3px">reporte-sol-eterno.pdf</div>
+          <div style="font-family:${SERIF};font-size:15px;color:${NAVY};margin-top:3px">reporte_sol_eterno.pdf</div>
         </td>
       </tr></table>
     </div>
@@ -314,10 +314,11 @@ export async function sendSubscription(sub: Subscription, opts?: { test?: boolea
     // Reporte completo → PDF gráfico adjunto + correo de presentación corto.
     const { renderReportPdf } = await import('@/lib/email/report-pdf')
     const pdf = await renderReportPdf(sub, freq, opts?.ref)
-    const slug = data.scopeText.toLowerCase().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'reporte'
+    const slug = data.scopeText.toLowerCase().replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '') || 'general'
+    const fechaArchivo = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, day: '2-digit', month: '2-digit', year: 'numeric' }).format(opts?.ref ?? new Date()).replace(/\//g, '-')
     subject = `Sol Eterno · Reporte ${data.periodWord} — ${data.scopeText}`
     html = renderIntroHtml(data)
-    attachments = [{ filename: `reporte-sol-eterno-${slug}.pdf`, content: pdf }]
+    attachments = [{ filename: `reporte_sol_eterno_${slug}_${fechaArchivo}.pdf`, content: pdf }]
   } else {
     subject = `Sol Eterno · Movimientos ${data.periodWord} (${data.scopeText}) — ${data.checkins.length} in / ${data.checkouts.length} out`
     html = renderDigestHtml(data)

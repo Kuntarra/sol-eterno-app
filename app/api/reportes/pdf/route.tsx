@@ -3,19 +3,23 @@ import { formatDate as fmt } from "@/lib/format"
 import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { createAdminClient } from '@/lib/supabase/admin'
 import React from 'react'
-import { renderToBuffer, Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
+import { renderToBuffer, Document, Page, View, Text, StyleSheet, Svg, Circle } from '@react-pdf/renderer'
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
-const N = '#0A2C4A', A = '#E0A33A', G = '#6C757D'
+const N = '#0A2C4A', A = '#E0A33A', G = '#6C757D', CREAM = '#F5F2EC', LINEW = '#E8E3D9'
 
 const s = StyleSheet.create({
   page:       { fontFamily: 'Helvetica', fontSize: 8, padding: 36, backgroundColor: '#ffffff', color: '#212529' },
-  header:     { backgroundColor: N, color: '#ffffff', padding: 14, borderRadius: 6, marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  hTitle:     { fontSize: 20, fontFamily: 'Helvetica-Bold', color: '#ffffff' },
-  hSub:       { fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
-  hLabel:     { fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: 1, marginBottom: 3 },
-  hPct:       { fontSize: 32, fontFamily: 'Helvetica-Bold', color: A, textAlign: 'right' },
+  header:     { backgroundColor: N, color: '#ffffff', padding: '22 24', borderTopLeftRadius: 8, borderTopRightRadius: 8, marginBottom: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  hEyebrow:   { fontSize: 8, color: A, letterSpacing: 2.4, fontFamily: 'Helvetica-Bold', marginBottom: 8 },
+  hWordmark:  { fontSize: 23, fontFamily: 'Times-Bold', color: '#ffffff', letterSpacing: 3 },
+  hRule:      { width: 34, height: 2, backgroundColor: A, marginTop: 11, marginBottom: 9 },
+  hTagline:   { fontSize: 7.5, color: 'rgba(255,255,255,0.55)', letterSpacing: 2 },
+  hGaugeLabel:{ fontSize: 7.5, color: 'rgba(255,255,255,0.6)', marginTop: 7, textAlign: 'center' },
+  metaStrip:  { backgroundColor: CREAM, borderLeft: `1px solid ${LINEW}`, borderRight: `1px solid ${LINEW}`, borderBottom: `1px solid ${LINEW}`, padding: '11 16', marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  metaTitle:  { fontSize: 12, fontFamily: 'Times-Bold', color: N },
+  metaSub:    { fontSize: 8, color: G },
   kpiGrid:    { flexDirection: 'row', gap: 8, marginBottom: 12 },
   kpiCard:    { flex: 1, border: '1px solid #e9ecef', borderRadius: 5, padding: 9 },
   kpiVal:     { fontSize: 16, fontFamily: 'Helvetica-Bold', color: N },
@@ -47,6 +51,28 @@ function deltaText(v: number | null, suffix: string) {
   if (v === null) return '—'
   const arrow = v > 0 ? '▲' : v < 0 ? '▼' : '•'
   return `${arrow} ${v > 0 ? '+' : ''}${v}${suffix}`
+}
+
+// Gauge circular (anillo SVG) con el % al centro.
+function Gauge({ pct }: { pct: number }) {
+  const SIZE = 86, R = 33, SW = 9, CX = SIZE / 2
+  const C = 2 * Math.PI * R
+  const dash = Math.min(pct, 100) / 100 * C
+  return (
+    <View style={{ width: SIZE, height: SIZE, position: 'relative' }}>
+      <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
+        <Circle cx={CX} cy={CX} r={R} stroke="rgba(255,255,255,0.16)" strokeWidth={SW} fill="none" />
+        <Circle
+          cx={CX} cy={CX} r={R} stroke={A} strokeWidth={SW} fill="none"
+          strokeDasharray={`${dash} ${C - dash}`} strokeLinecap="round"
+          transform={`rotate(-90 ${CX} ${CX})`}
+        />
+      </Svg>
+      <View style={{ position: 'absolute', top: 0, left: 0, width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 22, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>{pct}%</Text>
+      </View>
+    </View>
+  )
 }
 
 export async function GET(req: NextRequest) {
@@ -170,22 +196,29 @@ export async function GET(req: NextRequest) {
     <Document title={`Reporte Sol Eterno — ${tituloPeriodo}`}>
       <Page size="LETTER" style={s.page}>
 
-        {/* Header */}
+        {/* Membrete de marca */}
         <View style={s.header}>
           <View>
-            <Text style={s.hLabel}>REPORTE DE OCUPACIÓN — SOL ETERNO</Text>
-            <Text style={s.hTitle}>{tituloPeriodo}</Text>
-            <Text style={s.hSub}>{diasPeriodo} días · {porPropiedad.length} propiedad{porPropiedad.length!==1?'es':''} · Generado el {hoy}</Text>
+            <Text style={s.hEyebrow}>REPORTE DE OCUPACIÓN</Text>
+            <Text style={s.hWordmark}>SOL ETERNO</Text>
+            <View style={s.hRule} />
+            <Text style={s.hTagline}>GESTIÓN DE ALOJAMIENTOS</Text>
           </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text style={s.hPct}>{ocupPct}%</Text>
-            <Text style={s.hSub}>Ocupación del período</Text>
+          <View style={{ alignItems: 'center' }}>
+            <Gauge pct={ocupPct} />
+            <Text style={s.hGaugeLabel}>Ocupación del período</Text>
             {tieneComp && (
-              <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', marginTop: 3, color: deltaColor(deltaOcupPts) }}>
+              <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', marginTop: 2, color: deltaColor(deltaOcupPts) }}>
                 {deltaText(deltaOcupPts, ` pts vs ${unidad}`)}
               </Text>
             )}
           </View>
+        </View>
+
+        {/* Franja meta */}
+        <View style={s.metaStrip}>
+          <Text style={s.metaTitle}>{tituloPeriodo}</Text>
+          <Text style={s.metaSub}>{diasPeriodo} días · {porPropiedad.length} propiedad{porPropiedad.length!==1?'es':''} · Generado el {hoy}</Text>
         </View>
 
         {/* KPIs operativos */}
@@ -292,11 +325,12 @@ export async function GET(req: NextRequest) {
   )
 
   const buffer = await renderToBuffer(doc)
+  const fechaArchivo = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(now).replace(/\//g, '-')
 
   return new NextResponse(buffer as unknown as BodyInit, {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="reporte-sol-eterno-${tituloPeriodo.replace(/\s/g,'-')}.pdf"`,
+      'Content-Disposition': `attachment; filename="reporte_sol_eterno_${fechaArchivo}.pdf"`,
     },
   })
 }
