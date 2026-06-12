@@ -67,12 +67,12 @@ function mapMov(s: any, iso: string): Movimiento {
   const g = s.guests as any, r = s.rooms as any, c = s.companies as any
   return {
     nombre: `${g?.first_name ?? ''} ${g?.last_name_paterno ?? ''}`.trim() || '—',
-    rut: g?.rut ?? '—',
-    telefono: g?.phone ?? '—',
-    empresa: c?.name ?? '—',
-    propiedad: r?.properties?.name ?? '—',
-    habitacion: r?.number ?? '—',
-    turno: s.shift_type ?? '—',
+    rut: g?.rut || '—',
+    telefono: g?.phone || '—',
+    empresa: c?.name || '—',
+    propiedad: r?.properties?.name || '—',
+    habitacion: r?.number || '—',
+    turno: s.shift_type || '—',
     hora: horaCL(iso),
   }
 }
