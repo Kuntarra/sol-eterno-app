@@ -3,7 +3,7 @@ import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PrintButton } from './_components/print-button'
 import { ReportFilters } from './_components/report-filters'
-import { Bed, CircleSlash, Building2, Briefcase, FileSpreadsheet } from 'lucide-react'
+import { Bed, Moon, Users, CalendarDays, FileSpreadsheet } from 'lucide-react'
 import { formatDateShort as fmt } from '@/lib/format'
 
 const MONTHS = [
@@ -54,13 +54,23 @@ export default async function ReportesPage({
   const periodoFin    = new Date(hastaStr + 'T23:59:59')
   const hasta         = hastaStr + 'T23:59:59'
 
+  // ── Período ANTERIOR (para comparación / tendencias) ──────────
+  const prevInicio = new Date(periodoInicio)
+  const prevFin    = new Date(periodoInicio.getTime() - 1000) // 1s antes del inicio actual
+  if (periodo === 'mensual')      prevInicio.setMonth(prevInicio.getMonth() - 1)
+  else if (periodo === 'anual')   prevInicio.setFullYear(prevInicio.getFullYear() - 1)
+  else                            prevInicio.setTime(periodoInicio.getTime() - (periodoFin.getTime() - periodoInicio.getTime()))
+  const diasPrevPeriodo = Math.max(1, Math.round((prevFin.getTime() - prevInicio.getTime()) / 86400000))
+  const tieneComparacion = periodo !== 'todo'
+
   const admin = createAdminClient()
 
-  const desde = desdeStr + 'T00:00:00'
+  // Traemos estadías que solapan desde el período anterior (para comparar)
+  const desde = prevInicio.toISOString()
 
   const [{ data: staysRaw }, { data: allocsRaw }, { data: empresasRaw }, { data: propiedadesRaw }, { data: proyectosRaw }] = await Promise.all([
     admin.from('stays').select(`
-      id, shift_type, checked_in_at, checked_out_at,
+      id, guest_id, shift_type, checked_in_at, checked_out_at,
       guests(first_name, last_name_paterno, rut),
       rooms(id, number, type, capacity, properties(id, name, cities(name))),
       companies(id, name)
@@ -108,37 +118,51 @@ export default async function ReportesPage({
     allocs = allocs.filter(a => (a.rooms as any)?.properties?.id === filtroPropiedad)
   }
 
-  // ── Cálculo de noches dentro del período (ceil: 1 hora = 1 noche) ──
-  function noches(s: typeof stays[0]) {
+  // ── Noches dentro de una ventana cualquiera (ceil: 1h = 1 noche) ──
+  const nochesEn = (s: typeof stays[0], ini: Date, fin: Date) => {
     const entrada = new Date(s.checked_in_at)
-    const salida  = s.checked_out_at ? new Date(s.checked_out_at) : periodoFin
-    const ini = entrada < periodoInicio ? periodoInicio : entrada
-    const fin = salida  > periodoFin    ? periodoFin    : salida
-    if (fin <= ini) return 0
-    return Math.ceil((fin.getTime() - ini.getTime()) / 86400000)
+    const salida  = s.checked_out_at ? new Date(s.checked_out_at) : fin
+    const a = entrada < ini ? ini : entrada
+    const b = salida  > fin ? fin : salida
+    return b <= a ? 0 : Math.ceil((b.getTime() - a.getTime()) / 86400000)
   }
+  const noches = (s: typeof stays[0]) => nochesEn(s, periodoInicio, periodoFin)
 
-  // ── Métricas globales ────────────────────────────────────────
-  const nochesHuesped = stays.reduce((acc, s) => acc + noches(s), 0)
-
-  // Camas asignadas únicas
+  // ── Capacidad (camas asignadas) ──────────────────────────────
   const habitacionesAsignadas = new Map<string, number>()
   for (const a of allocs) {
     const r = a.rooms as any
     if (r?.id) habitacionesAsignadas.set(r.id, r.capacity ?? 1)
   }
   const camasDisponibles  = [...habitacionesAsignadas.values()].reduce((acc, c) => acc + c, 0)
+
+  // ── Período ANTERIOR (con el set amplio, antes de recortar) ───
+  const nochesPrev      = stays.reduce((a, s) => a + nochesEn(s, prevInicio, prevFin), 0)
+  const camasNochePrev  = camasDisponibles * diasPrevPeriodo
+  const ocupacionPctPrev = camasNochePrev > 0 ? Math.round((nochesPrev / camasNochePrev) * 100) : 0
+  const estadiasPrev    = stays.filter(s => nochesEn(s, prevInicio, prevFin) > 0).length
+
+  // ── Recortar al período ACTUAL para todo lo demás ────────────
+  stays = stays.filter(s => noches(s) > 0)
+
+  // ── Métricas globales (período actual) ───────────────────────
+  const nochesHuesped = stays.reduce((acc, s) => acc + noches(s), 0)
   const camasNocheTotal   = camasDisponibles * diasPeriodo
   const camasNocheLibres  = Math.max(0, camasNocheTotal - nochesHuesped)
-  // Camas promedio ocupadas por día = noches-huésped ÷ días del período
   const camasOcupadas     = diasPeriodo > 0 ? Math.round((nochesHuesped / diasPeriodo) * 10) / 10 : 0
-  const camasLibresDia    = Math.max(0, camasDisponibles - camasOcupadas)
-  const ocupacionPct      = camasNocheTotal > 0
-    ? Math.round((nochesHuesped / camasNocheTotal) * 100)
-    : 0
+  const ocupacionPct      = camasNocheTotal > 0 ? Math.round((nochesHuesped / camasNocheTotal) * 100) : 0
+  const estadiaPromedio   = stays.length > 0 ? Math.round((nochesHuesped / stays.length) * 10) / 10 : 0
+  const huespedesUnicos   = new Set(stays.map(s => (s as any).guest_id).filter(Boolean)).size
+  const activosAlCierre   = stays.filter(s => !s.checked_out_at).length
+
+  // ── Deltas vs período anterior ───────────────────────────────
+  const deltaOcupPts  = ocupacionPct - ocupacionPctPrev                 // puntos porcentuales
+  const deltaNochesPc = nochesPrev > 0 ? Math.round(((nochesHuesped - nochesPrev) / nochesPrev) * 100) : null
+  const deltaEstadias = stays.length - estadiasPrev
 
   const propiedadesSet = new Set(allocs.map(a => (a.rooms as any)?.properties?.id).filter(Boolean))
   const nPropiedades   = propiedadesSet.size
+  const unidad = periodo === 'anual' ? 'año' : periodo === 'mensual' ? 'mes' : 'período'
 
   // ── Por propiedad ────────────────────────────────────────────
   const propMap = new Map<string, { nombre: string; camasTotal: number; camasNoche: number; nochesUsadas: number; estadias: number }>()
@@ -225,51 +249,46 @@ export default async function ReportesPage({
 
       <div id="reporte-contenido" className="max-w-6xl mx-auto px-8 py-8 space-y-8">
 
-        {/* ── KPIs + gauge ── */}
+        {/* ── Héroe: ocupación + KPIs operativos ── */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Gauge */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-[var(--gray-200)] p-6 flex flex-col items-center justify-center">
-            <p className="text-xs font-semibold text-[var(--gray-600)] uppercase tracking-widest mb-4">Ocupación del período</p>
-            <div className="relative w-36 h-36">
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6 flex flex-col items-center">
+            <span className="section-label">Ocupación del período</span>
+            <div className="relative w-40 h-40 mt-1">
               <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" strokeWidth="10"/>
-                <circle cx="60" cy="60" r="54" fill="none"
+                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--gray-200)" strokeWidth="9"/>
+                <circle cx="60" cy="60" r="52" fill="none"
                   stroke={ocupacionPct >= 70 ? '#0A2C4A' : '#E0A33A'}
-                  strokeWidth="10" strokeLinecap="round"
-                  strokeDasharray={`${dash} ${circ}`}
-                />
+                  strokeWidth="9" strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-display text-3xl font-semibold text-[var(--navy)]">{ocupacionPct}%</span>
-                <span className="text-xs text-[var(--gray-500)]">ocupado</span>
+                <span className="font-display text-[2.6rem] font-semibold leading-none text-[var(--navy)] data-number">{ocupacionPct}%</span>
+                <span className="text-xs text-[var(--gray-500)] mt-1">ocupado</span>
               </div>
             </div>
-            <div className="mt-4 w-full space-y-1.5 text-xs text-[var(--gray-600)]">
-              <div className="flex justify-between">
-                <span>Camas-{periodo === 'anual' ? 'año' : 'mes'} disponibles</span>
-                <span className="font-semibold text-[var(--navy)]">{camasNocheTotal.toLocaleString('es-CL')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Camas-{periodo === 'anual' ? 'año' : 'mes'} usadas</span>
-                <span className="font-semibold text-[var(--amber-dark)]">{nochesHuesped.toLocaleString('es-CL')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Camas-{periodo === 'anual' ? 'año' : 'mes'} sin usar</span>
-                <span className="font-semibold text-[var(--gray-500)]">{camasNocheLibres.toLocaleString('es-CL')}</span>
+            {tieneComparacion && <div className="mt-3"><Delta value={deltaOcupPts} kind="pts" suffix=" pts vs ant." /></div>}
+            <div className="mt-5 w-full space-y-2 text-xs">
+              <Row label={`Camas-${unidad} disponibles`} value={camasNocheTotal} color="navy" />
+              <Row label={`Camas-${unidad} usadas`} value={nochesHuesped} color="amber" />
+              <Row label={`Camas-${unidad} sin usar`} value={camasNocheLibres} color="gray" />
+              <div className="pt-2 border-t border-[var(--gray-100)]">
+                <Row label="Camas ocupadas/día (prom.)" value={camasOcupadas} color="navy" />
               </div>
             </div>
           </div>
 
-          {/* 4 KPIs */}
+          {/* KPIs operativos */}
           <div className="lg:col-span-3 grid grid-cols-2 gap-4">
-            <MetricCard icon={<BedIcon/>} label="Camas usadas" value={nochesHuesped}
-              sub={`${camasDisponibles} camas × ${diasPeriodo} días = ${camasNocheTotal.toLocaleString('es-CL')} disp.`} accent="navy" />
-            <MetricCard icon={<SlashIcon/>} label="Camas sin usar" value={camasNocheLibres}
-              sub={`${100 - ocupacionPct}% de capacidad sin ocupar`} accent="amber" />
-            <MetricCard icon={<BuildingIcon/>} label="Propiedades" value={nPropiedades}
-              sub={`${stays.length} estadías en total`} accent="green" />
-            <MetricCard icon={<CompanyIcon/>} label="Empresas" value={porEmpresa.length}
-              sub={`${stays.filter(s => !s.checked_out_at).length} huéspedes activos`} accent="gray" />
+            <Kpi icon={<Bed {...RPT_ICON}/>} label="Noches-huésped" value={nochesHuesped} accent="navy"
+              delta={tieneComparacion ? deltaNochesPc : null} deltaKind="pct"
+              sub={`vs ${nochesPrev.toLocaleString('es-CL')} período anterior`} />
+            <Kpi icon={<Moon {...RPT_ICON}/>} label="Estadía promedio" value={estadiaPromedio} unit=" días" accent="amber"
+              sub={`${stays.length.toLocaleString('es-CL')} estadías en el período`} />
+            <Kpi icon={<Users {...RPT_ICON}/>} label="Huéspedes únicos" value={huespedesUnicos} accent="navy"
+              sub={`${nPropiedades} propiedad${nPropiedades !== 1 ? 'es' : ''} · ${porEmpresa.length} empresa${porEmpresa.length !== 1 ? 's' : ''}`} />
+            <Kpi icon={<CalendarDays {...RPT_ICON}/>} label="Estadías" value={stays.length} accent="amber"
+              delta={tieneComparacion ? deltaEstadias : null} deltaKind="count"
+              sub={`${activosAlCierre} activas al cierre`} />
           </div>
         </div>
 
@@ -423,61 +442,54 @@ export default async function ReportesPage({
   )
 }
 
-function MetricCard({ icon, label, value, sub, accent }: {
-  icon: ReactNode; label: string; value: number; sub: string; accent: string
+const RPT_ICON = { size: 16, strokeWidth: 1.75 } as const
+
+// Chip de tendencia (▲/▼). positiveGood: si subir es bueno (verde) o malo (rojo).
+function Delta({ value, kind = 'pts', positiveGood = true, suffix = '' }: {
+  value: number | null; kind?: 'pts' | 'pct' | 'count'; positiveGood?: boolean; suffix?: string
 }) {
-  const border  = accent==='navy'  ? 'border-t-[var(--navy)]'   :
-                  accent==='amber' ? 'border-t-[var(--amber)]'  :
-                  accent==='green' ? 'border-t-[var(--navy-light)]' : 'border-t-[var(--gray-300)]'
-  const iconBg  = accent==='navy'  ? 'bg-[var(--navy-5)] text-[var(--navy)]'  :
-                  accent==='amber' ? 'bg-[var(--amber)]/10 text-[var(--amber-dark)]' :
-                  accent==='green' ? 'bg-[var(--navy-5)] text-[var(--navy-light)]' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
-  const valColor= accent==='navy'  ? 'text-[var(--navy)]' :
-                  accent==='amber' ? 'text-[var(--amber-dark)]' :
-                  accent==='green' ? 'text-[var(--navy-light)]' : 'text-[var(--gray-700)]'
-  const display = Number.isInteger(value) ? value.toLocaleString('es-CL') : value.toFixed(1)
+  if (value == null) return null
+  const flat = value === 0
+  const good = positiveGood ? value > 0 : value < 0
+  const cls = flat ? 'text-[var(--gray-500)] bg-[var(--gray-100)]'
+            : good ? 'text-emerald-700 bg-emerald-50' : 'text-red-600 bg-red-50'
+  const arrow = flat ? '→' : value > 0 ? '↑' : '↓'
+  const v = kind === 'pct' ? `${Math.abs(value)}%` : `${Math.abs(value)}`
   return (
-    <div className={`bg-white rounded-xl border border-[var(--gray-200)] border-t-4 ${border} p-5`}>
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${iconBg}`}>{icon}</div>
-      <p className={`font-display text-[1.875rem] font-semibold leading-none tracking-tight data-number ${valColor}`}>{display}</p>
-      <p className="text-sm font-semibold text-[var(--navy)] mt-2">{label}</p>
-      <p className="text-xs text-[var(--gray-500)] mt-1 leading-snug">{sub}</p>
+    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${cls}`}>
+      {arrow} {v}{suffix}
+    </span>
+  )
+}
+
+function Row({ label, value, color }: { label: string; value: number; color: 'navy' | 'amber' | 'gray' }) {
+  const c = color === 'navy' ? 'text-[var(--navy)]' : color === 'amber' ? 'text-[var(--amber-dark)]' : 'text-[var(--gray-500)]'
+  return (
+    <div className="flex justify-between">
+      <span className="text-[var(--gray-600)]">{label}</span>
+      <span className={`font-semibold tabular-nums ${c}`}>{value.toLocaleString('es-CL')}</span>
     </div>
   )
 }
 
-const RPT_ICON     = { size: 16, strokeWidth: 1.75 } as const
-const BedIcon      = () => <Bed {...RPT_ICON} />
-const SlashIcon    = () => <CircleSlash {...RPT_ICON} />
-const BuildingIcon = () => <Building2 {...RPT_ICON} />
-const CompanyIcon  = () => <Briefcase {...RPT_ICON} />
-
-function SummaryTable({ title, rows }: { title: string; rows: { nombre: string; estadias: number; noches: number }[] }) {
+function Kpi({ icon, label, value, unit = '', sub, accent = 'navy', delta = null, deltaKind = 'pts' }: {
+  icon: ReactNode; label: string; value: number; unit?: string; sub: string
+  accent?: 'navy' | 'amber'; delta?: number | null; deltaKind?: 'pts' | 'pct' | 'count'
+}) {
+  const iconBg = accent === 'amber' ? 'bg-[var(--amber)]/12 text-[var(--amber-dark)]' : 'bg-[var(--navy-5)] text-[var(--navy)]'
+  const display = Number.isInteger(value) ? value.toLocaleString('es-CL') : value.toFixed(1)
   return (
-    <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
-      <div className="px-5 py-4 border-b border-[var(--gray-100)]">
-        <h2 className="text-sm font-bold text-[var(--navy)]">{title}</h2>
+    <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5
+                    hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200">
+      <div className="flex items-start justify-between mb-3.5">
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg}`}>{icon}</div>
+        {delta != null && <Delta value={delta} kind={deltaKind} />}
       </div>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-[var(--gray-50)] border-b border-[var(--gray-100)]">
-            <th className="text-left px-5 py-2.5 text-xs font-semibold text-[var(--gray-600)]">Nombre</th>
-            <th className="text-right px-5 py-2.5 text-xs font-semibold text-[var(--gray-600)]">Estadías</th>
-            <th className="text-right px-5 py-2.5 text-xs font-semibold text-[var(--gray-600)]">Noches</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[var(--gray-100)]">
-          {rows.length ? rows.map(r => (
-            <tr key={r.nombre}>
-              <td className="px-5 py-3 font-medium text-[var(--navy)]">{r.nombre}</td>
-              <td className="px-5 py-3 text-right text-[var(--gray-700)]">{r.estadias}</td>
-              <td className="px-5 py-3 text-right font-semibold text-[var(--navy)]">{r.noches}</td>
-            </tr>
-          )) : (
-            <tr><td colSpan={3} className="px-5 py-6 text-center text-sm text-[var(--gray-500)]">Sin datos</td></tr>
-          )}
-        </tbody>
-      </table>
+      <p className="font-display text-[2rem] font-semibold leading-none text-[var(--navy)] data-number">
+        {display}{unit && <span className="text-base font-medium text-[var(--gray-500)]">{unit}</span>}
+      </p>
+      <p className="text-sm font-semibold text-[var(--navy)] mt-2.5">{label}</p>
+      <p className="text-xs text-[var(--gray-500)] mt-1 leading-snug">{sub}</p>
     </div>
   )
 }
