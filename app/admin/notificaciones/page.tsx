@@ -16,7 +16,7 @@ export default async function NotificacionesPage({
   const supabase = await createClient()
 
   const [{ data: subs, error: dbError }, { data: companies }, { data: properties }, { data: projects }] = await Promise.all([
-    supabase.from('report_subscriptions').select('*').order('created_at', { ascending: true }),
+    supabase.from('report_subscriptions').select('*').order('email', { ascending: true }).order('report_type', { ascending: true }).order('created_at', { ascending: true }),
     supabase.from('companies').select('id, name').eq('active', true).order('name'),
     supabase.from('properties').select('id, name').eq('active', true).order('name'),
     supabase.from('projects').select('id, name, companies(name)').eq('active', true).order('name'),
