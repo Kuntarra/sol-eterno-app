@@ -1,18 +1,51 @@
-import { renderToBuffer, Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
+import { renderToBuffer, Document, Page, View, Text, StyleSheet, Svg, Circle } from '@react-pdf/renderer'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { buildScopeFilter, scopeLabel, type Scope, type Subscription } from '@/lib/email/digest'
 import { ROOM_TYPE_LABELS } from '@/lib/types'
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-const N = '#0A2C4A', A = '#E0A33A', G = '#6C757D'
+const N = '#0A2C4A', A = '#E0A33A', G = '#6C757D', CREAM = '#F5F2EC', LINEW = '#E8E3D9'
+const UP = '#0F8B6C', DOWN = '#C0392B'
+
+function deltaColor(v: number | null, positiveGood = true) {
+  if (v === null || v === 0) return G
+  return (v > 0) === positiveGood ? UP : DOWN
+}
+function deltaText(v: number | null, suffix: string) {
+  if (v === null) return '—'
+  const arrow = v > 0 ? '▲' : v < 0 ? '▼' : '•'
+  return `${arrow} ${v > 0 ? '+' : ''}${v}${suffix}`
+}
+
+function Gauge({ pct }: { pct: number }) {
+  const SIZE = 86, R = 33, SW = 9, CX = SIZE / 2
+  const C = 2 * Math.PI * R
+  const dash = Math.min(pct, 100) / 100 * C
+  return (
+    <View style={{ width: SIZE, height: SIZE, position: 'relative' }}>
+      <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
+        <Circle cx={CX} cy={CX} r={R} stroke="rgba(255,255,255,0.16)" strokeWidth={SW} fill="none" />
+        <Circle cx={CX} cy={CX} r={R} stroke={A} strokeWidth={SW} fill="none"
+          strokeDasharray={`${dash} ${C - dash}`} strokeLinecap="round" transform={`rotate(-90 ${CX} ${CX})`} />
+      </Svg>
+      <View style={{ position: 'absolute', top: 0, left: 0, width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 22, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>{pct}%</Text>
+      </View>
+    </View>
+  )
+}
 
 const s = StyleSheet.create({
   page:       { fontFamily: 'Helvetica', fontSize: 8, padding: 34, backgroundColor: '#ffffff', color: '#16242F' },
-  header:     { backgroundColor: N, color: '#ffffff', padding: 16, borderRadius: 6, marginBottom: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  hLabel:     { fontSize: 8, color: 'rgba(255,255,255,0.55)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4, fontFamily: 'Helvetica-Bold' },
-  hTitle:     { fontSize: 22, fontFamily: 'Helvetica-Bold', color: '#ffffff' },
-  hSub:       { fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 3 },
-  hPct:       { fontSize: 34, fontFamily: 'Helvetica-Bold', color: A, textAlign: 'right' },
+  header:     { backgroundColor: N, color: '#ffffff', padding: '22 24', borderTopLeftRadius: 8, borderTopRightRadius: 8, marginBottom: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  hEyebrow:   { fontSize: 8, color: A, letterSpacing: 2.4, fontFamily: 'Helvetica-Bold', marginBottom: 8 },
+  hWordmark:  { fontSize: 23, fontFamily: 'Times-Bold', color: '#ffffff', letterSpacing: 3 },
+  hRule:      { width: 34, height: 2, backgroundColor: A, marginTop: 11, marginBottom: 9 },
+  hTagline:   { fontSize: 7.5, color: 'rgba(255,255,255,0.55)', letterSpacing: 2 },
+  hGaugeLabel:{ fontSize: 7.5, color: 'rgba(255,255,255,0.6)', marginTop: 7, textAlign: 'center' },
+  metaStrip:  { backgroundColor: CREAM, borderLeft: `1px solid ${LINEW}`, borderRight: `1px solid ${LINEW}`, borderBottom: `1px solid ${LINEW}`, padding: '11 16', marginBottom: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  metaTitle:  { fontSize: 12, fontFamily: 'Times-Bold', color: N },
+  metaSub:    { fontSize: 8, color: G },
   kpiGrid:    { flexDirection: 'row', gap: 8, marginBottom: 14 },
   kpiCard:    { flex: 1, border: '1px solid #E8E3D9', borderRadius: 5, padding: 10 },
   kpiVal:     { fontSize: 17, fontFamily: 'Helvetica-Bold', color: N },
@@ -55,32 +88,56 @@ function periodFor(freq: Subscription['frequency'], ref: Date) {
 export async function renderReportPdf(scope: Scope, freq: Subscription['frequency'], ref = new Date()): Promise<Buffer> {
   const admin = createAdminClient()
   const { desde, hasta, dias, titulo } = periodFor(freq, ref)
-  const desdeISO = desde.toISOString(), hastaISO = hasta.toISOString()
+  const hastaISO = hasta.toISOString()
   const periodoInicio = desde, periodoFin = hasta
   const applyScope = await buildScopeFilter(scope)
 
-  const sel = `shift_type, checked_in_at, checked_out_at, guests(first_name, last_name_paterno, rut), rooms(id, number, type, capacity, properties(id, name)), companies(id, name)`
+  // Período anterior (para comparación)
+  const prevInicio = new Date(desde)
+  const prevFin = new Date(desde.getTime() - 1000)
+  if (freq === 'monthly') prevInicio.setMonth(prevInicio.getMonth() - 1)
+  else if (freq === 'weekly') prevInicio.setTime(desde.getTime() - 7 * 86400000)
+  else prevInicio.setTime(desde.getTime() - 86400000)
+  const diasPrev = Math.max(1, Math.round((prevFin.getTime() - prevInicio.getTime()) / 86400000))
+  const unidad = freq === 'monthly' ? 'mes ant.' : freq === 'weekly' ? 'sem. ant.' : 'día ant.'
+
+  const sel = `guest_id, shift_type, checked_in_at, checked_out_at, guests(first_name, last_name_paterno, rut), rooms(id, number, type, capacity, properties(id, name)), companies(id, name)`
   const [{ data: staysRaw }, { data: allocsRaw }] = await Promise.all([
-    applyScope(admin.from('stays').select(sel).lte('checked_in_at', hastaISO).or(`checked_out_at.gte.${desdeISO},checked_out_at.is.null`)).order('checked_in_at').limit(5000),
+    applyScope(admin.from('stays').select(sel).lte('checked_in_at', hastaISO).or(`checked_out_at.gte.${prevInicio.toISOString()},checked_out_at.is.null`)).order('checked_in_at').limit(5000),
     applyScope(admin.from('allocations').select(`room_id, rooms(id, capacity, properties(id, name)), companies(id, name)`)),
   ])
 
-  const stays = (staysRaw ?? []) as any[]
+  let stays = (staysRaw ?? []) as any[]
   const allocs = (allocsRaw ?? []) as any[]
 
-  const noches = (st: any) => {
-    const ini = Math.max(new Date(st.checked_in_at).getTime(), periodoInicio.getTime())
-    const fin = Math.min((st.checked_out_at ? new Date(st.checked_out_at) : periodoFin).getTime(), periodoFin.getTime())
+  const nochesEn = (st: any, pIni: Date, pFin: Date) => {
+    const ini = Math.max(new Date(st.checked_in_at).getTime(), pIni.getTime())
+    const fin = Math.min((st.checked_out_at ? new Date(st.checked_out_at) : pFin).getTime(), pFin.getTime())
     return Math.max(0, Math.ceil((fin - ini) / 86400000))
   }
+  const noches = (st: any) => nochesEn(st, periodoInicio, periodoFin)
 
-  const nochesH = stays.reduce((a, st) => a + noches(st), 0)
   const habMap = new Map<string, number>()
   for (const a of allocs) { const r = a.rooms; if (r?.id) habMap.set(r.id, r.capacity ?? 1) }
   const camasDisp = [...habMap.values()].reduce((a, c) => a + c, 0)
+
+  // Período anterior (antes de filtrar)
+  const nochesPrev = stays.reduce((a, st) => a + nochesEn(st, prevInicio, prevFin), 0)
+  const estadiasPrev = stays.filter(st => nochesEn(st, prevInicio, prevFin) > 0).length
+  const ocupPctPrev = camasDisp > 0 ? Math.round((nochesPrev / (camasDisp * diasPrev)) * 100) : 0
+
+  stays = stays.filter(st => noches(st) > 0)
+
+  const nochesH = stays.reduce((a, st) => a + noches(st), 0)
   const camasNoche = camasDisp * dias
   const camasLibres = Math.max(0, camasNoche - nochesH)
   const ocupPct = camasNoche > 0 ? Math.round((nochesH / camasNoche) * 100) : 0
+  const estadiaPromedio = stays.length > 0 ? Math.round((nochesH / stays.length) * 10) / 10 : 0
+  const huespedesUnicos = new Set(stays.map(st => st.guest_id).filter(Boolean)).size
+  const activosAlCierre = stays.filter(st => !st.checked_out_at).length
+  const deltaOcupPts = ocupPct - ocupPctPrev
+  const deltaNochesPc = nochesPrev > 0 ? Math.round(((nochesH - nochesPrev) / nochesPrev) * 100) : null
+  const deltaEstadias = stays.length - estadiasPrev
 
   const propMap = new Map<string, { nombre: string; camasNoche: number; usado: number; estadias: number }>()
   for (const a of allocs) {
@@ -112,26 +169,40 @@ export async function renderReportPdf(scope: Scope, freq: Subscription['frequenc
       <Page size="LETTER" style={s.page}>
         <View style={s.header}>
           <View>
-            <Text style={s.hLabel}>Reporte de Ocupación · {alcance}</Text>
-            <Text style={s.hTitle}>{titulo}</Text>
-            <Text style={s.hSub}>{dias} días · {porPropiedad.length} propiedad{porPropiedad.length !== 1 ? 'es' : ''} · Generado el {hoy}</Text>
+            <Text style={s.hEyebrow}>REPORTE DE OCUPACIÓN</Text>
+            <Text style={s.hWordmark}>SOL ETERNO</Text>
+            <View style={s.hRule} />
+            <Text style={s.hTagline}>GESTIÓN DE ALOJAMIENTOS</Text>
           </View>
-          <View>
-            <Text style={s.hPct}>{ocupPct}%</Text>
-            <Text style={s.hSub}>Ocupación del período</Text>
+          <View style={{ alignItems: 'center' }}>
+            <Gauge pct={ocupPct} />
+            <Text style={s.hGaugeLabel}>Ocupación del período</Text>
+            <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', marginTop: 2, color: deltaColor(deltaOcupPts) }}>
+              {deltaText(deltaOcupPts, ` pts vs ${unidad}`)}
+            </Text>
           </View>
+        </View>
+
+        <View style={s.metaStrip}>
+          <Text style={s.metaTitle}>{alcance} · {titulo}</Text>
+          <Text style={s.metaSub}>{dias} días · {porPropiedad.length} propiedad{porPropiedad.length !== 1 ? 'es' : ''} · Generado el {hoy}</Text>
         </View>
 
         <View style={s.kpiGrid}>
           {[
-            { label: 'Noches-huésped', val: nochesH.toLocaleString('es-CL'), sub: 'Suma de noches', color: N },
-            { label: 'Camas-noche disp.', val: camasNoche.toLocaleString('es-CL'), sub: `${camasDisp} camas × ${dias} días`, color: A },
-            { label: 'Camas-noche libres', val: camasLibres.toLocaleString('es-CL'), sub: `${100 - ocupPct}% sin ocupar`, color: G },
-            { label: 'Estadías', val: stays.length.toString(), sub: `${stays.filter(st => !st.checked_out_at).length} activas`, color: A },
+            { label: 'Noches-huésped', val: nochesH.toLocaleString('es-CL'), sub: `${camasLibres.toLocaleString('es-CL')} camas-noche libres`, color: N, delta: deltaNochesPc, dSuffix: '% vs ant.' },
+            { label: 'Estadía promedio', val: `${estadiaPromedio} d`, sub: `${huespedesUnicos} huéspedes únicos`, color: A, delta: null, dSuffix: '' },
+            { label: 'Estadías', val: stays.length.toString(), sub: `${activosAlCierre} activas al cierre`, color: A, delta: deltaEstadias, dSuffix: ' vs ant.' },
+            { label: 'Capacidad', val: `${camasDisp}`, sub: `${camasNoche.toLocaleString('es-CL')} camas-noche · ${dias} días`, color: G, delta: null, dSuffix: '' },
           ].map(k => (
             <View key={k.label} style={[s.kpiCard, { borderTopWidth: 3, borderTopColor: k.color }]}>
               <Text style={s.kpiVal}>{k.val}</Text>
               <Text style={s.kpiLabel}>{k.label}</Text>
+              {k.delta !== null && (
+                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', marginTop: 1, color: deltaColor(k.delta) }}>
+                  {deltaText(k.delta, k.dSuffix)}
+                </Text>
+              )}
               <Text style={s.kpiSub}>{k.sub}</Text>
             </View>
           ))}
