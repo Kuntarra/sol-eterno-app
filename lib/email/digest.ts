@@ -205,102 +205,91 @@ function shell(eyebrow: string, preheaderText: string, body: string, width = 660
   </body></html>`
 }
 
-function table(title: string, accent: string, rows: Movimiento[]): string {
-  const head = ['Hora', 'Nombre', 'RUT', 'Teléfono', 'Empresa', 'Propiedad', 'Hab.', 'Turno']
-  const body = rows.length
-    ? rows.map((m, i) => `
-      <tr style="background:${i % 2 ? '#FBFAF6' : '#ffffff'}">
-        <td style="padding:9px 12px;color:${MUTED};white-space:nowrap;font-variant-numeric:tabular-nums">${m.hora}</td>
-        <td style="padding:9px 12px;color:${INK};font-weight:600">${m.nombre}</td>
-        <td style="padding:9px 12px;color:${MUTED};font-family:'SFMono-Regular',Consolas,monospace;font-size:12px">${m.rut}</td>
-        <td style="padding:9px 12px;color:${MUTED}">${m.telefono}</td>
-        <td style="padding:9px 12px;color:${INK}">${m.empresa}</td>
-        <td style="padding:9px 12px;color:${INK}">${m.propiedad}</td>
-        <td style="padding:9px 12px;color:${MUTED}">${m.habitacion}</td>
-        <td style="padding:9px 12px;color:${MUTED}">${m.turno}</td>
-      </tr>`).join('')
-    : `<tr><td colspan="8" style="padding:22px;text-align:center;color:${MUTED};font-style:italic">Sin movimientos en este período.</td></tr>`
-
-  return `
-    <div style="margin:0 0 24px">
-      <table cellpadding="0" cellspacing="0" style="margin:0 0 11px"><tr>
-        <td style="width:3px;height:15px;background:${accent};font-size:0;line-height:0">&nbsp;</td>
-        <td style="padding-left:11px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${NAVY}">${title}</td>
-        <td style="padding-left:9px;font-size:12px;color:${MUTED}">${rows.length}</td>
-      </tr></table>
-      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0;border:1px solid ${LINE};border-radius:10px;overflow:hidden;font-size:13px">
-        <tr style="background:${CREAM}">
-          ${head.map(h => `<th style="text-align:left;padding:9px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${MUTED};border-bottom:1px solid ${LINE}">${h}</th>`).join('')}
-        </tr>
-        ${body}
-      </table>
-    </div>`
-}
-
 // Etiqueta de sección con marca dorada.
 function sectionLabel(text: string): string {
-  return `<div style="margin:0 0 12px">
+  return `<div style="margin:0 0 14px">
     <span style="display:inline-block;width:14px;height:3px;border-radius:2px;background:${GOLD};vertical-align:middle;margin-right:9px"></span>
     <span style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:${NAVY};vertical-align:middle">${text}</span>
   </div>`
 }
 
-// Agrupa los movimientos por propiedad y cuenta in/out (vista comprimida).
-function summaryByProperty(checkins: Movimiento[], checkouts: Movimiento[]) {
-  const map = new Map<string, { in: number; out: number }>()
-  for (const m of checkins)  { const e = map.get(m.propiedad) ?? { in: 0, out: 0 }; e.in++;  map.set(m.propiedad, e) }
-  for (const m of checkouts) { const e = map.get(m.propiedad) ?? { in: 0, out: 0 }; e.out++; map.set(m.propiedad, e) }
-  return [...map.entries()]
-    .map(([propiedad, c]) => ({ propiedad, ...c }))
-    .sort((a, b) => (b.in + b.out) - (a.in + a.out) || a.propiedad.localeCompare(b.propiedad))
+// Tabla compacta de movimientos dentro de un desplegable (sin columna propiedad).
+function movTable(rows: Movimiento[], accent: string): string {
+  const head = ['Hora', 'Nombre', 'RUT', 'Teléfono', 'Empresa', 'Hab.', 'Turno']
+  const td = 'padding:8px 12px'
+  const body = rows.map((m, i) => `
+    <tr style="background:${i % 2 ? '#FBFAF6' : '#ffffff'}">
+      <td style="${td};color:${MUTED};white-space:nowrap;font-variant-numeric:tabular-nums">${m.hora}</td>
+      <td style="${td};color:${INK};font-weight:600">${m.nombre}</td>
+      <td style="${td};color:${MUTED};font-family:'SFMono-Regular',Consolas,monospace;font-size:12px">${m.rut}</td>
+      <td style="${td};color:${MUTED}">${m.telefono}</td>
+      <td style="${td};color:${INK}">${m.empresa}</td>
+      <td style="${td};color:${MUTED}">${m.habitacion}</td>
+      <td style="${td};color:${MUTED}">${m.turno}</td>
+    </tr>`).join('')
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0;border:1px solid ${LINE};border-top:2px solid ${accent};border-radius:8px;overflow:hidden;font-size:12.5px">
+    <tr style="background:${CREAM}">
+      ${head.map(h => `<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${MUTED};border-bottom:1px solid ${LINE}">${h}</th>`).join('')}
+    </tr>
+    ${body}
+  </table>`
 }
 
-// Tabla compacta: propiedad · check-in · check-out (un vistazo).
-function propSummaryTable(rows: { propiedad: string; in: number; out: number }[], totIn: number, totOut: number): string {
-  if (!rows.length) return `<p style="color:${MUTED};font-size:13px;font-style:italic;margin:0">Sin movimientos en este período.</p>`
-  const th = (txt: string, align: string) =>
-    `<th style="text-align:${align};padding:9px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${MUTED};border-bottom:1px solid ${LINE}">${txt}</th>`
-  const body = rows.map((r, i) => `
-    <tr style="background:${i % 2 ? '#FBFAF6' : '#ffffff'}">
-      <td style="padding:11px 16px;color:${INK};font-weight:600">${r.propiedad}</td>
-      <td style="padding:11px 16px;text-align:center;font-family:${SERIF};font-size:17px;font-weight:700;color:${r.in ? NAVY : '#C9C4B8'}">${r.in}</td>
-      <td style="padding:11px 16px;text-align:center;font-family:${SERIF};font-size:17px;font-weight:700;color:${r.out ? GOLDD : '#C9C4B8'}">${r.out}</td>
-    </tr>`).join('')
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0;border:1px solid ${LINE};border-radius:10px;overflow:hidden">
-    <tr style="background:${CREAM}">${th('Propiedad', 'left')}${th('Check-in', 'center')}${th('Check-out', 'center')}</tr>
-    ${body}
-    <tr style="background:${CREAM}">
-      <td style="padding:10px 16px;border-top:2px solid ${LINE};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${MUTED}">Total</td>
-      <td style="padding:10px 16px;border-top:2px solid ${LINE};text-align:center;font-weight:700;color:${NAVY}">${totIn}</td>
-      <td style="padding:10px 16px;border-top:2px solid ${LINE};text-align:center;font-weight:700;color:${GOLDD}">${totOut}</td>
-    </tr>
-  </table>`
+// Agrupa movimientos por propiedad (cada uno con sus check-ins y check-outs).
+function propertyGroups(checkins: Movimiento[], checkouts: Movimiento[]) {
+  const map = new Map<string, { ins: Movimiento[]; outs: Movimiento[] }>()
+  for (const m of checkins)  { const e = map.get(m.propiedad) ?? { ins: [], outs: [] }; e.ins.push(m);  map.set(m.propiedad, e) }
+  for (const m of checkouts) { const e = map.get(m.propiedad) ?? { ins: [], outs: [] }; e.outs.push(m); map.set(m.propiedad, e) }
+  return [...map.entries()]
+    .map(([propiedad, v]) => ({ propiedad, ...v }))
+    .sort((a, b) => (b.ins.length + b.outs.length) - (a.ins.length + a.outs.length) || a.propiedad.localeCompare(b.propiedad))
+}
+
+// Fila desplegable: "Check-in · N" → al abrir muestra la tabla de nombres.
+function disclosure(label: string, accent: string, rows: Movimiento[], last: boolean): string {
+  const n = rows.length
+  const border = last ? '' : `border-bottom:1px solid ${LINE};`
+  const head = `
+    <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${n ? accent : '#D6D1C6'};margin-right:10px;vertical-align:middle"></span>
+    <span style="font-size:13px;font-weight:700;color:${NAVY};vertical-align:middle">${label}</span>
+    <span style="font-family:${SERIF};font-size:16px;font-weight:700;color:${n ? accent : '#C9C4B8'};vertical-align:middle;margin-left:9px">${n}</span>`
+  if (!n) return `<div style="padding:12px 6px;${border}">${head}</div>`
+  return `<details style="${border}">
+    <summary style="list-style:none;cursor:pointer;padding:12px 6px">
+      ${head}<span style="float:right;font-size:11px;font-weight:600;color:${MUTED}">ver ▾</span>
+    </summary>
+    <div style="padding:6px 0 14px">${movTable(rows, accent)}</div>
+  </details>`
+}
+
+// Tarjeta por propiedad: nombre + check-in/check-out desplegables.
+function propertyCard(g: { propiedad: string; ins: Movimiento[]; outs: Movimiento[] }): string {
+  return `<div style="border:1px solid ${LINE};border-radius:12px;overflow:hidden;margin:0 0 12px">
+    <div style="background:${CREAM};padding:13px 16px;border-bottom:1px solid ${LINE}">
+      <span style="font-family:${SERIF};font-size:15px;font-weight:700;color:${NAVY}">${g.propiedad}</span>
+      <span style="float:right;font-size:11px;color:${MUTED};padding-top:3px">${g.ins.length} in · ${g.outs.length} out</span>
+    </div>
+    <div style="padding:6px 14px">
+      ${disclosure('Check-in', NAVY, g.ins, false)}
+      ${disclosure('Check-out', GOLDD, g.outs, true)}
+    </div>
+  </div>`
 }
 
 export function renderDigestHtml(data: DigestData): string {
   const eyebrow = `Movimientos · ${data.scopeText}`
-  const rows = summaryByProperty(data.checkins, data.checkouts)
-  const total = data.checkins.length + data.checkouts.length
+  const groups = propertyGroups(data.checkins, data.checkouts)
   const body = `
     ${reportTitle(`Movimientos ${data.periodWord}`, data.periodLabel)}
     ${statBand([
       { value: data.checkins.length, label: 'Check-ins', accent: NAVY },
       { value: data.checkouts.length, label: 'Check-outs', accent: GOLD },
     ])}
-    <div style="padding:24px 36px 0">
-      ${sectionLabel('Resumen por propiedad')}
-      ${propSummaryTable(rows, data.checkins.length, data.checkouts.length)}
-    </div>
-    <div style="padding:20px 36px 4px">
-      <details>
-        <summary style="list-style:none;cursor:pointer;padding:12px 16px;border:1px solid ${LINE};border-radius:10px;background:#ffffff;font-size:12px;font-weight:700;letter-spacing:.04em;color:${NAVY}">
-          Ver detalle de huéspedes · ${total} movimiento${total !== 1 ? 's' : ''}
-        </summary>
-        <div style="padding:20px 0 0">
-          ${table('Check-ins', NAVY, data.checkins)}
-          ${table('Check-outs', GOLD, data.checkouts)}
-        </div>
-      </details>
+    <div style="padding:24px 36px 8px">
+      ${sectionLabel('Movimientos por propiedad')}
+      ${groups.length
+        ? groups.map(propertyCard).join('')
+        : `<p style="color:${MUTED};font-size:13px;font-style:italic;margin:0">Sin movimientos en este período.</p>`}
     </div>
     ${mailFooter()}`
   const pre = `${data.checkins.length} check-in · ${data.checkouts.length} check-out — ${data.periodLabel}`
