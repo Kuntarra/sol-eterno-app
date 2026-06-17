@@ -38,8 +38,10 @@ function Gauge({ pct }: { pct: number }) {
     <View style={{ width: SIZE, height: SIZE, position: 'relative' }}>
       <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
         <Circle cx={CX} cy={CX} r={R} stroke={TRACK} strokeWidth={SW} fill="none" />
-        <Circle cx={CX} cy={CX} r={R} stroke={A} strokeWidth={SW} fill="none"
-          strokeDasharray={`${dash} ${C - dash}`} strokeLinecap="round" transform={`rotate(-90 ${CX} ${CX})`} />
+        {dash > 0 && (
+          <Circle cx={CX} cy={CX} r={R} stroke={A} strokeWidth={SW} fill="none"
+            strokeDasharray={`${dash} ${C - dash}`} strokeLinecap="round" transform={`rotate(-90 ${CX} ${CX})`} />
+        )}
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: 21, fontFamily: 'Helvetica-Bold', color: '#ffffff' }}>{pct}%</Text>
