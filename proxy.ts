@@ -10,6 +10,13 @@ const ROLE_HOME: Record<string, string> = {
 }
 
 export async function proxy(request: NextRequest) {
+  // Las rutas de cron se autentican con su propio Bearer (CRON_SECRET).
+  // No deben pasar por el guardia de sesión: el cron llega sin cookies y
+  // sería redirigido a /login (307), por lo que el envío nunca se ejecuta.
+  if (request.nextUrl.pathname.startsWith('/api/cron/')) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
