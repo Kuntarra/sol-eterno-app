@@ -107,7 +107,10 @@ export async function buildScopeFilter(scope: Scope) {
   }
   return (q: any) => {
     if (scope.scope_type === 'company' && scope.company_id) q = q.eq('company_id', scope.company_id)
-    if (scope.scope_type === 'project' && scope.project_id) q = q.eq('project_id', scope.project_id)
+    if (scope.scope_type === 'project') {
+      // null project_id → filtro imposible para no filtrar toda la operación por accidente
+      q = scope.project_id ? q.eq('project_id', scope.project_id) : q.eq('id', '00000000-0000-0000-0000-000000000000')
+    }
     if (roomIds) q = roomIds.length ? q.in('room_id', roomIds) : q.eq('id', '00000000-0000-0000-0000-000000000000')
     return q
   }
@@ -284,7 +287,10 @@ export function renderDigestHtml(data: DigestData): string {
       ${sectionLabel('Movimientos por propiedad')}
       ${groups.length
         ? groups.map(propertyCard).join('')
-        : `<p style="color:${MUTED};font-size:13px;font-style:italic;margin:0">Sin movimientos en este período.</p>`}
+        : `<div style="border:1px solid ${LINE};border-radius:12px;padding:28px 24px;text-align:center;margin:0 0 16px">
+            <div style="font-family:${SERIF};font-size:15px;color:${NAVY};margin-bottom:10px;font-weight:700">Sin actividad registrada</div>
+            <p style="color:${MUTED};font-size:13px;line-height:1.7;margin:0">No se registraron ingresos ni salidas de personal<br>en los alojamientos asignados durante este período.</p>
+          </div>`}
     </div>
     ${mailFooter()}`
   const pre = `${data.checkins.length} check-in · ${data.checkouts.length} check-out — ${data.periodLabel}`
@@ -327,6 +333,11 @@ export async function sendSubscription(sub: Subscription, opts?: { test?: boolea
   const r = resend()
   if (!r) return { ok: false, reason: 'Falta RESEND_API_KEY' }
 
+  // Validar que el scope esté completo antes de continuar
+  if (sub.scope_type === 'project' && !sub.project_id) return { ok: false, reason: 'Suscripción de proyecto sin project_id configurado.' }
+  if (sub.scope_type === 'company' && !sub.company_id) return { ok: false, reason: 'Suscripción de empresa sin company_id configurado.' }
+  if (sub.scope_type === 'property' && (!sub.property_ids || sub.property_ids.length === 0)) return { ok: false, reason: 'Suscripción de propiedades sin property_ids configurados.' }
+
   // Fan-out: una suscripción "cada proyecto" → un correo por proyecto activo.
   if (sub.scope_type === 'each_project') {
     const admin = createAdminClient()
@@ -358,7 +369,10 @@ export async function sendSubscription(sub: Subscription, opts?: { test?: boolea
     html = renderIntroHtml(data)
     attachments = [{ filename: `reporte_sol_eterno_${slug}_${fechaArchivo}.pdf`, content: pdf }]
   } else {
-    subject = `Sol Eterno · Movimientos ${data.periodWord} (${data.scopeText}) — ${data.checkins.length} in / ${data.checkouts.length} out`
+    const hasMovements = data.checkins.length > 0 || data.checkouts.length > 0
+    subject = hasMovements
+      ? `Sol Eterno · Movimientos ${data.periodWord} (${data.scopeText}) — ${data.checkins.length} in / ${data.checkouts.length} out`
+      : `Sol Eterno · Sin actividad ${data.periodWord} (${data.scopeText})`
     html = renderDigestHtml(data)
   }
 
