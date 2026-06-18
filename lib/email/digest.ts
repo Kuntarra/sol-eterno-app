@@ -381,31 +381,88 @@ export async function sendSubscription(sub: Subscription, opts?: { test?: boolea
   return { ok: true }
 }
 
+// ── Confiabilidad: reintentos y alertas ───────────────────────────
+// Destinatario de las alertas de fallo (configurable; por defecto el dueño).
+const ALERT_TO = process.env.ALERT_EMAIL || 'bernardovillablanca@gmail.com'
+
+// Reintenta un envío ante fallos transitorios (hiccup de Resend, timeout, etc.).
+async function sendWithRetry(sub: Subscription, opts: { ref?: Date }, attempts = 3): Promise<{ ok: boolean; reason?: string; tries: number }> {
+  let last: { ok: boolean; reason?: string } = { ok: false, reason: 'sin intentos' }
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      last = await sendSubscription(sub, opts)
+    } catch (e: any) {
+      last = { ok: false, reason: e?.message || String(e) }
+    }
+    if (last.ok) return { ...last, tries: i }
+    if (i < attempts) await new Promise(r => setTimeout(r, 1500 * i))
+  }
+  return { ...last, tries: attempts }
+}
+
+// Avisa por correo al dueño cuando algo falla (no rompe el flujo si falla el aviso).
+async function sendAlert(subject: string, lines: string[]): Promise<void> {
+  const r = resend()
+  if (!r) return
+  const body = `
+    ${reportTitle('Alerta del sistema de correos', fmtDate(new Date()))}
+    <div style="padding:22px 36px 0">
+      <p style="font-size:15px;color:${INK};line-height:1.6;margin:0 0 16px">Se detectó un problema en el envío automático de resúmenes:</p>
+      <div style="border:1px solid ${LINE};border-left:3px solid #C0392B;border-radius:8px;padding:14px 18px;background:#FCF6F5">
+        ${lines.map(l => `<div style="font-size:13px;color:${INK};margin:3px 0;font-family:Consolas,monospace">${l}</div>`).join('')}
+      </div>
+    </div>
+    ${mailFooter()}`
+  try {
+    await r.emails.send({ from: FROM, to: [ALERT_TO], subject: `⚠️ Sol Eterno · ${subject}`, html: shell('Alerta del sistema', subject, body, 560) })
+  } catch { /* el aviso es best-effort */ }
+}
+
 // Recorre las suscripciones activas y envía las que "tocan" hoy (Chile).
 // El plan Hobby solo permite UN cron diario, así que no filtramos por hora:
 // a la corrida diaria salen todas las suscripciones cuyo día corresponde.
 // (El campo send_hour queda para cuando se pase a Pro con cron horario.)
-export async function runDueSubscriptions(ref = new Date()): Promise<{ checked: number; sent: number; details: any[] }> {
+// Cada corrida queda registrada en `digest_runs` y, si hay fallos, se avisa por correo.
+export async function runDueSubscriptions(ref = new Date()): Promise<{ checked: number; sent: number; failed: number; details: any[]; error?: string }> {
   const admin = createAdminClient()
-  const { data: subs } = await admin.from('report_subscriptions').select('*').eq('active', true)
+  try {
+    const { data: subs } = await admin.from('report_subscriptions').select('*').eq('active', true)
 
-  const D = +new Intl.DateTimeFormat('en-GB', { timeZone: TZ, day: '2-digit' }).format(ref)
-  const wd = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(ref)
-  const W = ({ Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 } as Record<string, number>)[wd]
+    const D = +new Intl.DateTimeFormat('en-GB', { timeZone: TZ, day: '2-digit' }).format(ref)
+    const wd = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(ref)
+    const W = ({ Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 } as Record<string, number>)[wd]
 
-  const details: any[] = []
-  let sent = 0
-  for (const s of (subs ?? []) as Subscription[]) {
-    if (s.frequency === 'weekly' && !(s.weekdays ?? []).includes(W)) continue
-    if (s.frequency === 'monthly' && s.monthday !== D) continue
-    if (s.last_sent_at && ref.getTime() - new Date(s.last_sent_at).getTime() < 12 * 3600 * 1000) continue
+    const details: any[] = []
+    let sent = 0, failed = 0
+    for (const s of (subs ?? []) as Subscription[]) {
+      if (s.frequency === 'weekly' && !(s.weekdays ?? []).includes(W)) continue
+      if (s.frequency === 'monthly' && s.monthday !== D) continue
+      if (s.last_sent_at && ref.getTime() - new Date(s.last_sent_at).getTime() < 12 * 3600 * 1000) continue
 
-    const res = await sendSubscription(s, { ref })
-    if (res.ok) {
-      sent++
-      await admin.from('report_subscriptions').update({ last_sent_at: ref.toISOString() }).eq('id', s.id)
+      const res = await sendWithRetry(s, { ref })
+      if (res.ok) {
+        sent++
+        await admin.from('report_subscriptions').update({ last_sent_at: ref.toISOString() }).eq('id', s.id)
+      } else {
+        failed++
+      }
+      details.push({ id: s.id, email: s.email, ok: res.ok, reason: res.reason, tries: res.tries })
     }
-    details.push({ id: s.id, email: s.email, ...res })
+
+    await admin.from('digest_runs').insert({ checked: subs?.length ?? 0, sent, failed, ok: failed === 0, details })
+
+    if (failed > 0) {
+      const fails = details.filter(d => !d.ok)
+      await sendAlert(`${failed} envío(s) fallaron en el resumen diario`,
+        fails.map(d => `• ${d.email}: ${d.reason ?? 'error desconocido'} (tras ${d.tries} intentos)`))
+    }
+
+    return { checked: subs?.length ?? 0, sent, failed, details }
+  } catch (e: any) {
+    // Fallo total de la corrida: registrar y avisar, sin tumbar el endpoint.
+    const msg = e?.message || String(e)
+    try { await admin.from('digest_runs').insert({ checked: 0, sent: 0, failed: 0, ok: false, error: msg }) } catch { /* noop */ }
+    await sendAlert('El cron del resumen diario FALLÓ por completo', [msg])
+    return { checked: 0, sent: 0, failed: 0, details: [], error: msg }
   }
-  return { checked: subs?.length ?? 0, sent, details }
 }
