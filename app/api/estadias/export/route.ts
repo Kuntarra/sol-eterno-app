@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 
 function fmt(iso: string | null) {
   if (!iso) return ''
@@ -28,12 +29,14 @@ export async function GET(request: Request) {
   if (profile?.role !== 'admin') return new Response('No autorizado', { status: 403 })
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
 
   let guestIds: string[] | null = null
   if (q) {
     const { data: guests } = await admin
       .from('guests')
       .select('id')
+      .eq('tenant_id', tenantId)
       .or(`first_name.ilike.%${q}%,last_name_paterno.ilike.%${q}%,rut.ilike.%${q}%`)
       .limit(500)
     guestIds = (guests ?? []).map(g => g.id)

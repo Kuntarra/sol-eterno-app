@@ -2,8 +2,9 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 
-const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+const MONTHS =['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
 export default async function ClienteReportePage({
   searchParams,
@@ -32,10 +33,11 @@ export default async function ClienteReportePage({
   if (myProfile?.role !== 'client' && myProfile?.role !== 'admin') redirect('/login')
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
   const cookieStore = await cookies()
   const impersonateId = myProfile?.role === 'admin' ? cookieStore.get('sol_impersonate')?.value : null
   const { data: profile } = impersonateId
-    ? await admin.from('user_profiles').select('company_id').eq('id', impersonateId).single()
+    ? await admin.from('user_profiles').select('company_id').eq('id', impersonateId).eq('tenant_id', tenantId).single()
     : { data: myProfile }
 
   const companyId = (profile as any)?.company_id
@@ -68,6 +70,7 @@ export default async function ClienteReportePage({
     .from('projects')
     .select('id, name')
     .eq('company_id', companyId)
+    .eq('tenant_id', tenantId)
     .eq('active', true)
     .order('name')
 
@@ -79,6 +82,7 @@ export default async function ClienteReportePage({
     .from('allocations')
     .select('room_id, project_id, rooms(id, capacity, properties(id, name))')
     .eq('company_id', companyId)
+    .eq('tenant_id', tenantId)
 
   if (proyectoId) allocQuery = allocQuery.eq('project_id', proyectoId)
 
@@ -110,6 +114,7 @@ export default async function ClienteReportePage({
       rooms(id, number, type, capacity, properties(id, name))
     `)
     .eq('company_id', companyId)
+    .eq('tenant_id', tenantId)
     .lte('checked_in_at', hastaStr + 'T23:59:59')
     .or(`checked_out_at.gte.${desdeStr}T00:00:00,checked_out_at.is.null`)
     .order('checked_in_at')
@@ -162,7 +167,7 @@ export default async function ClienteReportePage({
   })).sort((a,b) => b.pct - a.pct)
 
   // ── Datos empresa ───────────────────────────────────────────────────────────
-  const { data: company } = await admin.from('companies').select('name').eq('id', companyId).single()
+  const { data: company } = await admin.from('companies').select('name').eq('id', companyId).eq('tenant_id', tenantId).single()
 
   const fmt  = (iso: string) => new Date(iso).toLocaleDateString('es-CL', { day:'2-digit', month:'2-digit', year:'2-digit' })
   const years = Array.from({ length: now.getFullYear() - 2023 }, (_, i) => 2024 + i)

@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user'
+import { getMyTenantId } from '@/lib/tenant'
 import Link from 'next/link'
 import { CheckoutButton } from './_components/checkout-button'
 import { RecepcionSearchBar } from './_components/search-bar'
@@ -20,12 +21,14 @@ export default async function RecepcionPage({
   const params       = await searchParams
   const q            = params.q?.trim() ?? ''
   const effectiveId  = await getEffectiveUserId()
+  const tenantId     = await getMyTenantId()
   const supabase     = createAdminClient()
 
   const { data: rpRows } = await supabase
     .from('receptionist_properties')
     .select('property_id, properties(id, name)')
     .eq('user_id', effectiveId)
+    .eq('tenant_id', tenantId)
 
   const myProperties = (rpRows ?? []).map(r => {
     const p = r.properties as unknown as { id: string; name: string } | null
@@ -41,9 +44,11 @@ export default async function RecepcionPage({
   if (q) {
     const [{ data: guests }, { data: rooms }] = await Promise.all([
       supabase.from('guests').select('id')
+        .eq('tenant_id', tenantId)
         .or(`first_name.ilike.%${q}%,last_name_paterno.ilike.%${q}%,rut.ilike.%${q}%`)
         .limit(200),
       supabase.from('rooms').select('id')
+        .eq('tenant_id', tenantId)
         .ilike('number', `%${q}%`)
         .limit(100),
     ])
@@ -59,6 +64,7 @@ export default async function RecepcionPage({
       rooms(id, number, floor, property_id, properties(id, name, cities(name))),
       companies(name)
     `)
+    .eq('tenant_id', tenantId)
     .is('checked_out_at', null)
     .order('checked_in_at', { ascending: false })
 

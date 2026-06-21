@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import Link from 'next/link'
 
 function fmt(iso: string) {
@@ -22,6 +23,7 @@ export default async function AlojamientoPage() {
   if (myProfile?.role !== 'client' && myProfile?.role !== 'admin') redirect('/login')
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
   const cookieStore = await cookies()
   const impersonateId = myProfile?.role === 'admin' ? cookieStore.get('sol_impersonate')?.value : null
   const targetId = impersonateId ?? user.id
@@ -40,15 +42,15 @@ export default async function AlojamientoPage() {
   }
 
   const [{ data: company }, { data: stays }, { data: allocs }] = await Promise.all([
-    admin.from('companies').select('name, rut, contact_name, contact_email, contact_phone').eq('id', companyId).single(),
+    admin.from('companies').select('name, rut, contact_name, contact_email, contact_phone').eq('id', companyId).eq('tenant_id', tenantId).single(),
     admin.from('stays').select(`
       id, shift_type, checked_in_at, checked_out_at, estimated_checkout,
       guests(first_name, last_name_paterno, rut, phone),
       rooms(number, type, capacity, properties(name, cities(name)))
-    `).eq('company_id', companyId).order('checked_in_at', { ascending: false }).limit(50),
+    `).eq('company_id', companyId).eq('tenant_id', tenantId).order('checked_in_at', { ascending: false }).limit(50),
     admin.from('allocations').select(`
       rooms(number, type, capacity, properties(name))
-    `).eq('company_id', companyId),
+    `).eq('company_id', companyId).eq('tenant_id', tenantId),
   ])
 
   const activos    = (stays ?? []).filter(s => !s.checked_out_at)

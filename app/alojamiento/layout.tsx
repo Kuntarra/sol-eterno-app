@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { ClientSidebar } from './_components/client-sidebar'
 import { stopImpersonate } from '@/app/actions/impersonate'
 
@@ -25,15 +26,16 @@ export default async function AlojamientoLayout({ children }: { children: React.
   if (!isAdmin && adminProfile?.role !== 'client') redirect('/login')
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
 
   const { data: targetProfile } = impersonateId
-    ? await admin.from('user_profiles').select('role, full_name, company_id').eq('id', targetId).single()
+    ? await admin.from('user_profiles').select('role, full_name, company_id').eq('id', targetId).eq('tenant_id', tenantId).single()
     : await supabase.from('user_profiles').select('role, full_name, company_id').eq('id', targetId).single()
 
   const companyId = (targetProfile as any)?.company_id
 
   const { data: company } = companyId
-    ? await admin.from('companies').select('name').eq('id', companyId).single()
+    ? await admin.from('companies').select('name').eq('id', companyId).eq('tenant_id', tenantId).single()
     : { data: null }
 
   return (

@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { formatDate as fmt } from "@/lib/format"
 import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { AutoPrint } from './_auto-print'
@@ -42,14 +43,15 @@ export default async function ReportePdfPage({
   const periodoFin    = new Date(hastaStr + 'T23:59:59')
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
   const [{ data: staysRaw }, { data: allocsRaw }] = await Promise.all([
     admin.from('stays').select(`
       id, shift_type, checked_in_at, checked_out_at,
       guests(first_name, last_name_paterno, rut),
       rooms(id, number, type, capacity, properties(id, name)),
       companies(id, name)
-    `).lte('checked_in_at', hastaStr + 'T23:59:59').order('checked_in_at', { ascending: true }),
-    admin.from('allocations').select(`room_id, company_id, rooms(id, number, capacity, properties(id, name)), companies(id, name)`),
+    `).eq('tenant_id', tenantId).lte('checked_in_at', hastaStr + 'T23:59:59').order('checked_in_at', { ascending: true }),
+    admin.from('allocations').select(`room_id, company_id, rooms(id, number, capacity, properties(id, name)), companies(id, name)`).eq('tenant_id', tenantId),
   ])
 
   let stays = (staysRaw ?? []).filter(s => {

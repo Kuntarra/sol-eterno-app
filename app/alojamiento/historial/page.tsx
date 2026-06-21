@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 
 function fmt(iso: string) {
   return new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
@@ -31,12 +32,13 @@ export default async function HistorialPage({
   if (myProfile?.role !== 'client' && myProfile?.role !== 'admin') redirect('/login')
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
   const cookieStore = await cookies()
   const impersonateId = myProfile?.role === 'admin' ? cookieStore.get('sol_impersonate')?.value : null
   const targetId = impersonateId ?? user.id
 
   const { data: profile } = impersonateId
-    ? await admin.from('user_profiles').select('company_id').eq('id', targetId).single()
+    ? await admin.from('user_profiles').select('company_id').eq('id', targetId).eq('tenant_id', tenantId).single()
     : { data: myProfile }
 
   const companyId = (profile as any)?.company_id
@@ -50,6 +52,7 @@ export default async function HistorialPage({
       rooms(number, type, properties(name))
     `)
     .eq('company_id', companyId)
+    .eq('tenant_id', tenantId)
     .order('checked_in_at', { ascending: false })
 
   const stays = q

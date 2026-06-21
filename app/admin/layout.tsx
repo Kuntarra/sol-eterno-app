@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { AdminSidebar } from './_components/admin-sidebar'
 import { AdminTopBar } from './_components/admin-topbar'
 
@@ -21,17 +22,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   // ── Notificaciones derivadas de datos ──────────────────────────
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
   const nowISO = new Date().toISOString()
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
   const [{ data: overdue }, { count: checkinsHoy }] = await Promise.all([
     admin.from('stays')
       .select('id, estimated_checkout, guests(first_name, last_name_paterno), rooms(number, properties(name))')
+      .eq('tenant_id', tenantId)
       .is('checked_out_at', null)
       .not('estimated_checkout', 'is', null)
       .lt('estimated_checkout', nowISO)
       .order('estimated_checkout', { ascending: true })
       .limit(6),
-    admin.from('stays').select('*', { count: 'exact', head: true }).gte('checked_in_at', todayStart.toISOString()),
+    admin.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('checked_in_at', todayStart.toISOString()),
   ])
 
   const fmtD = (iso: string | null) =>

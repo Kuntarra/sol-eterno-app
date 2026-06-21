@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { ROLE_LABELS } from '@/lib/types'
@@ -11,16 +12,19 @@ const ROLE_COLORS: Record<string, string> = {
 
 export default async function UsuariosPage() {
   const adminClient = createAdminClient()
+  const tenantId = await getMyTenantId()
 
   const [{ data: profiles }, { data: rp }] = await Promise.all([
     adminClient
       .from('user_profiles')
       .select('*, companies(name)')
+      .eq('tenant_id', tenantId)
       .order('role')
       .order('full_name'),
     adminClient
       .from('receptionist_properties')
-      .select('user_id, properties(name)'),
+      .select('user_id, properties(name)')
+      .eq('tenant_id', tenantId),
   ])
 
   // Agrupar propiedades por user_id

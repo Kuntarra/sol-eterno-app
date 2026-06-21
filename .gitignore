@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# respaldos de base de datos (datos sensibles — NUNCA subir)
+/backups
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

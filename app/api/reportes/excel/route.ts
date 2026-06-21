@@ -4,6 +4,7 @@ import { ROOM_TYPE_LABELS } from "@/lib/types"
 import ExcelJS from 'exceljs'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest) {
   const periodoFin    = new Date(hastaStr + 'T23:59:59')
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
   const desdeISO = desdeStr + 'T00:00:00'
   const hastaISO = hastaStr + 'T23:59:59'
 
@@ -57,11 +59,12 @@ export async function GET(req: NextRequest) {
       rooms(id, number, type, capacity, properties(id, name)),
       companies(id, name)
     `)
+    .eq('tenant_id', tenantId)
     .lte('checked_in_at', hastaISO)
     .or(`checked_out_at.gte.${desdeISO},checked_out_at.is.null`)
     .order('checked_in_at', { ascending: true })
     .limit(5000),
-    admin.from('allocations').select(`room_id, company_id, rooms(id, capacity, properties(id, name)), companies(id, name)`),
+    admin.from('allocations').select(`room_id, company_id, rooms(id, capacity, properties(id, name)), companies(id, name)`).eq('tenant_id', tenantId),
   ])
 
   let stays = staysRaw ?? []

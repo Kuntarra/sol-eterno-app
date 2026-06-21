@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { ArrowLeft } from "lucide-react"
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -16,12 +17,13 @@ export default async function UsuarioDetailPage({ params, searchParams }: Props)
   const { id } = await params
   const { success, error } = await searchParams
   const adminClient = createAdminClient()
+  const tenantId = await getMyTenantId()
 
   const [{ data: profile }, { data: properties }, { data: companies }, { data: rp }] = await Promise.all([
-    adminClient.from('user_profiles').select('*, companies(name)').eq('id', id).single(),
-    adminClient.from('properties').select('id, name, type, cities(name)').eq('active', true).order('name'),
-    adminClient.from('companies').select('id, name').eq('active', true).order('name'),
-    adminClient.from('receptionist_properties').select('property_id').eq('user_id', id),
+    adminClient.from('user_profiles').select('*, companies(name)').eq('id', id).eq('tenant_id', tenantId).single(),
+    adminClient.from('properties').select('id, name, type, cities(name)').eq('tenant_id', tenantId).eq('active', true).order('name'),
+    adminClient.from('companies').select('id, name').eq('tenant_id', tenantId).eq('active', true).order('name'),
+    adminClient.from('receptionist_properties').select('property_id').eq('tenant_id', tenantId).eq('user_id', id),
   ])
 
   if (!profile) notFound()

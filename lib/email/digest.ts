@@ -12,6 +12,7 @@ export type Scope = {
   company_id?: string | null
   property_ids?: string[] | null
   project_id?: string | null
+  tenant_id: string   // operador dueño de la suscripción (aislamiento multi-tenant)
 }
 export type Subscription = Scope & {
   id: string
@@ -81,16 +82,16 @@ function mapMov(s: any, iso: string): Movimiento {
 export async function scopeLabel(scope: Scope): Promise<string> {
   const admin = createAdminClient()
   if (scope.scope_type === 'project' && scope.project_id) {
-    const { data } = await admin.from('projects').select('name, companies(name)').eq('id', scope.project_id).single()
+    const { data } = await admin.from('projects').select('name, companies(name)').eq('id', scope.project_id).eq('tenant_id', scope.tenant_id).single()
     const emp = (data?.companies as any)?.name
     return data?.name ? `Proyecto: ${data.name}${emp ? ` (${emp})` : ''}` : 'Proyecto'
   }
   if (scope.scope_type === 'company' && scope.company_id) {
-    const { data } = await admin.from('companies').select('name').eq('id', scope.company_id).single()
+    const { data } = await admin.from('companies').select('name').eq('id', scope.company_id).eq('tenant_id', scope.tenant_id).single()
     return data?.name ? `Empresa: ${data.name}` : 'Empresa'
   }
   if (scope.scope_type === 'property' && scope.property_ids?.length) {
-    const { data } = await admin.from('properties').select('name').in('id', scope.property_ids)
+    const { data } = await admin.from('properties').select('name').eq('tenant_id', scope.tenant_id).in('id', scope.property_ids)
     const names = (data ?? []).map(p => p.name)
     return names.length ? `Propiedades: ${names.join(', ')}` : 'Propiedades'
   }
@@ -102,10 +103,12 @@ export async function buildScopeFilter(scope: Scope) {
   const admin = createAdminClient()
   let roomIds: string[] | null = null
   if (scope.scope_type === 'property' && scope.property_ids?.length) {
-    const { data: rooms } = await admin.from('rooms').select('id').in('property_id', scope.property_ids)
+    const { data: rooms } = await admin.from('rooms').select('id').eq('tenant_id', scope.tenant_id).in('property_id', scope.property_ids)
     roomIds = (rooms ?? []).map(r => r.id)
   }
   return (q: any) => {
+    // Aislamiento multi-tenant: SIEMPRE acotar al operador de la suscripción
+    q = q.eq('tenant_id', scope.tenant_id)
     if (scope.scope_type === 'company' && scope.company_id) q = q.eq('company_id', scope.company_id)
     if (scope.scope_type === 'project') {
       // null project_id → filtro imposible para no filtrar toda la operación por accidente
@@ -341,7 +344,7 @@ export async function sendSubscription(sub: Subscription, opts?: { test?: boolea
   // Fan-out: una suscripción "cada proyecto" → un correo por proyecto activo.
   if (sub.scope_type === 'each_project') {
     const admin = createAdminClient()
-    const { data: projects } = await admin.from('projects').select('id').eq('active', true).order('name')
+    const { data: projects } = await admin.from('projects').select('id').eq('tenant_id', sub.tenant_id).eq('active', true).order('name')
     if (!projects?.length) return { ok: false, reason: 'No hay proyectos activos' }
     let okAll = true
     let lastReason: string | undefined

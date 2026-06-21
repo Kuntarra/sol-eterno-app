@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { Users, Building2, Briefcase, ArrowRight, Search } from 'lucide-react'
 
 export const metadata = { title: 'Buscar · Sol Eterno' }
@@ -17,18 +18,22 @@ export default async function BuscarPage({
 
   if (q) {
     const admin = createAdminClient()
+    const tenantId = await getMyTenantId()
     const like = `%${q}%`
     const [g, p, c] = await Promise.all([
       admin.from('guests')
         .select('id, first_name, last_name_paterno, rut')
+        .eq('tenant_id', tenantId)
         .or(`first_name.ilike.${like},last_name_paterno.ilike.${like},rut.ilike.${like}`)
         .limit(12),
       admin.from('properties')
         .select('id, name, cities(name)')
+        .eq('tenant_id', tenantId)
         .ilike('name', like)
         .limit(8),
       admin.from('companies')
         .select('id, name')
+        .eq('tenant_id', tenantId)
         .ilike('name', like)
         .limit(8),
     ])

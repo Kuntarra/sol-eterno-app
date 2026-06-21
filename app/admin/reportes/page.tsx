@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { PrintButton } from './_components/print-button'
 import { ReportFilters } from './_components/report-filters'
 import { Bed, Moon, Users, CalendarDays, FileSpreadsheet } from 'lucide-react'
@@ -64,6 +65,7 @@ export default async function ReportesPage({
   const tieneComparacion = periodo !== 'todo'
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
 
   // Traemos estadías que solapan desde el período anterior (para comparar)
   const desde = prevInicio.toISOString()
@@ -77,6 +79,7 @@ export default async function ReportesPage({
     `)
     // Estadías que se solapan con el período:
     // checkin <= fin_periodo  AND  (checkout >= inicio_periodo OR sin checkout)
+    .eq('tenant_id', tenantId)
     .lte('checked_in_at', hasta)
     .or(`checked_out_at.gte.${desde},checked_out_at.is.null`)
     .order('checked_in_at', { ascending: true })
@@ -86,11 +89,11 @@ export default async function ReportesPage({
       room_id, company_id, project_id,
       rooms(id, number, type, capacity, properties(id, name)),
       companies(id, name)
-    `),
+    `).eq('tenant_id', tenantId),
 
-    admin.from('companies').select('id, name').eq('active', true).order('name'),
-    admin.from('properties').select('id, name').eq('active', true).order('name'),
-    admin.from('projects').select('id, name, company_id').eq('active', true).order('name'),
+    admin.from('companies').select('id, name').eq('tenant_id', tenantId).eq('active', true).order('name'),
+    admin.from('properties').select('id, name').eq('tenant_id', tenantId).eq('active', true).order('name'),
+    admin.from('projects').select('id, name, company_id').eq('tenant_id', tenantId).eq('active', true).order('name'),
   ])
 
   // El filtro principal ya viene desde la BD; este es solo seguridad extra

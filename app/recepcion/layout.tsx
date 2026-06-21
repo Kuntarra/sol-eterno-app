@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { RecepcionSidebar } from './_components/recepcion-sidebar'
 import { stopImpersonate } from '@/app/actions/impersonate'
 
@@ -31,10 +32,11 @@ export default async function RecepcionLayout({ children }: { children: React.Re
   }
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
 
   // Perfil del usuario objetivo
   const { data: targetProfile } = impersonateId
-    ? await admin.from('user_profiles').select('role, full_name').eq('id', targetUserId).single()
+    ? await admin.from('user_profiles').select('role, full_name').eq('id', targetUserId).eq('tenant_id', tenantId).single()
     : { data: adminProfile }
 
   if (!impersonateId && adminProfile?.role !== 'receptionist' && adminProfile?.role !== 'admin') {
@@ -46,6 +48,7 @@ export default async function RecepcionLayout({ children }: { children: React.Re
     .from('receptionist_properties')
     .select('properties(name, cities(name))')
     .eq('user_id', targetUserId)
+    .eq('tenant_id', tenantId)
 
   const properties = (rpRows ?? []).map(row => {
     const p = row.properties as unknown as { name: string; cities: { name: string } | null } | null

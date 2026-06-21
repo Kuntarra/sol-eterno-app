@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { ArrowLeft, Phone, Building2, CalendarDays, Moon, MapPin } from 'lucide-react'
 
 export const metadata = { title: 'Huésped · Sol Eterno' }
@@ -20,11 +21,13 @@ function nights(inIso: string, outIso: string | null) {
 export default async function HuespedPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
 
   const { data: guest } = await admin
     .from('guests')
     .select('id, first_name, last_name_paterno, last_name_materno, rut, phone, companies(name)')
     .eq('id', id)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (!guest) notFound()
@@ -33,6 +36,7 @@ export default async function HuespedPage({ params }: { params: Promise<{ id: st
     .from('stays')
     .select('id, shift_type, checked_in_at, checked_out_at, estimated_checkout, rooms(number, type, properties(name)), companies(name)')
     .eq('guest_id', id)
+    .eq('tenant_id', tenantId)
     .order('checked_in_at', { ascending: false })
 
   const list = stays ?? []

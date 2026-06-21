@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { formatDate as fmt } from "@/lib/format"
 import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import React from 'react'
 import { renderToBuffer, Document, Page, View, Text, StyleSheet, Svg, Circle, Polygon } from '@react-pdf/renderer'
 
@@ -125,6 +126,7 @@ export async function GET(req: NextRequest) {
   const tieneComp = periodo !== 'todo'
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
   const hastaISO = hastaStr + 'T23:59:59'
 
   const [{ data: staysRaw }, { data: allocsRaw }] = await Promise.all([
@@ -134,11 +136,12 @@ export async function GET(req: NextRequest) {
       rooms(id, number, type, capacity, properties(id, name)),
       companies(id, name)
     `)
+    .eq('tenant_id', tenantId)
     .lte('checked_in_at', hastaISO)
     .or(`checked_out_at.gte.${prevInicio.toISOString()},checked_out_at.is.null`)
     .order('checked_in_at', { ascending: true })
     .limit(5000),
-    admin.from('allocations').select(`room_id, company_id, rooms(id, capacity, properties(id, name)), companies(id, name)`),
+    admin.from('allocations').select(`room_id, company_id, rooms(id, capacity, properties(id, name)), companies(id, name)`).eq('tenant_id', tenantId),
   ])
 
   let stays = staysRaw ?? []

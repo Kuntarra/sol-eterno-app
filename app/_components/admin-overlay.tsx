@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { RoleSwitcher } from '@/app/admin/_components/role-switcher'
 
 export async function AdminOverlay() {
@@ -16,9 +17,11 @@ export async function AdminOverlay() {
   if (profile?.role !== 'admin') return null
 
   const admin = createAdminClient()
+  const tenantId = await getMyTenantId()
   const { data: users } = await admin
     .from('user_profiles')
     .select('id, full_name, role, email')
+    .eq('tenant_id', tenantId)
     .neq('id', user.id)
     .in('role', ['receptionist', 'client'])
     .order('role')

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import Link from 'next/link'
 import { SearchBar } from './_components/search-bar'
 import { CheckCircle2, Download } from 'lucide-react'
@@ -17,6 +18,7 @@ export default async function EstadiasPage({
 
   const supabase = await createClient()
   const admin    = createAdminClient()
+  const tenantId = await getMyTenantId()
 
   // Mini KPIs: check-ins hoy y activos totales
   const todayStart = new Date()
@@ -51,6 +53,7 @@ export default async function EstadiasPage({
     const { data: guests } = await admin
       .from('guests')
       .select('id')
+      .eq('tenant_id', tenantId)
       .or(`first_name.ilike.%${q}%,last_name_paterno.ilike.%${q}%,rut.ilike.%${q}%`)
       .limit(200)
 
@@ -88,7 +91,7 @@ export default async function EstadiasPage({
   const guestIdsShown = [...new Set((stays ?? []).map(s => (s.guests as any)?.id).filter(Boolean))]
   const stayCount = new Map<string, number>()
   if (guestIdsShown.length) {
-    const { data: counts } = await admin.from('stays').select('guest_id').in('guest_id', guestIdsShown).limit(5000)
+    const { data: counts } = await admin.from('stays').select('guest_id').eq('tenant_id', tenantId).in('guest_id', guestIdsShown).limit(5000)
     for (const c of counts ?? []) stayCount.set(c.guest_id, (stayCount.get(c.guest_id) ?? 0) + 1)
   }
 

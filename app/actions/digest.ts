@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMyTenantId } from '@/lib/tenant'
 import { sendSubscription, type Subscription } from '@/lib/email/digest'
 
 async function requireAdmin() {
@@ -64,8 +65,9 @@ export async function deleteSubscription(id: string) {
 
 export async function sendTestSubscription(id: string) {
   await requireAdmin()
+  const tenantId = await getMyTenantId()
   const admin = createAdminClient()
-  const { data: sub } = await admin.from('report_subscriptions').select('*').eq('id', id).single()
+  const { data: sub } = await admin.from('report_subscriptions').select('*').eq('id', id).eq('tenant_id', tenantId).single()
   if (!sub) back('error=' + encodeURIComponent('Suscripción no encontrada.'))
   const res = await sendSubscription(sub as Subscription, { test: true })
   if (res.ok) back('ok=' + encodeURIComponent(`Prueba enviada a ${(sub as Subscription).email}.`))

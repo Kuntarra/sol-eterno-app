@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user'
+import { getMyTenantId } from '@/lib/tenant'
 import Link from 'next/link'
 import { CheckinForm } from '../_components/checkin-form'
 import { AlertCircle } from 'lucide-react'
@@ -11,6 +12,7 @@ export default async function CheckinPage({
 }) {
   const params = await searchParams
   const effectiveId = await getEffectiveUserId()
+  const tenantId = await getMyTenantId()
   const supabase = createAdminClient()
 
   // Verificar si el recepcionista tiene propiedades asignadas
@@ -18,6 +20,7 @@ export default async function CheckinPage({
     .from('receptionist_properties')
     .select('property_id')
     .eq('user_id', effectiveId)
+    .eq('tenant_id', tenantId)
 
   const noPropertiesAssigned = !assignedProps?.length
 
@@ -33,6 +36,7 @@ export default async function CheckinPage({
         properties(id, name, cities(name))
       )
     `)
+    .eq('tenant_id', tenantId)
     .in('rooms.property_id' as any, propIds.length ? propIds : ['00000000-0000-0000-0000-000000000000'])
 
   // Construir estructura: propiedad → empresa → habitaciones
