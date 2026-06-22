@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt } from 'lucide-react'
 
 const NAV_GROUPS = [
   {
@@ -26,7 +26,10 @@ const NAV_GROUPS = [
   {
     label: 'Módulos',
     items: [
-      { href: '/admin/transporte', label: 'Transporte', exact: false, icon: <TransporteIcon /> },
+      { href: '/admin/transporte',  label: 'Transporte',   exact: false, icon: <TransporteIcon /> },
+      { href: '/admin/alimentacion', label: 'Alimentación', exact: false, icon: <AlimentacionIcon /> },
+      { href: '/admin/colaciones',  label: 'Colaciones',   exact: false, icon: <ColacionIcon /> },
+      { href: '/admin/lavanderia',  label: 'Lavandería',   exact: false, icon: <LavanderiaIcon /> },
     ],
   },
   {
@@ -228,3 +231,6 @@ function BellSideIcon() { return <Bell {...ICON} /> }
 function PersonalIcon() { return <IdCard {...ICON} /> }
 function ProyectoIcon() { return <FolderKanban {...ICON} /> }
 function TransporteIcon() { return <Bus {...ICON} /> }
+function AlimentacionIcon() { return <UtensilsCrossed {...ICON} /> }
+function ColacionIcon() { return <Package {...ICON} /> }
+function LavanderiaIcon() { return <Shirt {...ICON} /> }

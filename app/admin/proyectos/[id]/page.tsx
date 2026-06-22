@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createDotacion } from '@/app/actions/dotaciones'
 import { updateProyectoEstado } from '@/app/actions/proyectos'
-import { ArrowLeft, Plus, Users } from 'lucide-react'
+import { createVinculo } from '@/app/actions/modulos'
+import { ArrowLeft, Plus, Users, Link2 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
@@ -27,7 +28,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
 
   if (!proyecto) notFound()
 
-  const [{ data: directorio }, { data: dotaciones }] = await Promise.all([
+  const [{ data: directorio }, { data: dotaciones }, { data: proveedores }] = await Promise.all([
     supabase
       .from('persona_directorio')
       .select('persona_id, personas(nombres, apellido_paterno, apellido_materno, tipo_documento, numero_documento)')
@@ -37,11 +38,17 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
       .select('id, turno_dias_trabajo, turno_dias_descanso, fecha_inicio_contrato, fecha_fin_contrato, estado, personas(nombres, apellido_paterno, numero_documento, tipo_documento), oficios(nombre), rotaciones(id)')
       .eq('proyecto_id', id)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('proyecto_proveedores')
+      .select('*')
+      .eq('proyecto_id', id)
+      .order('created_at', { ascending: false }),
   ])
 
   const ciudad = (proyecto.cities as { name: string } | null)?.name
   const createDotacionForProject = createDotacion.bind(null, id)
   const setEstado = updateProyectoEstado.bind(null, id)
+  const vincularProveedor = createVinculo.bind(null, id)
 
   return (
     <div className="p-8 max-w-5xl">
@@ -185,6 +192,50 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Proveedores vinculados (match por RUT) */}
+      <h2 className="text-sm font-semibold text-[var(--navy)] mt-10 mb-3">Proveedores vinculados ({proveedores?.length ?? 0})</h2>
+      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-4">
+        <form action={vincularProveedor} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+          <div>
+            <label htmlFor="proveedor_rut" className="block text-xs font-medium text-[var(--gray-600)] mb-1">RUT del proveedor *</label>
+            <input id="proveedor_rut" name="proveedor_rut" required placeholder="76.543.210-K" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+          </div>
+          <div>
+            <label htmlFor="proveedor_nombre" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Nombre (si es nuevo)</label>
+            <input id="proveedor_nombre" name="proveedor_nombre" placeholder="Pullman San Luis" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+          </div>
+          <div>
+            <label htmlFor="modulo" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Módulo</label>
+            <select id="modulo" name="modulo" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" defaultValue="transporte">
+              <option value="transporte">Transporte</option>
+              <option value="hotel">Hotel</option>
+              <option value="alimentacion">Alimentación</option>
+              <option value="colaciones">Colaciones</option>
+              <option value="lavanderia">Lavandería</option>
+            </select>
+          </div>
+          <button type="submit" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">
+            <Link2 size={15} strokeWidth={2.25} /> Vincular
+          </button>
+        </form>
+        <p className="text-xs text-[var(--gray-600)] mt-2">Si el RUT ya usa el sistema, se conecta directo. Si no, queda como invitado temporal del proyecto.</p>
+      </div>
+      {!!proveedores?.length && (
+        <div className="bg-white rounded-2xl border border-[var(--gray-200)] divide-y divide-[var(--gray-100)]">
+          {proveedores.map((pv) => (
+            <div key={pv.id} className="flex items-center justify-between px-5 py-3.5">
+              <div>
+                <p className="text-sm font-medium text-[var(--navy)]">{pv.proveedor_nombre ?? pv.proveedor_rut}</p>
+                <p className="text-xs text-[var(--gray-600)]">{pv.proveedor_rut} · {pv.modulo}</p>
+              </div>
+              <span className={`badge ${pv.estado === 'activo' ? 'badge-green' : pv.estado === 'stub' ? 'badge-amber' : 'badge-gray'}`}>
+                {pv.estado === 'stub' ? 'Invitado temporal' : pv.estado === 'activo' ? 'Conectado' : pv.estado}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>
