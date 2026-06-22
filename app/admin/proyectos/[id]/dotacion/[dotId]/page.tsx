@@ -1,8 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Plane } from 'lucide-react'
+import { updateRotacion, recalcularSiguientes } from '@/app/actions/rotaciones'
+import { ArrowLeft, Plane, Save, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
+
+const RIN = 'px-2.5 py-1.5 rounded-md border border-[var(--gray-200)] bg-white text-xs text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 
 interface Props {
   params: Promise<{ id: string; dotId: string }>
@@ -89,41 +92,58 @@ export default async function DotacionDetallePage({ params }: Props) {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[var(--gray-200)] text-left text-[var(--gray-600)]">
-                <th className="px-5 py-3 font-semibold">#</th>
-                <th className="px-5 py-3 font-semibold">Inicio faena</th>
-                <th className="px-5 py-3 font-semibold">Fin esperada</th>
-                <th className="px-5 py-3 font-semibold">Días</th>
-                <th className="px-5 py-3 font-semibold">Vuelo ida</th>
-                <th className="px-5 py-3 font-semibold">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rotaciones.map((r) => {
-                const dias = r.fecha_inicio && r.fecha_fin_esperada
-                  ? Math.round((new Date(r.fecha_fin_esperada).getTime() - new Date(r.fecha_inicio).getTime()) / 86400000) + 1
-                  : '—'
-                return (
-                  <tr key={r.id} className="border-b border-[var(--gray-100)] last:border-0">
-                    <td className="px-5 py-3.5 font-semibold text-[var(--navy)]">{r.numero}</td>
-                    <td className="px-5 py-3.5 text-[var(--gray-600)] tabular-nums">{r.fecha_inicio ?? '—'}</td>
-                    <td className="px-5 py-3.5 text-[var(--gray-600)] tabular-nums">
-                      {r.fecha_fin_esperada ?? '—'}
-                      {r.ajustada_manual && <span className="ml-1.5 badge badge-amber">ajustada</span>}
-                    </td>
-                    <td className="px-5 py-3.5 text-[var(--gray-600)] tabular-nums">{dias}</td>
-                    <td className="px-5 py-3.5 text-[var(--gray-600)]">{r.vuelo_ida_numero ?? '—'}</td>
-                    <td className="px-5 py-3.5">
-                      <span className="badge badge-gray">{ESTADO_LABEL[r.estado_ciclo] ?? r.estado_ciclo}</span>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {rotaciones.map((r) => {
+            const guardar = updateRotacion.bind(null, id, dotId, r.id)
+            const recalc = recalcularSiguientes.bind(null, id, dotId, r.numero)
+            return (
+              <div key={r.id} className="bg-white rounded-xl border border-[var(--gray-200)] p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-[var(--navy)] text-white text-xs font-bold flex items-center justify-center">{r.numero}</span>
+                    <span className="badge badge-gray">{ESTADO_LABEL[r.estado_ciclo] ?? r.estado_ciclo}</span>
+                    {r.ajustada_manual && <span className="badge badge-amber">ajustada</span>}
+                  </div>
+                  <form action={recalc}>
+                    <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-xs font-semibold hover:bg-[var(--gray-100)]" title="Recalcular las rotaciones siguientes desde esta">
+                      <RefreshCw size={12} strokeWidth={2.5} /> Recalcular siguientes
+                    </button>
+                  </form>
+                </div>
+                <form action={guardar} className="grid grid-cols-2 md:grid-cols-7 gap-2 items-end">
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wide text-[var(--gray-600)] mb-0.5">Inicio</label>
+                    <input type="date" name="fecha_inicio" defaultValue={r.fecha_inicio ?? undefined} className={`${RIN} w-full`} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wide text-[var(--gray-600)] mb-0.5">Fin esperada</label>
+                    <input type="date" name="fecha_fin_esperada" defaultValue={r.fecha_fin_esperada ?? undefined} className={`${RIN} w-full`} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wide text-[var(--gray-600)] mb-0.5">Vuelo ida</label>
+                    <input name="vuelo_ida_numero" defaultValue={r.vuelo_ida_numero ?? ''} placeholder="LA123" className={`${RIN} w-full`} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wide text-[var(--gray-600)] mb-0.5">Fecha ida</label>
+                    <input type="date" name="vuelo_ida_fecha" defaultValue={r.vuelo_ida_fecha ?? undefined} className={`${RIN} w-full`} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wide text-[var(--gray-600)] mb-0.5">Vuelo vuelta</label>
+                    <input name="vuelo_vuelta_numero" defaultValue={r.vuelo_vuelta_numero ?? ''} placeholder="LA456" className={`${RIN} w-full`} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wide text-[var(--gray-600)] mb-0.5">Estado</label>
+                    <select name="estado_ciclo" defaultValue={r.estado_ciclo} className={`${RIN} w-full`}>
+                      {Object.entries(ESTADO_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                  </div>
+                  <button type="submit" className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-[var(--navy)] text-white text-xs font-semibold hover:bg-[var(--navy-dark)]">
+                    <Save size={12} strokeWidth={2.5} /> Guardar
+                  </button>
+                </form>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
