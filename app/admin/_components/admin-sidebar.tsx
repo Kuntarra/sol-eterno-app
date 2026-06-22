@@ -49,16 +49,19 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
   },
 ]
 
-// Filtra los grupos según el rol. Admin ve todo; el sub-usuario `modulo` ve los
-// ítems neutros (Dashboard) + los módulos que tiene asignados.
+// Filtra los grupos según el rol y los módulos permitidos.
+// - adminOnly: solo el admin (Configuración, Proyectos, Reportes…).
+// - modulo: visible si está en `allowedModulos` (= comprados por la empresa,
+//   y para sub-usuarios además asignados). Aplica también al admin: un admin
+//   de un proveedor solo ve los módulos que su empresa compró.
+// - neutros (Dashboard): siempre.
 function visibleGroups(role: string, allowedModulos: string[] | null) {
-  if (role === 'admin') return NAV_GROUPS
   const allowed = new Set(allowedModulos ?? [])
   return NAV_GROUPS
     .map((g) => ({
       ...g,
       items: g.items.filter((it) => {
-        if (it.adminOnly) return false
+        if (it.adminOnly) return role === 'admin'
         if (it.modulo) return allowed.has(it.modulo)
         return true
       }),

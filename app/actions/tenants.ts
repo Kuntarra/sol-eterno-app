@@ -57,6 +57,12 @@ export async function createTenant(formData: FormData) {
     id: created.user.id, role: 'admin', full_name: adminName, email: adminEmail, tenant_id: tenant.id,
   })
 
+  // Por defecto la empresa nace con todos los módulos activos; el super-admin
+  // los ajusta luego (y elige tipo proveedor) en la ficha de la empresa.
+  await admin.from('tenant_modulos').insert(
+    MODULOS.map((m) => ({ tenant_id: tenant.id, modulo: m, activo: true })),
+  )
+
   revalidatePath('/super')
   redirect('/super?success=creado')
 }
@@ -91,6 +97,33 @@ export async function toggleTenantActive(id: string, active: boolean) {
   await admin.from('tenants').update({ active }).eq('id', id)
   revalidatePath('/super')
   revalidatePath(`/super/${id}`)
+}
+
+const MODULOS = ['personal', 'transporte', 'hotel', 'alimentacion', 'colaciones', 'lavanderia']
+
+// Guarda el TIPO de empresa (empresa_proyecto | proveedor) y los MÓDULOS
+// contratados. Define qué ve el admin de esa empresa (y sus sub-usuarios).
+export async function updateTenantModulos(id: string, formData: FormData) {
+  await requireSuperAdmin()
+  const admin = createAdminClient()
+
+  const tipo = (formData.get('tipo') as string) || 'empresa_proyecto'
+  await admin.from('tenants')
+    .update({ tipo: ['empresa_proyecto', 'proveedor'].includes(tipo) ? tipo : 'empresa_proyecto' })
+    .eq('id', id)
+
+  // Upsert por módulo: marcado = activo, desmarcado = inactivo (no se borra,
+  // así conserva historial/configuración del módulo si vuelve a activarse).
+  const rows = MODULOS.map((m) => ({
+    tenant_id: id,
+    modulo: m,
+    activo: formData.get(`mod_${m}`) === 'on',
+  }))
+  await admin.from('tenant_modulos').upsert(rows, { onConflict: 'tenant_id,modulo' })
+
+  revalidatePath('/super')
+  revalidatePath(`/super/${id}`)
+  redirect(`/super/${id}?success=modulos`)
 }
 
 // Marca el cobro del mes como pagado (al día hasta fin del mes en curso).

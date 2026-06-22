@@ -22,9 +22,19 @@ export async function puedeAdministrar(modulo: string): Promise<boolean> {
   return (await nivelModulo(modulo)) === 'admin_modulo'
 }
 
-// Guard de página de módulo: si el usuario no tiene acceso al módulo, lo
-// devuelve al dashboard. Admin/super pasan siempre (nivel_modulo = 'admin_modulo').
+// Guard de página de módulo. Bloquea (→ /admin) si:
+//  1) la EMPRESA no compró el módulo (vale incluso para el admin), o
+//  2) el usuario no tiene acceso al módulo (sub-usuario sin asignación).
+// Admin/super con el módulo comprado pasan (nivel_modulo = 'admin_modulo').
 export async function requireAccesoModulo(modulo: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: comprado } = await supabase
+    .from('tenant_modulos')
+    .select('id')
+    .eq('modulo', modulo)
+    .eq('activo', true)
+    .maybeSingle()
+  if (!comprado) redirect('/admin')
   if ((await nivelModulo(modulo)) === null) redirect('/admin')
 }
 

@@ -17,3 +17,14 @@ export async function getMyTenantId(): Promise<string> {
   if (!profile?.tenant_id) throw new Error('Usuario sin tenant asignado')
   return profile.tenant_id
 }
+
+// Módulos que la empresa (tenant) tiene activos = lo que compró.
+// RLS deja a cada usuario leer los de su propia empresa.
+export async function modulosActivosTenant(): Promise<string[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('tenant_modulos')
+    .select('modulo')
+    .eq('activo', true)
+  return (data ?? []).map((r) => r.modulo)
+}

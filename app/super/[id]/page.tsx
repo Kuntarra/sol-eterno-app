@@ -2,8 +2,13 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireSuperAdmin } from '@/lib/super'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { updateTenant, toggleTenantActive, markTenantPaid } from '@/app/actions/tenants'
-import { ArrowLeft, Building2, BedDouble, Users, CheckCircle2 } from 'lucide-react'
+import { updateTenant, toggleTenantActive, markTenantPaid, updateTenantModulos } from '@/app/actions/tenants'
+import { ArrowLeft, Building2, BedDouble, Users, CheckCircle2, Boxes } from 'lucide-react'
+
+const MODULOS_DEF = [
+  { k: 'personal', label: 'Personal' }, { k: 'transporte', label: 'Transporte' }, { k: 'hotel', label: 'Hotel' },
+  { k: 'alimentacion', label: 'Alimentación' }, { k: 'colaciones', label: 'Colaciones' }, { k: 'lavanderia', label: 'Lavandería' },
+]
 
 const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
 const LABEL = 'block text-xs font-semibold text-[var(--gray-600)] mb-1.5'
@@ -30,9 +35,13 @@ export default async function OperadorDetailPage({
     admin.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', id).is('checked_out_at', null),
   ])
 
+  const { data: modRows } = await admin.from('tenant_modulos').select('modulo, activo').eq('tenant_id', id)
+  const modActivos = new Set((modRows ?? []).filter((m) => m.activo).map((m) => m.modulo))
+
   const updateWithId = updateTenant.bind(null, id)
   const toggleWithId = toggleTenantActive.bind(null, id, !t.active)
   const markPaidWithId = markTenantPaid.bind(null, id)
+  const updateModulosWithId = updateTenantModulos.bind(null, id)
 
   return (
     <div className="max-w-3xl">
@@ -91,6 +100,36 @@ export default async function OperadorDetailPage({
           </button>
         </form>
       </div>
+
+      {/* Tipo de empresa + módulos contratados */}
+      <form action={updateModulosWithId} className="bg-white rounded-xl border border-[var(--gray-200)] p-6 mb-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Boxes size={16} strokeWidth={2} className="text-[var(--navy)]" />
+          <h3 className="text-sm font-bold text-[var(--navy)]">Tipo de empresa y módulos contratados</h3>
+        </div>
+        <div>
+          <label className={LABEL}>Tipo de empresa</label>
+          <select name="tipo" defaultValue={t.tipo ?? 'empresa_proyecto'} className={INPUT}>
+            <option value="empresa_proyecto">Empresa de proyecto (usa la plataforma completa)</option>
+            <option value="proveedor">Proveedor (solo los módulos que contrate)</option>
+          </select>
+        </div>
+        <div>
+          <label className={LABEL}>Módulos contratados</label>
+          <p className="text-xs text-[var(--gray-500)] mb-3">Marca lo que esta empresa puede usar. Su admin y sus sub-usuarios solo verán los módulos activos.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {MODULOS_DEF.map((m) => (
+              <label key={m.k} className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] cursor-pointer hover:bg-[var(--gray-100)] transition-colors">
+                <input type="checkbox" name={`mod_${m.k}`} defaultChecked={modActivos.has(m.k)} className="w-4 h-4 accent-[var(--navy)]" />
+                <span className="text-sm font-medium text-[var(--navy)]">{m.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <button type="submit" className="btn-primary">Guardar módulos</button>
+        </div>
+      </form>
 
       {/* Edición de datos + facturación */}
       <form action={updateWithId} className="bg-white rounded-xl border border-[var(--gray-200)] p-6 space-y-4">

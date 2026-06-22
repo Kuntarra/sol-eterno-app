@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { modulosActivosTenant } from '@/lib/tenant'
 import { AdminSidebar } from './_components/admin-sidebar'
 import { AdminTopBar } from './_components/admin-topbar'
 
@@ -23,16 +24,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const fullName = profile?.full_name ?? user.email ?? 'Admin'
 
-  // Módulos visibles en el menú para sub-usuarios (alcance general).
-  // Admin ve todo; el sub-usuario ve solo los módulos que tiene asignados.
-  let allowedModulos: string[] | null = null
+  // Módulos de MÓDULO (sección "Módulos") visibles en el menú.
+  // Regla: lo que la EMPRESA compró (tenant_modulos) acota a todos; el admin
+  // ve todos los comprados; el sub-usuario ve solo los que tiene asignados,
+  // intersectados con los comprados.
+  const modulosComprados = new Set(await modulosActivosTenant())
+
+  let allowedModulos: string[]
   if (esModulo) {
     const { data: ums } = await supabase
       .from('user_modulos')
       .select('modulo')
       .eq('user_id', user.id)
       .is('proyecto_id', null)
-    allowedModulos = [...new Set((ums ?? []).map((u) => u.modulo))]
+    allowedModulos = [...new Set((ums ?? []).map((u) => u.modulo))].filter((m) => modulosComprados.has(m))
+  } else {
+    allowedModulos = [...modulosComprados]
   }
 
   // ── Notificaciones derivadas de datos ──────────────────────────
