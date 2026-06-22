@@ -11,7 +11,7 @@ const MOD_LABEL: Record<string, string> = {
   personal: 'Personal', transporte: 'Transporte', hotel: 'Hotel', alimentacion: 'Alimentación', colaciones: 'Colaciones', lavanderia: 'Lavandería',
 }
 const NIVEL_LABEL: Record<string, string> = {
-  admin_modulo: 'Administrador', actuador: 'Revisor', visor: 'Visualizador',
+  admin_modulo: 'Supervisor de módulo', actuador: 'Revisor', visor: 'Visualizador',
 }
 const NIVEL_BADGE: Record<string, string> = {
   admin_modulo: 'badge-green', actuador: 'badge-amber', visor: 'badge-gray',
@@ -68,7 +68,7 @@ export default async function RolesPage({ searchParams }: Props) {
                   <select id="nivel" name="nivel" className={`${INPUT} w-full`} defaultValue="visor">
                     <option value="visor">Visualizador (solo lee)</option>
                     <option value="actuador">Revisor (registra en terreno: check-in/out, entregas, embarques)</option>
-                    <option value="admin_modulo">Administrador (gestiona el módulo)</option>
+                    <option value="admin_modulo">Supervisor de módulo (crea/gestiona)</option>
                   </select>
                 </div>
                 <div>
