@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getMyTenantId } from '@/lib/tenant'
 import { AdminSidebar } from './_components/admin-sidebar'
 import { AdminTopBar } from './_components/admin-topbar'
 
@@ -10,9 +9,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Una sola lectura de perfil: rol + nombre + tenant (antes se consultaba
+  // dos veces, la segunda dentro de getMyTenantId).
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('role, full_name')
+    .select('role, full_name, tenant_id')
     .eq('id', user.id)
     .single()
 
@@ -22,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   // ── Notificaciones derivadas de datos ──────────────────────────
   const admin = createAdminClient()
-  const tenantId = await getMyTenantId()
+  const tenantId = profile?.tenant_id
   const nowISO = new Date().toISOString()
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
   const [{ data: overdue }, { count: checkinsHoy }] = await Promise.all([
