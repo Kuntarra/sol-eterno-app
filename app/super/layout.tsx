@@ -20,6 +20,8 @@ export default async function SuperLayout({ children }: { children: React.ReactN
             </div>
           </div>
           <div className="flex items-center gap-4 text-sm">
+            <Link href="/super" className="text-white/80 hover:text-white transition-colors">Operadores</Link>
+            <Link href="/super/edp" className="text-white/80 hover:text-white transition-colors">EDP / Cobros</Link>
             <span className="text-white/60 hidden sm:inline">{fullName}</span>
             <Link href="/admin" className="inline-flex items-center gap-1.5 text-white/80 hover:text-white transition-colors">
               <ArrowLeft size={15} strokeWidth={2} />
