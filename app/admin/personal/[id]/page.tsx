@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { crearAccesoPersona, guardarPermisos } from '@/app/actions/acceso'
+import { SubmitButton } from '@/app/_components/submit-button'
 import { ArrowLeft, IdCard, Phone, Globe, Cake, ShieldAlert, FolderKanban, Lock, KeyRound, Save, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -131,9 +132,9 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
               <label htmlFor="password" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Clave (mín. 6)</label>
               <input id="password" name="password" type="text" required minLength={6} placeholder="clave inicial" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
             </div>
-            <button type="submit" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">
+            <SubmitButton pendingText="Creando acceso…" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">
               <KeyRound size={15} strokeWidth={2.25} /> Crear acceso
-            </button>
+            </SubmitButton>
             <p className="md:col-span-3 text-xs text-[var(--gray-600)]">Esto crea el usuario para que esta persona pueda iniciar sesión. Luego marcas sus módulos y nivel.</p>
           </form>
         ) : (
@@ -159,9 +160,9 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
                   </div>
                 )
               })}
-              <button type="submit" className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">
+              <SubmitButton pendingText="Guardando…" className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">
                 <Save size={15} strokeWidth={2.25} /> Guardar permisos
-              </button>
+              </SubmitButton>
               <p className="text-xs text-[var(--gray-600)] mt-1">Marca el módulo y elige el nivel. El alcance (todo el proyecto o solo el módulo) lo aplica el sistema según el tipo de empresa.</p>
             </form>
           </>
