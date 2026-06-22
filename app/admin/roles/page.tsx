@@ -11,7 +11,7 @@ const MOD_LABEL: Record<string, string> = {
   personal: 'Personal', transporte: 'Transporte', hotel: 'Hotel', alimentacion: 'Alimentación', colaciones: 'Colaciones', lavanderia: 'Lavandería',
 }
 const NIVEL_LABEL: Record<string, string> = {
-  admin_modulo: 'Administrador', actuador: 'Actuador', visor: 'Visualizador',
+  admin_modulo: 'Administrador', actuador: 'Revisor', visor: 'Visualizador',
 }
 const NIVEL_BADGE: Record<string, string> = {
   admin_modulo: 'badge-green', actuador: 'badge-amber', visor: 'badge-gray',
@@ -33,7 +33,7 @@ export default async function RolesPage({ searchParams }: Props) {
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-6">
         <span className="section-label">Configuración</span>
         <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Roles por módulo</h1>
-        <p className="text-sm text-[var(--gray-600)] mt-1">Supervisor (gestiona) o Visor (solo lectura) por módulo. Los administradores tienen acceso total.</p>
+        <p className="text-sm text-[var(--gray-600)] mt-1">Administrador (crea) · Revisor (registra en terreno) · Visualizador (solo ve). Los administradores de la empresa tienen acceso total.</p>
       </div>
 
       <div className="px-8 pb-8">
@@ -67,7 +67,7 @@ export default async function RolesPage({ searchParams }: Props) {
                   <label htmlFor="nivel" className={LABEL}>Nivel</label>
                   <select id="nivel" name="nivel" className={`${INPUT} w-full`} defaultValue="visor">
                     <option value="visor">Visualizador (solo lee)</option>
-                    <option value="actuador">Actuador (opera en terreno)</option>
+                    <option value="actuador">Revisor (registra en terreno: check-in/out, entregas, embarques)</option>
                     <option value="admin_modulo">Administrador (gestiona el módulo)</option>
                   </select>
                 </div>
