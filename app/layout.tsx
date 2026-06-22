@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, Spectral } from 'next/font/google'
 import './globals.css'
 import { AdminOverlay } from './_components/admin-overlay'
@@ -19,6 +19,11 @@ const spectral = Spectral({
 export const metadata: Metadata = {
   title: 'Sol Eterno — Gestión de Alojamientos',
   description: 'Plataforma de gestión de alojamientos para empresas mineras del norte de Chile.',
+  appleWebApp: { capable: true, title: 'Sol Eterno', statusBarStyle: 'default' },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0A2C4A',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

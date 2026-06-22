@@ -19,6 +19,7 @@ const NAV_GROUPS = [
   {
     label: 'Dotación',
     items: [
+      { href: '/admin/dotia',      label: 'Resumen',    exact: true,  icon: <DashIcon /> },
       { href: '/admin/personal',   label: 'Personal',   exact: false, icon: <PersonalIcon /> },
       { href: '/admin/proyectos',  label: 'Proyectos',  exact: false, icon: <ProyectoIcon /> },
     ],
