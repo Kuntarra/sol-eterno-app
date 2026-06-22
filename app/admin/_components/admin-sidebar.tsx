@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard } from 'lucide-react'
 
 const NAV_GROUPS = [
   {
@@ -14,6 +14,12 @@ const NAV_GROUPS = [
       { href: '/admin',            label: 'Dashboard',  exact: true,  icon: <DashIcon /> },
       { href: '/admin/estadias',   label: 'Estadías',   exact: false, icon: <StayIcon /> },
       { href: '/admin/reportes',   label: 'Reportes',   exact: false, icon: <ChartIcon /> },
+    ],
+  },
+  {
+    label: 'Dotación',
+    items: [
+      { href: '/admin/personal',   label: 'Personal',   exact: false, icon: <PersonalIcon /> },
     ],
   },
   {
@@ -212,3 +218,4 @@ function BuildIcon() { return <Building2 {...ICON} /> }
 function BriefIcon() { return <Briefcase {...ICON} /> }
 function UserIcon()  { return <Users {...ICON} /> }
 function BellSideIcon() { return <Bell {...ICON} /> }
+function PersonalIcon() { return <IdCard {...ICON} /> }
