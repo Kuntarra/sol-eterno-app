@@ -5,18 +5,19 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck, Link2 } from 'lucide-react'
 
 // `modulo` = clave del módulo (user_modulos) para filtrar el menú de sub-usuarios.
 // `adminOnly` = visible solo para admin. Ítems sin ninguna marca = siempre visibles.
-type NavItemDef = { href: string; label: string; exact: boolean; icon: React.ReactNode; modulo?: string; adminOnly?: boolean }
+type NavItemDef = { href: string; label: string; exact: boolean; icon: React.ReactNode; modulo?: string; adminOnly?: boolean; proveedorOnly?: boolean }
 
 const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
   {
     label: 'Operaciones',
     items: [
-      { href: '/admin',            label: 'Dashboard',  exact: true,  icon: <DashIcon /> },
-      { href: '/admin/reportes',   label: 'Reportes',   exact: false, icon: <ChartIcon />, adminOnly: true },
+      { href: '/admin',            label: 'Dashboard',   exact: true,  icon: <DashIcon /> },
+      { href: '/admin/conectados', label: 'Conectados',  exact: false, icon: <Link2 size={18} strokeWidth={1.75} />, proveedorOnly: true },
+      { href: '/admin/reportes',   label: 'Reportes',    exact: false, icon: <ChartIcon />, adminOnly: true },
     ],
   },
   {
@@ -55,12 +56,13 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
 //   y para sub-usuarios además asignados). Aplica también al admin: un admin
 //   de un proveedor solo ve los módulos que su empresa compró.
 // - neutros (Dashboard): siempre.
-function visibleGroups(role: string, allowedModulos: string[] | null) {
+function visibleGroups(role: string, allowedModulos: string[] | null, tenantTipo: string) {
   const allowed = new Set(allowedModulos ?? [])
   return NAV_GROUPS
     .map((g) => ({
       ...g,
       items: g.items.filter((it) => {
+        if (it.proveedorOnly) return tenantTipo === 'proveedor'
         if (it.adminOnly) return role === 'admin'
         if (it.modulo) return allowed.has(it.modulo)
         return true
@@ -108,8 +110,8 @@ function NavItem({ href, label, exact, icon, onClose }: { href: string; label: s
   )
 }
 
-function SidebarContent({ fullName, role, allowedModulos, onClose }: { fullName: string; role: string; allowedModulos: string[] | null; onClose?: () => void }) {
-  const groups = visibleGroups(role, allowedModulos)
+function SidebarContent({ fullName, role, allowedModulos, tenantTipo, onClose }: { fullName: string; role: string; allowedModulos: string[] | null; tenantTipo: string; onClose?: () => void }) {
+  const groups = visibleGroups(role, allowedModulos, tenantTipo)
   return (
     <>
       <BrandSection />
@@ -172,14 +174,14 @@ function SidebarContent({ fullName, role, allowedModulos, onClose }: { fullName:
   )
 }
 
-export function AdminSidebar({ fullName, role, allowedModulos }: { fullName: string; role: string; allowedModulos: string[] | null }) {
+export function AdminSidebar({ fullName, role, allowedModulos, tenantTipo }: { fullName: string; role: string; allowedModulos: string[] | null; tenantTipo: string }) {
   const [open, setOpen] = useState(false)
 
   return (
     <>
       {/* ── Desktop sidebar ── */}
       <aside className="hidden md:flex w-[220px] min-h-screen bg-[var(--navy)] flex-col shrink-0 border-r border-white/5">
-        <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} />
+        <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} tenantTipo={tenantTipo} />
       </aside>
 
       {/* ── Mobile top bar ── */}
@@ -202,7 +204,7 @@ export function AdminSidebar({ fullName, role, allowedModulos }: { fullName: str
               <X size={16} strokeWidth={2.25} />
             </button>
           </div>
-          <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} onClose={() => setOpen(false)} />
+          <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} tenantTipo={tenantTipo} onClose={() => setOpen(false)} />
         </aside>
       </div>
 

@@ -24,6 +24,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const fullName = profile?.full_name ?? user.email ?? 'Admin'
 
+  // Tipo de empresa: define si se ofrece la vista "Proyectos conectados".
+  const { data: tnt } = await supabase.from('tenants').select('tipo').eq('id', profile?.tenant_id).maybeSingle()
+  const tenantTipo = tnt?.tipo ?? 'empresa_proyecto'
+
   // Módulos de MÓDULO (sección "Módulos") visibles en el menú.
   // Regla: lo que la EMPRESA compró (tenant_modulos) acota a todos; el admin
   // ve todos los comprados; el sub-usuario ve solo los que tiene asignados,
@@ -84,7 +88,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar fullName={fullName} role={esAdmin ? 'admin' : 'modulo'} allowedModulos={allowedModulos} />
+      <AdminSidebar fullName={fullName} role={esAdmin ? 'admin' : 'modulo'} allowedModulos={allowedModulos} tenantTipo={tenantTipo} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminTopBar fullName={fullName} notifications={notifications} />
         <main className="flex-1 overflow-auto bg-[var(--gray-100)] pt-16 pb-16 md:pt-0 md:pb-0">
