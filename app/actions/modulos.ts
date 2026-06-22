@@ -3,9 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { puedeGestionar } from '@/lib/rbac'
 
 // ── Colaciones ─────────────────────────────────────────────────
 export async function createColacion(formData: FormData) {
+  if (!(await puedeGestionar('colaciones'))) redirect('/admin/colaciones?error=' + encodeURIComponent('No tienes permiso de supervisor en Colaciones.'))
   const supabase = await createClient()
   const cant = parseInt((formData.get('cantidad') as string) || '1', 10)
   const { error } = await supabase.from('colaciones').insert({
@@ -33,6 +35,7 @@ export async function toggleColacionEntregada(id: string, entregada: boolean) {
 
 // ── Alimentación ───────────────────────────────────────────────
 export async function createPlanAlimentacion(formData: FormData) {
+  if (!(await puedeGestionar('alimentacion'))) redirect('/admin/alimentacion?error=' + encodeURIComponent('No tienes permiso de supervisor en Alimentación.'))
   const supabase = await createClient()
   const dotacionId = formData.get('dotacion_id') as string
   if (!dotacionId) redirect('/admin/alimentacion?error=' + encodeURIComponent('Selecciona una persona.'))
@@ -58,6 +61,7 @@ export async function createPrenda(formData: FormData) {
 }
 
 export async function createBolsa(formData: FormData) {
+  if (!(await puedeGestionar('lavanderia'))) redirect('/admin/lavanderia?error=' + encodeURIComponent('No tienes permiso de supervisor en Lavandería.'))
   const supabase = await createClient()
   const dotacionId = formData.get('dotacion_id') as string
   if (!dotacionId) redirect('/admin/lavanderia?error=' + encodeURIComponent('Selecciona una persona.'))

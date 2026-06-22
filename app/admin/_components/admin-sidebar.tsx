@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck } from 'lucide-react'
 
 const NAV_GROUPS = [
   {
@@ -40,6 +40,7 @@ const NAV_GROUPS = [
       { href: '/admin/propiedades',   label: 'Propiedades',   exact: false, icon: <BuildIcon /> },
       { href: '/admin/clientes',      label: 'Clientes',      exact: false, icon: <BriefIcon /> },
       { href: '/admin/usuarios',      label: 'Usuarios',      exact: false, icon: <UserIcon /> },
+      { href: '/admin/roles',         label: 'Roles',         exact: false, icon: <RolesIcon /> },
       { href: '/admin/notificaciones', label: 'Notificaciones', exact: false, icon: <BellSideIcon /> },
     ],
   },
@@ -236,3 +237,4 @@ function TransporteIcon() { return <Bus {...ICON} /> }
 function AlimentacionIcon() { return <UtensilsCrossed {...ICON} /> }
 function ColacionIcon() { return <Package {...ICON} /> }
 function LavanderiaIcon() { return <Shirt {...ICON} /> }
+function RolesIcon() { return <ShieldCheck {...ICON} /> }

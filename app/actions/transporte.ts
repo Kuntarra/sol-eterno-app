@@ -3,9 +3,13 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { puedeGestionar } from '@/lib/rbac'
+
+const SIN_PERMISO = '/admin/transporte?error=' + encodeURIComponent('No tienes permiso de supervisor en Transporte.')
 
 // ── Flota ──────────────────────────────────────────────────────
 export async function createVehiculo(formData: FormData) {
+  if (!(await puedeGestionar('transporte'))) redirect(SIN_PERMISO)
   const supabase = await createClient()
   const cap = parseInt((formData.get('capacidad') as string) || '1', 10)
   const { error } = await supabase.from('vehiculos').insert({
@@ -21,6 +25,7 @@ export async function createVehiculo(formData: FormData) {
 
 // ── Traslados ──────────────────────────────────────────────────
 export async function createTraslado(formData: FormData) {
+  if (!(await puedeGestionar('transporte'))) redirect(SIN_PERMISO)
   const supabase = await createClient()
   const { data, error } = await supabase.from('traslados').insert({
     proyecto_id:      (formData.get('proyecto_id') as string) || null,
