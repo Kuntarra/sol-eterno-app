@@ -7,44 +7,64 @@ import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
 import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck } from 'lucide-react'
 
-const NAV_GROUPS = [
+// `modulo` = clave del módulo (user_modulos) para filtrar el menú de sub-usuarios.
+// `adminOnly` = visible solo para admin. Ítems sin ninguna marca = siempre visibles.
+type NavItemDef = { href: string; label: string; exact: boolean; icon: React.ReactNode; modulo?: string; adminOnly?: boolean }
+
+const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
   {
     label: 'Operaciones',
     items: [
       { href: '/admin',            label: 'Dashboard',  exact: true,  icon: <DashIcon /> },
-      { href: '/admin/estadias',   label: 'Estadías',   exact: false, icon: <StayIcon /> },
-      { href: '/admin/reportes',   label: 'Reportes',   exact: false, icon: <ChartIcon /> },
+      { href: '/admin/reportes',   label: 'Reportes',   exact: false, icon: <ChartIcon />, adminOnly: true },
     ],
   },
   {
     label: 'Dotación',
     items: [
-      { href: '/admin/dotia',      label: 'Resumen',    exact: true,  icon: <DashIcon /> },
-      { href: '/admin/personal',   label: 'Personal',   exact: false, icon: <PersonalIcon /> },
-      { href: '/admin/proyectos',  label: 'Proyectos',  exact: false, icon: <ProyectoIcon /> },
+      { href: '/admin/dotia',      label: 'Resumen',    exact: true,  icon: <DashIcon />,     adminOnly: true },
+      { href: '/admin/personal',   label: 'Personal',   exact: false, icon: <PersonalIcon />, modulo: 'personal' },
+      { href: '/admin/proyectos',  label: 'Proyectos',  exact: false, icon: <ProyectoIcon />, adminOnly: true },
     ],
   },
   {
     label: 'Módulos',
     items: [
-      { href: '/admin/transporte',  label: 'Transporte',   exact: false, icon: <TransporteIcon /> },
-      { href: '/admin/estadias',    label: 'Hotel',        exact: false, icon: <BuildIcon /> },
-      { href: '/admin/alimentacion', label: 'Alimentación', exact: false, icon: <AlimentacionIcon /> },
-      { href: '/admin/colaciones',  label: 'Colaciones',   exact: false, icon: <ColacionIcon /> },
-      { href: '/admin/lavanderia',  label: 'Lavandería',   exact: false, icon: <LavanderiaIcon /> },
+      { href: '/admin/transporte',  label: 'Transporte',   exact: false, icon: <TransporteIcon />,  modulo: 'transporte' },
+      { href: '/admin/estadias',    label: 'Hotel',        exact: false, icon: <BuildIcon />,        modulo: 'hotel' },
+      { href: '/admin/alimentacion', label: 'Alimentación', exact: false, icon: <AlimentacionIcon />, modulo: 'alimentacion' },
+      { href: '/admin/colaciones',  label: 'Colaciones',   exact: false, icon: <ColacionIcon />,     modulo: 'colaciones' },
+      { href: '/admin/lavanderia',  label: 'Lavandería',   exact: false, icon: <LavanderiaIcon />,   modulo: 'lavanderia' },
     ],
   },
   {
     label: 'Configuración',
     items: [
-      { href: '/admin/propiedades',   label: 'Propiedades',   exact: false, icon: <BuildIcon /> },
-      { href: '/admin/clientes',      label: 'Clientes',      exact: false, icon: <BriefIcon /> },
-      { href: '/admin/usuarios',      label: 'Usuarios',      exact: false, icon: <UserIcon /> },
-      { href: '/admin/roles',         label: 'Roles',         exact: false, icon: <RolesIcon /> },
-      { href: '/admin/notificaciones', label: 'Notificaciones', exact: false, icon: <BellSideIcon /> },
+      { href: '/admin/propiedades',   label: 'Propiedades',   exact: false, icon: <BuildIcon />,     adminOnly: true },
+      { href: '/admin/clientes',      label: 'Clientes',      exact: false, icon: <BriefIcon />,     adminOnly: true },
+      { href: '/admin/usuarios',      label: 'Usuarios',      exact: false, icon: <UserIcon />,      adminOnly: true },
+      { href: '/admin/roles',         label: 'Roles',         exact: false, icon: <RolesIcon />,     adminOnly: true },
+      { href: '/admin/notificaciones', label: 'Notificaciones', exact: false, icon: <BellSideIcon />, adminOnly: true },
     ],
   },
 ]
+
+// Filtra los grupos según el rol. Admin ve todo; el sub-usuario `modulo` ve los
+// ítems neutros (Dashboard) + los módulos que tiene asignados.
+function visibleGroups(role: string, allowedModulos: string[] | null) {
+  if (role === 'admin') return NAV_GROUPS
+  const allowed = new Set(allowedModulos ?? [])
+  return NAV_GROUPS
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((it) => {
+        if (it.adminOnly) return false
+        if (it.modulo) return allowed.has(it.modulo)
+        return true
+      }),
+    }))
+    .filter((g) => g.items.length > 0)
+}
 
 function BrandSection() {
   return (
@@ -85,39 +105,42 @@ function NavItem({ href, label, exact, icon, onClose }: { href: string; label: s
   )
 }
 
-function SidebarContent({ fullName, onClose }: { fullName: string; onClose?: () => void }) {
+function SidebarContent({ fullName, role, allowedModulos, onClose }: { fullName: string; role: string; allowedModulos: string[] | null; onClose?: () => void }) {
+  const groups = visibleGroups(role, allowedModulos)
   return (
     <>
       <BrandSection />
 
       {/* Navegación agrupada */}
       <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto sidebar-scroll">
-        {NAV_GROUPS.map(group => (
+        {groups.map(group => (
           <div key={group.label}>
             <p className="px-3 mb-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/25">
               {group.label}
             </p>
             <div className="space-y-0.5">
               {group.items.map(item => (
-                <NavItem key={item.href} {...item} onClose={onClose} />
+                <NavItem key={item.href} href={item.href} label={item.label} exact={item.exact} icon={item.icon} onClose={onClose} />
               ))}
             </div>
           </div>
         ))}
       </nav>
 
-      {/* CTA Nueva Propiedad */}
-      <div className="px-3 pb-3">
-        <a href="/admin/propiedades/nueva"
-          className="btn-amber-cta flex items-center justify-center gap-2 w-full py-2.5 rounded-xl
-                     bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-[var(--navy)]
-                     text-[13px] font-bold transition-all duration-150
-                     shadow-[0_4px_12px_rgb(224_163_58/0.35)] hover:shadow-[0_6px_18px_rgb(224_163_58/0.45)]
-                     hover:-translate-y-px">
-          <Plus size={15} strokeWidth={2.5} />
-          Nueva propiedad
-        </a>
-      </div>
+      {/* CTA Nueva Propiedad (solo admin) */}
+      {role === 'admin' && (
+        <div className="px-3 pb-3">
+          <a href="/admin/propiedades/nueva"
+            className="btn-amber-cta flex items-center justify-center gap-2 w-full py-2.5 rounded-xl
+                       bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-[var(--navy)]
+                       text-[13px] font-bold transition-all duration-150
+                       shadow-[0_4px_12px_rgb(224_163_58/0.35)] hover:shadow-[0_6px_18px_rgb(224_163_58/0.45)]
+                       hover:-translate-y-px">
+            <Plus size={15} strokeWidth={2.5} />
+            Nueva propiedad
+          </a>
+        </div>
+      )}
 
       {/* Usuario + Cerrar sesión */}
       <div className="px-4 py-3 border-t border-white/8 space-y-2">
@@ -129,7 +152,7 @@ function SidebarContent({ fullName, onClose }: { fullName: string; onClose?: () 
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-xs font-semibold truncate">{fullName}</p>
-            <p className="text-white/35 text-[10px]">Administrador</p>
+            <p className="text-white/35 text-[10px]">{role === 'admin' ? 'Administrador' : 'Usuario'}</p>
           </div>
         </div>
         <form action={logout} className="w-full">
@@ -146,14 +169,14 @@ function SidebarContent({ fullName, onClose }: { fullName: string; onClose?: () 
   )
 }
 
-export function AdminSidebar({ fullName }: { fullName: string }) {
+export function AdminSidebar({ fullName, role, allowedModulos }: { fullName: string; role: string; allowedModulos: string[] | null }) {
   const [open, setOpen] = useState(false)
 
   return (
     <>
       {/* ── Desktop sidebar ── */}
       <aside className="hidden md:flex w-[220px] min-h-screen bg-[var(--navy)] flex-col shrink-0 border-r border-white/5">
-        <SidebarContent fullName={fullName} />
+        <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} />
       </aside>
 
       {/* ── Mobile top bar ── */}
@@ -176,7 +199,7 @@ export function AdminSidebar({ fullName }: { fullName: string }) {
               <X size={16} strokeWidth={2.25} />
             </button>
           </div>
-          <SidebarContent fullName={fullName} onClose={() => setOpen(false)} />
+          <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} onClose={() => setOpen(false)} />
         </aside>
       </div>
 

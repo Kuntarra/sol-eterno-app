@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 
 const ROLE_HOME: Record<string, string> = {
   admin: '/admin',
+  modulo: '/admin',
   receptionist: '/recepcion',
   client: '/alojamiento',
 }

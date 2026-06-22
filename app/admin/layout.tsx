@@ -13,13 +13,27 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // dos veces, la segunda dentro de getMyTenantId).
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('role, full_name, tenant_id')
+    .select('role, full_name, tenant_id, is_super_admin')
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') redirect('/login')
+  const esAdmin = profile?.role === 'admin' || profile?.is_super_admin
+  const esModulo = profile?.role === 'modulo'
+  if (!esAdmin && !esModulo) redirect('/login')
 
   const fullName = profile?.full_name ?? user.email ?? 'Admin'
+
+  // Módulos visibles en el menú para sub-usuarios (alcance general).
+  // Admin ve todo; el sub-usuario ve solo los módulos que tiene asignados.
+  let allowedModulos: string[] | null = null
+  if (esModulo) {
+    const { data: ums } = await supabase
+      .from('user_modulos')
+      .select('modulo')
+      .eq('user_id', user.id)
+      .is('proyecto_id', null)
+    allowedModulos = [...new Set((ums ?? []).map((u) => u.modulo))]
+  }
 
   // ── Notificaciones derivadas de datos ──────────────────────────
   const admin = createAdminClient()
@@ -63,7 +77,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar fullName={fullName} />
+      <AdminSidebar fullName={fullName} role={esAdmin ? 'admin' : 'modulo'} allowedModulos={allowedModulos} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminTopBar fullName={fullName} notifications={notifications} />
         <main className="flex-1 overflow-auto bg-[var(--gray-100)] pt-16 pb-16 md:pt-0 md:pb-0">
