@@ -10,6 +10,12 @@ const MODULOS = ['personal', 'transporte', 'hotel', 'alimentacion', 'colaciones'
 const MOD_LABEL: Record<string, string> = {
   personal: 'Personal', transporte: 'Transporte', hotel: 'Hotel', alimentacion: 'Alimentación', colaciones: 'Colaciones', lavanderia: 'Lavandería',
 }
+const NIVEL_LABEL: Record<string, string> = {
+  admin_modulo: 'Administrador', actuador: 'Actuador', visor: 'Visualizador',
+}
+const NIVEL_BADGE: Record<string, string> = {
+  admin_modulo: 'badge-green', actuador: 'badge-amber', visor: 'badge-gray',
+}
 
 export default async function RolesPage({ searchParams }: Props) {
   const { error, success } = await searchParams
@@ -60,8 +66,9 @@ export default async function RolesPage({ searchParams }: Props) {
                 <div>
                   <label htmlFor="nivel" className={LABEL}>Nivel</label>
                   <select id="nivel" name="nivel" className={`${INPUT} w-full`} defaultValue="visor">
-                    <option value="visor">Visor (solo lee)</option>
-                    <option value="supervisor">Supervisor (gestiona)</option>
+                    <option value="visor">Visualizador (solo lee)</option>
+                    <option value="actuador">Actuador (opera en terreno)</option>
+                    <option value="admin_modulo">Administrador (gestiona el módulo)</option>
                   </select>
                 </div>
                 <div>
@@ -89,7 +96,7 @@ export default async function RolesPage({ searchParams }: Props) {
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-[var(--navy)]">{nombreUsuario(a.user_id)}</span>
                         <span className="badge badge-gray">{MOD_LABEL[a.modulo] ?? a.modulo}</span>
-                        <span className={`badge ${a.nivel === 'supervisor' ? 'badge-green' : 'badge-amber'}`}>{a.nivel}</span>
+                        <span className={`badge ${NIVEL_BADGE[a.nivel] ?? 'badge-gray'}`}>{NIVEL_LABEL[a.nivel] ?? a.nivel}</span>
                         {(a.proyectos as unknown as { nombre: string } | null)?.nombre && (
                           <span className="text-xs text-[var(--gray-600)]">· {(a.proyectos as unknown as { nombre: string }).nombre}</span>
                         )}
