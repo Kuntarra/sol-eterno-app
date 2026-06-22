@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban } from 'lucide-react'
 
 const NAV_GROUPS = [
   {
@@ -20,6 +20,7 @@ const NAV_GROUPS = [
     label: 'Dotación',
     items: [
       { href: '/admin/personal',   label: 'Personal',   exact: false, icon: <PersonalIcon /> },
+      { href: '/admin/proyectos',  label: 'Proyectos',  exact: false, icon: <ProyectoIcon /> },
     ],
   },
   {
@@ -219,3 +220,4 @@ function BriefIcon() { return <Briefcase {...ICON} /> }
 function UserIcon()  { return <Users {...ICON} /> }
 function BellSideIcon() { return <Bell {...ICON} /> }
 function PersonalIcon() { return <IdCard {...ICON} /> }
+function ProyectoIcon() { return <FolderKanban {...ICON} /> }
