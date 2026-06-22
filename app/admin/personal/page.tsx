@@ -12,6 +12,7 @@ type DirectorioRow = {
   activa: boolean
   oficios: { nombre: string } | null
   personas: {
+    id: string
     nombres: string
     apellido_paterno: string
     apellido_materno: string | null
@@ -27,7 +28,7 @@ export default async function PersonalPage({ searchParams }: Props) {
 
   const { data } = await supabase
     .from('persona_directorio')
-    .select('id, activa, oficios(nombre), personas(nombres, apellido_paterno, apellido_materno, tipo_documento, numero_documento)')
+    .select('id, activa, oficios(nombre), personas(id, nombres, apellido_paterno, apellido_materno, tipo_documento, numero_documento)')
     .order('created_at', { ascending: false })
     .limit(200)
 
@@ -126,7 +127,9 @@ export default async function PersonalPage({ searchParams }: Props) {
                     : '—'
                   return (
                     <tr key={r.id} className="border-b border-[var(--gray-100)] last:border-0 hover:bg-[var(--gray-100)]/50 transition-colors">
-                      <td className="px-5 py-3.5 font-medium text-[var(--navy)]">{nombre}</td>
+                      <td className="px-5 py-3.5 font-medium text-[var(--navy)]">
+                        {p?.id ? <a href={`/admin/personal/${p.id}`} className="hover:underline">{nombre}</a> : nombre}
+                      </td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)] tabular-nums">{docLabel(p)}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{r.oficios?.nombre ?? '—'}</td>
                       <td className="px-5 py-3.5">
