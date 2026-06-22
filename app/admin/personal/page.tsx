@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, IdCard, Search } from 'lucide-react'
+import { Plus, IdCard, Search, Upload } from 'lucide-react'
 import { formatRut } from '@/lib/rut'
 
 interface Props {
-  searchParams: Promise<{ q?: string; success?: string }>
+  searchParams: Promise<{ q?: string; success?: string; creadas?: string; reusadas?: string; errores?: string }>
 }
 
 type DirectorioRow = {
@@ -21,7 +21,8 @@ type DirectorioRow = {
 }
 
 export default async function PersonalPage({ searchParams }: Props) {
-  const { q, success } = await searchParams
+  const { q, success, creadas, reusadas, errores } = await searchParams
+  const huboImport = creadas !== undefined || reusadas !== undefined || errores !== undefined
   const supabase = await createClient()
 
   const { data } = await supabase
@@ -55,16 +56,29 @@ export default async function PersonalPage({ searchParams }: Props) {
             {rows.length} {rows.length === 1 ? 'persona' : 'personas'} en tu directorio
           </p>
         </div>
-        <Link href="/admin/personal/nuevo" className="btn-primary shrink-0">
-          <Plus size={16} strokeWidth={2.25} />
-          Nueva persona
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link href="/admin/personal/importar" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+            <Upload size={16} strokeWidth={2.25} />
+            Importar Excel
+          </Link>
+          <Link href="/admin/personal/nuevo" className="btn-primary">
+            <Plus size={16} strokeWidth={2.25} />
+            Nueva persona
+          </Link>
+        </div>
       </div>
 
       <div className="px-8 pb-8">
         {success && (
           <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
             Persona agregada al directorio.
+          </div>
+        )}
+        {huboImport && (
+          <div className="mb-6 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800">
+            Importación completada: <strong>{creadas ?? 0}</strong> nuevas ·{' '}
+            <strong>{reusadas ?? 0}</strong> ya existían
+            {Number(errores ?? 0) > 0 && <> · <strong className="text-red-700">{errores} con error</strong> (RUT inválido o datos faltantes)</>}.
           </div>
         )}
 
