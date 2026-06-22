@@ -10,6 +10,13 @@ function slugify(s: string) {
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'operador'
 }
 
+// Cupo de personas: entero entre 1 y 10.000 (tope duro del sistema).
+function clampLimite(raw: FormDataEntryValue | null): number {
+  const n = Number(raw)
+  if (!Number.isFinite(n)) return 100
+  return Math.min(10000, Math.max(1, Math.round(n)))
+}
+
 // Crea un operador (tenant) nuevo + su primer usuario administrador.
 export async function createTenant(formData: FormData) {
   await requireSuperAdmin()
@@ -22,6 +29,7 @@ export async function createTenant(formData: FormData) {
   const contactPhone  = (formData.get('contact_phone') as string)?.trim() || null
   const billingDay    = formData.get('billing_day') ? Number(formData.get('billing_day')) : null
   const monthlyAmount = formData.get('monthly_amount') ? Number(formData.get('monthly_amount')) : null
+  const limitePersonas = clampLimite(formData.get('limite_personas'))
   const adminEmail    = (formData.get('admin_email') as string)?.trim()
   const adminPassword = (formData.get('admin_password') as string)
   const adminName     = (formData.get('admin_name') as string)?.trim() || contactName || name
@@ -39,6 +47,7 @@ export async function createTenant(formData: FormData) {
   const { data: tenant, error: tErr } = await admin.from('tenants').insert({
     name, slug, rut, contact_name: contactName, contact_email: contactEmail,
     contact_phone: contactPhone, billing_day: billingDay, monthly_amount: monthlyAmount,
+    limite_personas: limitePersonas,
   }).select('id').single()
   if (tErr || !tenant) redirect('/super/nuevo?error=' + encodeURIComponent(tErr?.message ?? 'No se pudo crear el operador.'))
 
@@ -81,6 +90,7 @@ export async function updateTenant(id: string, formData: FormData) {
     contact_phone:  (formData.get('contact_phone') as string)?.trim() || null,
     billing_day:    formData.get('billing_day') ? Number(formData.get('billing_day')) : null,
     monthly_amount: formData.get('monthly_amount') ? Number(formData.get('monthly_amount')) : null,
+    limite_personas: formData.get('limite_personas') != null ? clampLimite(formData.get('limite_personas')) : undefined,
     payment_status: ['al_dia', 'pendiente', 'moroso'].includes(payment) ? payment : 'al_dia',
     notes:          (formData.get('notes') as string)?.trim() || null,
   }).eq('id', id)

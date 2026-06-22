@@ -18,6 +18,18 @@ export async function getMyTenantId(): Promise<string> {
   return profile.tenant_id
 }
 
+// Cupo de personas: cuántas hay en el directorio vs el límite contratado.
+export async function getCupoPersonas(): Promise<{ usadas: number; limite: number; disponibles: number }> {
+  const supabase = await createClient()
+  const [{ count }, { data: t }] = await Promise.all([
+    supabase.from('persona_directorio').select('*', { count: 'exact', head: true }),
+    supabase.from('tenants').select('limite_personas').eq('id', await getMyTenantId()).maybeSingle(),
+  ])
+  const usadas = count ?? 0
+  const limite = t?.limite_personas ?? 0
+  return { usadas, limite, disponibles: Math.max(0, limite - usadas) }
+}
+
 // Módulos que la empresa (tenant) tiene activos = lo que compró.
 // RLS deja a cada usuario leer los de su propia empresa.
 export async function modulosActivosTenant(): Promise<string[]> {

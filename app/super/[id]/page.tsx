@@ -28,11 +28,12 @@ export default async function OperadorDetailPage({
   const { data: t } = await admin.from('tenants').select('*').eq('id', id).single()
   if (!t) notFound()
 
-  const [{ count: companies }, { count: properties }, { count: users }, { count: activeStays }] = await Promise.all([
+  const [{ count: companies }, { count: properties }, { count: users }, { count: activeStays }, { count: personasUsadas }] = await Promise.all([
     admin.from('companies').select('*', { count: 'exact', head: true }).eq('tenant_id', id),
     admin.from('properties').select('*', { count: 'exact', head: true }).eq('tenant_id', id),
     admin.from('user_profiles').select('*', { count: 'exact', head: true }).eq('tenant_id', id),
     admin.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', id).is('checked_out_at', null),
+    admin.from('persona_directorio').select('*', { count: 'exact', head: true }).eq('tenant_id', id),
   ])
 
   const { data: modRows } = await admin.from('tenant_modulos').select('modulo, activo').eq('tenant_id', id)
@@ -145,6 +146,14 @@ export default async function OperadorDetailPage({
           <div><label className={LABEL}>Teléfono</label><input name="contact_phone" defaultValue={t.contact_phone ?? ''} className={INPUT} /></div>
           <div><label className={LABEL}>Monto mensual (CLP)</label><input name="monthly_amount" type="number" min="0" step="1000" defaultValue={t.monthly_amount ?? ''} className={INPUT} /></div>
           <div><label className={LABEL}>Día de cobro (1–28)</label><input name="billing_day" type="number" min="1" max="28" defaultValue={t.billing_day ?? ''} className={INPUT} /></div>
+          <div className="sm:col-span-2">
+            <label className={LABEL}>Cupo de personas contratado (máx. 10.000)</label>
+            <input name="limite_personas" type="number" min="1" max="10000" defaultValue={t.limite_personas ?? 100} className={INPUT} />
+            <p className="text-[11px] text-[var(--gray-500)] mt-1">
+              En uso: <strong className="text-[var(--navy)]">{personasUsadas ?? 0}</strong> de {t.limite_personas ?? 100} personas
+              {(personasUsadas ?? 0) > (t.limite_personas ?? 100) && <span className="text-red-600"> · ¡cupo superado!</span>}
+            </p>
+          </div>
           <div className="sm:col-span-2">
             <label className={LABEL}>Estado de pago</label>
             <select name="payment_status" defaultValue={t.payment_status} className={INPUT}>

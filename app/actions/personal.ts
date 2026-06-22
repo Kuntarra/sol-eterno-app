@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { cleanRut, isValidRut } from '@/lib/rut'
+import { getCupoPersonas } from '@/lib/tenant'
 
 const NUEVO = '/admin/personal/nuevo'
 
@@ -37,6 +38,13 @@ export async function createPersona(formData: FormData) {
 
   if (!nombres || !apPat) {
     redirect(NUEVO + '?error=' + encodeURIComponent('Nombres y apellido paterno son obligatorios.'))
+  }
+
+  // Cupo: si la persona es NUEVA en mi directorio y no queda cupo, se bloquea.
+  // (Reutilizar una persona ya existente no consume cupo nuevo.)
+  const { disponibles, limite } = await getCupoPersonas()
+  if (disponibles <= 0) {
+    redirect(NUEVO + '?error=' + encodeURIComponent(`Alcanzaste el cupo contratado (${limite} personas). Pídele al administrador del sistema ampliarlo.`))
   }
 
   // 1) Persona global (deduplica por documento)
@@ -111,7 +119,8 @@ export async function importPersonas(formData: FormData) {
     return ''
   }
 
-  let creadas = 0, reusadas = 0, errores = 0
+  let creadas = 0, reusadas = 0, errores = 0, omitidas = 0
+  let { disponibles } = await getCupoPersonas() // cupo restante para personas NUEVAS
   const oficioCache = new Map<string, string>()
 
   for (let i = 2; i <= ws.rowCount; i++) {
@@ -163,14 +172,18 @@ export async function importPersonas(formData: FormData) {
     const { data: existingDir } = await supabase
       .from('persona_directorio').select('id').eq('persona_id', personaId).maybeSingle()
 
+    // Cupo: una persona NUEVA consume cupo; si no queda, se omite (las ya
+    // existentes en el directorio no consumen y siguen actualizándose).
+    if (!existingDir && disponibles <= 0) { omitidas++; continue }
+
     const { error: dErr } = await supabase
       .from('persona_directorio')
       .upsert({ persona_id: personaId, oficio_id: oficioId }, { onConflict: 'tenant_id,persona_id' })
 
     if (dErr) { errores++; continue }
-    if (existingDir) reusadas++; else creadas++
+    if (existingDir) reusadas++; else { creadas++; disponibles-- }
   }
 
   revalidatePath('/admin/personal')
-  redirect(`/admin/personal?creadas=${creadas}&reusadas=${reusadas}&errores=${errores}`)
+  redirect(`/admin/personal?creadas=${creadas}&reusadas=${reusadas}&errores=${errores}&omitidas=${omitidas}`)
 }

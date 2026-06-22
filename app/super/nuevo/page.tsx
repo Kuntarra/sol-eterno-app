@@ -59,8 +59,13 @@ export default async function NuevoOperadorPage({
 
         {/* Facturación */}
         <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-          <h3 className="text-sm font-bold text-[var(--navy)] mb-4">Facturación</h3>
+          <h3 className="text-sm font-bold text-[var(--navy)] mb-4">Facturación y cupo</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={LABEL}>Cupo de personas contratado *</label>
+              <input name="limite_personas" type="number" min="1" max="10000" required defaultValue={100} className={INPUT} placeholder="500" />
+              <p className="text-[11px] text-[var(--gray-500)] mt-1">Máximo de personas que la empresa puede cargar. Define el plan/cobro. Tope del sistema: 10.000.</p>
+            </div>
             <div>
               <label className={LABEL}>Monto mensual (CLP)</label>
               <input name="monthly_amount" type="number" min="0" step="1000" className={INPUT} placeholder="200000" />

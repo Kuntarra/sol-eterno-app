@@ -6,15 +6,20 @@ import { SearchBar } from './_components/search-bar'
 import { CheckCircle2, Download } from 'lucide-react'
 import { formatDateTime as formatDate } from '@/lib/format'
 import { STAY_FILTER_LABELS as FILTER_LABELS } from '@/lib/types'
+import { Pagination } from '@/app/_components/pagination'
+
+const PAGE_SIZE = 50
 
 export default async function EstadiasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string; filter?: string; q?: string }>
+  searchParams: Promise<{ success?: string; filter?: string; q?: string; page?: string }>
 }) {
   const params = await searchParams
   const q      = params.q?.trim() ?? ''
   const filter = q ? 'todas' : (params.filter ?? 'activas')
+  const pageNum = Math.max(1, Number(params.page) || 1)
+  const from = (pageNum - 1) * PAGE_SIZE
 
   const supabase = await createClient()
   const admin    = createAdminClient()
@@ -60,7 +65,7 @@ export default async function EstadiasPage({
     guestIds = (guests ?? []).map(g => g.id)
   }
 
-  // Construir query de estadías
+  // Construir query de estadías (paginada en BD)
   let query = supabase
     .from('stays')
     .select(`
@@ -68,9 +73,9 @@ export default async function EstadiasPage({
       guests(id, first_name, last_name_paterno, rut, phone),
       rooms(number, type, properties(name)),
       companies(name)
-    `)
+    `, { count: 'exact' })
     .order('checked_in_at', { ascending: false })
-    .limit(200)
+    .range(from, from + PAGE_SIZE - 1)
 
   if (guestIds !== null) {
     if (guestIds.length === 0) {
@@ -85,7 +90,14 @@ export default async function EstadiasPage({
     else if (filter === 'completadas') query = query.not('checked_out_at', 'is', null)
   }
 
-  const { data: stays } = await query
+  const { data: stays, count: staysTotal } = await query
+  const totalPages = Math.max(1, Math.ceil((staysTotal ?? 0) / PAGE_SIZE))
+  const pageHref = (p: number) => {
+    const sp = new URLSearchParams()
+    if (q) sp.set('q', q); else if (params.filter) sp.set('filter', params.filter)
+    sp.set('page', String(p))
+    return `/admin/estadias?${sp}`
+  }
 
   // Conteo total de estadías por huésped (para marcar "Repite")
   const guestIdsShown = [...new Set((stays ?? []).map(s => (s.guests as any)?.id).filter(Boolean))]
@@ -274,6 +286,7 @@ export default async function EstadiasPage({
               </tbody>
             </table>
           </div>
+          <Pagination page={pageNum} totalPages={totalPages} hrefFor={pageHref} />
         </div>
       )}
       </div>

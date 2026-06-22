@@ -1,19 +1,28 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Plus, Bus, Truck } from 'lucide-react'
+import { Pagination } from '@/app/_components/pagination'
 
 const TIPO_LABEL: Record<string, string> = { movilizacion: 'Movilización', diario: 'Diario a faena' }
 const ESTADO_BADGE: Record<string, string> = {
   planificado: 'badge-gray', en_curso: 'badge-amber', completado: 'badge-green', cancelado: 'badge-gray',
 }
 
-export default async function TransportePage() {
+const PAGE_SIZE = 50
+
+export default async function TransportePage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const { page } = await searchParams
+  const pageNum = Math.max(1, Number(page) || 1)
+  const from = (pageNum - 1) * PAGE_SIZE
   const supabase = await createClient()
-  const { data: traslados } = await supabase
+  const { data: traslados, count } = await supabase
     .from('traslados')
-    .select('*, proyectos(nombre), vehiculos(tipo, identificador), traslado_pasajeros(id)')
+    .select('*, proyectos(nombre), vehiculos(tipo, identificador), traslado_pasajeros(id)', { count: 'exact' })
     .order('fecha', { ascending: false })
-    .limit(100)
+    .range(from, from + PAGE_SIZE - 1)
+
+  const total = count ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
     <div>
@@ -21,7 +30,7 @@ export default async function TransportePage() {
         <div>
           <span className="section-label">Módulo</span>
           <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Transporte</h1>
-          <p className="text-sm text-[var(--gray-600)] mt-1">{traslados?.length ?? 0} traslados</p>
+          <p className="text-sm text-[var(--gray-600)] mt-1">{total} traslados</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link href="/admin/transporte/flota" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
@@ -80,6 +89,7 @@ export default async function TransportePage() {
             </table>
           </div>
         )}
+        <Pagination page={pageNum} totalPages={totalPages} hrefFor={(p) => `/admin/transporte?page=${p}`} />
       </div>
     </div>
   )
