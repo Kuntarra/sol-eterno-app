@@ -28,6 +28,7 @@ const NAV_GROUPS = [
     label: 'Módulos',
     items: [
       { href: '/admin/transporte',  label: 'Transporte',   exact: false, icon: <TransporteIcon /> },
+      { href: '/admin/estadias',    label: 'Hotel',        exact: false, icon: <BuildIcon /> },
       { href: '/admin/alimentacion', label: 'Alimentación', exact: false, icon: <AlimentacionIcon /> },
       { href: '/admin/colaciones',  label: 'Colaciones',   exact: false, icon: <ColacionIcon /> },
       { href: '/admin/lavanderia',  label: 'Lavandería',   exact: false, icon: <LavanderiaIcon /> },
