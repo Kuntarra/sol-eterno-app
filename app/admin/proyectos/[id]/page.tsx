@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createDotacion } from '@/app/actions/dotaciones'
+import { updateProyectoEstado } from '@/app/actions/proyectos'
 import { ArrowLeft, Plus, Users } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -40,6 +41,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
 
   const ciudad = (proyecto.cities as { name: string } | null)?.name
   const createDotacionForProject = createDotacion.bind(null, id)
+  const setEstado = updateProyectoEstado.bind(null, id)
 
   return (
     <div className="p-8 max-w-5xl">
@@ -47,16 +49,29 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
         <Link href="/admin/proyectos" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{proyecto.nombre}</h1>
-            <span className="badge badge-gray">{proyecto.estado}</span>
-          </div>
+        <div className="flex-1">
+          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{proyecto.nombre}</h1>
           <p className="text-sm text-[var(--gray-600)]">
             {[proyecto.faena, ciudad].filter(Boolean).join(' · ') || 'Sin faena definida'}
             {proyecto.fecha_inicio && ` · ${proyecto.fecha_inicio} → ${proyecto.fecha_fin_estimada ?? '—'}`}
           </p>
         </div>
+        {/* Cambiar estado del proyecto */}
+        <form action={setEstado} className="flex items-center gap-2 shrink-0">
+          <select
+            name="estado"
+            defaultValue={proyecto.estado}
+            className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]"
+          >
+            <option value="planificado">Planificado</option>
+            <option value="activo">Activo</option>
+            <option value="suspendido">Suspendido</option>
+            <option value="cerrado">Cerrado</option>
+          </select>
+          <button type="submit" className="px-3 py-2 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-medium hover:bg-[var(--gray-100)] transition-colors">
+            Cambiar
+          </button>
+        </form>
       </div>
 
       {error && (

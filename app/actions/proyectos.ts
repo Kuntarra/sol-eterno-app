@@ -27,8 +27,9 @@ export async function createProyecto(formData: FormData) {
   redirect(`/admin/proyectos/${data.id}`)
 }
 
-export async function updateProyectoEstado(id: string, estado: string) {
+export async function updateProyectoEstado(id: string, formData: FormData) {
   const supabase = await createClient()
+  const estado = formData.get('estado') as string
   await supabase.from('proyectos').update({ estado }).eq('id', id)
   revalidatePath('/admin/proyectos')
   revalidatePath(`/admin/proyectos/${id}`)
