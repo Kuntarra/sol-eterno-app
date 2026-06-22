@@ -109,3 +109,28 @@ export async function createVinculo(proyectoId: string, formData: FormData) {
   revalidatePath(back)
   redirect(back + '?success=vinculo')
 }
+
+// Recursos que el proveedor compromete a este proyecto (ej. 3 buses, 3 sprinters).
+export async function addRecursoVinculo(proyectoId: string, vinculoId: string, formData: FormData) {
+  const supabase = await createClient()
+  const back = `/admin/proyectos/${proyectoId}`
+  const tipo = ((formData.get('tipo') as string) || '').trim()
+  const cant = parseInt((formData.get('cantidad') as string) || '1', 10)
+  if (!tipo) redirect(back + '?error=' + encodeURIComponent('Indica el tipo de recurso (ej. Bus, Sprinter).'))
+
+  const { error } = await supabase.from('proyecto_proveedor_recursos').insert({
+    vinculo_id: vinculoId,
+    tipo,
+    cantidad: Number.isFinite(cant) && cant >= 0 ? cant : 1,
+    notas: ((formData.get('notas') as string) || '').trim() || null,
+  })
+  if (error) redirect(back + '?error=' + encodeURIComponent(error.message))
+  revalidatePath(back)
+  redirect(back + '?success=recurso')
+}
+
+export async function deleteRecursoVinculo(proyectoId: string, recursoId: string) {
+  const supabase = await createClient()
+  await supabase.from('proyecto_proveedor_recursos').delete().eq('id', recursoId)
+  revalidatePath(`/admin/proyectos/${proyectoId}`)
+}

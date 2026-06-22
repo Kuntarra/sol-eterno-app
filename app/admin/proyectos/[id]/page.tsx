@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createDotacion } from '@/app/actions/dotaciones'
 import { updateProyectoEstado } from '@/app/actions/proyectos'
-import { createVinculo } from '@/app/actions/modulos'
-import { ArrowLeft, Plus, Users, Link2 } from 'lucide-react'
+import { createVinculo, addRecursoVinculo, deleteRecursoVinculo } from '@/app/actions/modulos'
+import { ArrowLeft, Plus, Users, Link2, Boxes, X } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
@@ -40,7 +40,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
       .order('created_at', { ascending: false }),
     supabase
       .from('proyecto_proveedores')
-      .select('*')
+      .select('*, proyecto_proveedor_recursos(id, tipo, cantidad, notas)')
       .eq('proyecto_id', id)
       .order('created_at', { ascending: false }),
   ])
@@ -88,7 +88,9 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
       )}
       {success && (
         <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
-          Persona asignada. Las rotaciones se generaron automáticamente.
+          {success === 'vinculo' ? 'Proveedor vinculado al proyecto.'
+            : success === 'recurso' ? 'Recurso agregado al proveedor.'
+            : 'Persona asignada. Las rotaciones se generaron automáticamente.'}
         </div>
       )}
 
@@ -224,18 +226,71 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
         <p className="text-xs text-[var(--gray-600)] mt-2">Si el RUT ya usa el sistema, se conecta directo. Si no, queda como invitado temporal del proyecto.</p>
       </div>
       {!!proveedores?.length && (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] divide-y divide-[var(--gray-100)]">
-          {proveedores.map((pv) => (
-            <div key={pv.id} className="flex items-center justify-between px-5 py-3.5">
-              <div>
-                <p className="text-sm font-medium text-[var(--navy)]">{pv.proveedor_nombre ?? pv.proveedor_rut}</p>
-                <p className="text-xs text-[var(--gray-600)]">{pv.proveedor_rut} · {pv.modulo}</p>
+        <div className="space-y-3">
+          {proveedores.map((pv) => {
+            const recursos = (pv.proyecto_proveedor_recursos as { id: string; tipo: string; cantidad: number; notas: string | null }[]) ?? []
+            const addRecurso = addRecursoVinculo.bind(null, id, pv.id)
+            return (
+              <div key={pv.id} className="bg-white rounded-2xl border border-[var(--gray-200)] p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-[var(--navy)]">{pv.proveedor_nombre ?? pv.proveedor_rut}</p>
+                    <p className="text-xs text-[var(--gray-600)]">{pv.proveedor_rut} · {pv.modulo}</p>
+                  </div>
+                  <span className={`badge ${pv.estado === 'activo' ? 'badge-green' : pv.estado === 'stub' ? 'badge-amber' : 'badge-gray'}`}>
+                    {pv.estado === 'stub' ? 'Invitado temporal' : pv.estado === 'activo' ? 'Conectado' : pv.estado}
+                  </span>
+                </div>
+
+                {/* Recursos comprometidos a este proyecto */}
+                <div className="mt-4 pt-4 border-t border-[var(--gray-100)]">
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <Boxes size={14} strokeWidth={2} className="text-[var(--gray-600)]" />
+                    <span className="text-xs font-semibold text-[var(--gray-600)] uppercase tracking-wide">Recursos para este proyecto</span>
+                  </div>
+
+                  {recursos.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {recursos.map((r) => {
+                        const del = deleteRecursoVinculo.bind(null, id, r.id)
+                        return (
+                          <span key={r.id} className="inline-flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg bg-[var(--gray-100)] text-sm text-[var(--navy)]">
+                            <span className="font-semibold tabular-nums">{r.cantidad}</span> {r.tipo}
+                            {r.notas && <span className="text-xs text-[var(--gray-600)]">· {r.notas}</span>}
+                            <form action={del}>
+                              <button type="submit" aria-label="Quitar recurso" className="w-5 h-5 flex items-center justify-center rounded text-[var(--gray-600)] hover:text-red-600 hover:bg-red-50 transition-colors">
+                                <X size={13} strokeWidth={2.25} />
+                              </button>
+                            </form>
+                          </span>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-[var(--gray-600)] mb-3">Sin recursos asignados todavía.</p>
+                  )}
+
+                  <form action={addRecurso} className="flex flex-wrap items-end gap-2">
+                    <div>
+                      <label className="block text-[11px] font-medium text-[var(--gray-600)] mb-1">Cantidad</label>
+                      <input name="cantidad" type="number" min={0} defaultValue={1} className="w-20 px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-medium text-[var(--gray-600)] mb-1">Tipo de recurso</label>
+                      <input name="tipo" required placeholder="Bus, Sprinter, Habitación…" className="w-48 px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+                    </div>
+                    <div className="flex-1 min-w-[8rem]">
+                      <label className="block text-[11px] font-medium text-[var(--gray-600)] mb-1">Nota (opcional)</label>
+                      <input name="notas" placeholder="Ej. 45 asientos" className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+                    </div>
+                    <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+                      <Plus size={14} strokeWidth={2.5} /> Agregar
+                    </button>
+                  </form>
+                </div>
               </div>
-              <span className={`badge ${pv.estado === 'activo' ? 'badge-green' : pv.estado === 'stub' ? 'badge-amber' : 'badge-gray'}`}>
-                {pv.estado === 'stub' ? 'Invitado temporal' : pv.estado === 'activo' ? 'Conectado' : pv.estado}
-              </span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
