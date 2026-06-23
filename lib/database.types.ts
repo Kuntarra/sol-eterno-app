@@ -474,6 +474,70 @@ export type Database = {
           },
         ]
       }
+      eventos_bitacora: {
+        Row: {
+          autor_nombre: string | null
+          autor_tenant_id: string
+          autor_user_id: string | null
+          created_at: string
+          detalle: string | null
+          dotacion_id: string | null
+          id: string
+          modulo: string
+          persona_id: string | null
+          proyecto_id: string
+          tipo: string
+        }
+        Insert: {
+          autor_nombre?: string | null
+          autor_tenant_id?: string
+          autor_user_id?: string | null
+          created_at?: string
+          detalle?: string | null
+          dotacion_id?: string | null
+          id?: string
+          modulo: string
+          persona_id?: string | null
+          proyecto_id: string
+          tipo: string
+        }
+        Update: {
+          autor_nombre?: string | null
+          autor_tenant_id?: string
+          autor_user_id?: string | null
+          created_at?: string
+          detalle?: string | null
+          dotacion_id?: string | null
+          id?: string
+          modulo?: string
+          persona_id?: string | null
+          proyecto_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_bitacora_dotacion_id_fkey"
+            columns: ["dotacion_id"]
+            isOneToOne: false
+            referencedRelation: "dotaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_bitacora_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_bitacora_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: false
+            referencedRelation: "proyectos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guests: {
         Row: {
           company_id: string | null
@@ -1867,6 +1931,7 @@ export type Database = {
       nivel_modulo: { Args: { p_modulo: string }; Returns: string }
       personas_vinculadas: { Args: never; Returns: string[] }
       proyectos_vinculados: { Args: never; Returns: string[] }
+      puedo_acceder_proyecto: { Args: { p_proyecto: string }; Returns: boolean }
       recalcular_rotaciones: {
         Args: { p_desde: number; p_dotacion_id: string }
         Returns: number

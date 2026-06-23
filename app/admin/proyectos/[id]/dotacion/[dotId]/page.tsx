@@ -45,6 +45,20 @@ export default async function DotacionDetallePage({ params }: Props) {
     .eq('dotacion_id', dotId)
     .order('numero')
 
+  // Bitácora compartida: eventos que registraron los proveedores y el equipo.
+  const { data: eventos } = await supabase
+    .from('eventos_bitacora')
+    .select('id, modulo, tipo, detalle, autor_nombre, created_at')
+    .eq('dotacion_id', dotId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const EVENTO_LABEL: Record<string, string> = {
+    subio: 'Subió al transporte', dejado: 'Dejado', no_show: 'No se presentó',
+    check_in: 'Check-in hotel', check_out: 'Check-out hotel', entregada: 'Entregada',
+    recepcionada: 'Recepcionada', nota: 'Nota',
+  }
+
   const p = dot.personas as unknown as { nombres: string; apellido_paterno: string; apellido_materno: string | null; tipo_documento: string; numero_documento: string } | null
   const nombre = p ? `${p.nombres} ${p.apellido_paterno}${p.apellido_materno ? ' ' + p.apellido_materno : ''}` : '—'
   const turno = dot.turno_dias_trabajo ? `${dot.turno_dias_trabajo}x${dot.turno_dias_descanso ?? 0}` : '—'
@@ -144,6 +158,32 @@ export default async function DotacionDetallePage({ params }: Props) {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Bitácora compartida (lo que registran los proveedores y el equipo) */}
+      <h2 className="text-sm font-semibold text-[var(--navy)] mt-10 mb-3">Bitácora ({eventos?.length ?? 0})</h2>
+      {!eventos?.length ? (
+        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-8 text-center text-sm text-[var(--gray-600)]">
+          Sin actividad registrada todavía.
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-[var(--gray-200)] divide-y divide-[var(--gray-100)]">
+          {eventos.map((e) => (
+            <div key={e.id} className="flex items-center justify-between gap-3 px-5 py-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[var(--navy)]">
+                  {EVENTO_LABEL[e.tipo] ?? e.tipo}
+                  <span className="ml-2 badge badge-gray capitalize">{e.modulo}</span>
+                </p>
+                {e.detalle && <p className="text-xs text-[var(--gray-600)] truncate">{e.detalle}</p>}
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-xs text-[var(--navy)] font-medium">{e.autor_nombre ?? '—'}</p>
+                <p className="text-[11px] text-[var(--gray-500)] tabular-nums">{new Date(e.created_at).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

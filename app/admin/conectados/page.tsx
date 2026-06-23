@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatRut } from '@/lib/rut'
+import { puedeGestionar } from '@/lib/rbac'
+import { registrarEvento } from '@/app/actions/bitacora'
 import { Link2, Users, Plane } from 'lucide-react'
 
-// Vista del PROVEEDOR: proyectos a los que está conectado por match.
-// El aislamiento lo aplica RLS (solo personas/dotaciones/rotaciones de los
-// proyectos vinculados). El recorte por CAMPO (need-to-know) es de esta capa:
-// cada módulo muestra solo las columnas que le competen.
+// Vista del PROVEEDOR: proyectos conectados por match. RLS acota a personas/
+// dotaciones/rotaciones de esos proyectos. El recorte por CAMPO (need-to-know)
+// y el registro de eventos (bitácora compartida) viven en esta capa.
 type Rotacion = {
   numero: number
   fecha_inicio: string | null
@@ -19,7 +20,6 @@ type Rotacion = {
   vuelo_vuelta_hora: string | null
 }
 
-// Columnas (encabezados) según el módulo del vínculo.
 const COLUMNAS: Record<string, string[]> = {
   transporte: ['Persona', 'Turno', 'Vuelo ida', 'Vuelo vuelta'],
   colaciones: ['Persona', 'Vuelo ida', 'Aeropuerto'],
@@ -27,6 +27,21 @@ const COLUMNAS: Record<string, string[]> = {
   alimentacion: ['Persona', 'Turno', 'Período'],
   lavanderia: ['Persona', 'Turno'],
   default: ['Persona', 'Turno', 'Próximo vuelo'],
+}
+
+// Eventos que cada módulo puede registrar sobre una persona del proyecto.
+const EVENTOS_MODULO: Record<string, { tipo: string; label: string }[]> = {
+  transporte: [{ tipo: 'subio', label: 'Subió' }, { tipo: 'dejado', label: 'Dejó' }, { tipo: 'no_show', label: 'No se presentó' }],
+  hotel: [{ tipo: 'check_in', label: 'Check-in' }, { tipo: 'check_out', label: 'Check-out' }],
+  alimentacion: [{ tipo: 'entregada', label: 'Comida entregada' }],
+  colaciones: [{ tipo: 'entregada', label: 'Colación entregada' }],
+  lavanderia: [{ tipo: 'recepcionada', label: 'Recepcionada' }, { tipo: 'entregada', label: 'Entregada' }],
+  default: [{ tipo: 'nota', label: 'Registrar nota' }],
+}
+
+const EVENTO_LABEL: Record<string, string> = {
+  subio: 'Subió', dejado: 'Dejó', no_show: 'No se presentó', check_in: 'Check-in', check_out: 'Check-out',
+  entregada: 'Entregada', recepcionada: 'Recepcionada', nota: 'Nota',
 }
 
 function vuelo(r: Rotacion | undefined, dir: 'ida' | 'vuelta') {
@@ -54,7 +69,17 @@ export default async function ConectadosPage() {
 
   const { data: dotaciones } = await supabase
     .from('dotaciones')
-    .select('id, proyecto_id, turno_dias_trabajo, turno_dias_descanso, personas(nombres, apellido_paterno, tipo_documento, numero_documento), rotaciones(numero, fecha_inicio, fecha_fin_esperada, vuelo_ida_numero, vuelo_ida_fecha, vuelo_ida_hora, vuelo_ida_aeropuerto, vuelo_vuelta_numero, vuelo_vuelta_fecha, vuelo_vuelta_hora)')
+    .select('id, proyecto_id, turno_dias_trabajo, turno_dias_descanso, personas(id, nombres, apellido_paterno, tipo_documento, numero_documento), rotaciones(numero, fecha_inicio, fecha_fin_esperada, vuelo_ida_numero, vuelo_ida_fecha, vuelo_ida_hora, vuelo_ida_aeropuerto, vuelo_vuelta_numero, vuelo_vuelta_fecha, vuelo_vuelta_hora)')
+
+  // Último evento por dotación (bitácora compartida)
+  const { data: eventos } = await supabase
+    .from('eventos_bitacora')
+    .select('dotacion_id, tipo, detalle, autor_nombre, created_at')
+    .order('created_at', { ascending: false })
+  const ultimoEvento = new Map<string, NonNullable<typeof eventos>[number]>()
+  for (const e of eventos ?? []) {
+    if (e.dotacion_id && !ultimoEvento.has(e.dotacion_id)) ultimoEvento.set(e.dotacion_id, e)
+  }
 
   const dotsPorProyecto = new Map<string, NonNullable<typeof dotaciones>>()
   for (const d of dotaciones ?? []) {
@@ -64,6 +89,11 @@ export default async function ConectadosPage() {
     dotsPorProyecto.set(d.proyecto_id, arr)
   }
 
+  // ¿Puedo registrar eventos en cada módulo presente? (admin/actuador sí; visor no)
+  const modulosPresentes = [...new Set((vinculos ?? []).map((v) => v.modulo))]
+  const canWrite: Record<string, boolean> = {}
+  await Promise.all(modulosPresentes.map(async (m) => { canWrite[m] = await puedeGestionar(m) }))
+
   return (
     <div className="p-8 max-w-5xl">
       <div className="flex items-center gap-3 mb-2">
@@ -72,7 +102,7 @@ export default async function ConectadosPage() {
         </div>
         <div>
           <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Proyectos conectados</h1>
-          <p className="text-sm text-[var(--gray-600)]">Personal de los proyectos donde te contrataron · solo la información de tu servicio</p>
+          <p className="text-sm text-[var(--gray-600)]">Personal de los proyectos donde te contrataron · registra tu servicio sobre cada persona</p>
         </div>
       </div>
 
@@ -90,6 +120,9 @@ export default async function ConectadosPage() {
             const dots = dotsPorProyecto.get(p.id) ?? []
             const modulo = moduloPorProyecto.get(p.id) ?? 'default'
             const cols = COLUMNAS[modulo] ?? COLUMNAS.default
+            const escribir = canWrite[modulo] ?? false
+            const acciones = EVENTOS_MODULO[modulo] ?? EVENTOS_MODULO.default
+            const headers = escribir ? [...cols, 'Registrar'] : cols
             return (
               <div key={p.id} className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
                 <div className="px-5 py-4 border-b border-[var(--gray-100)] flex items-center justify-between gap-3">
@@ -111,23 +144,24 @@ export default async function ConectadosPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-[var(--gray-200)] text-left text-[var(--gray-600)]">
-                        {cols.map((c) => <th key={c} className="px-5 py-2.5 font-semibold">{c}</th>)}
+                        {headers.map((c) => <th key={c} className="px-5 py-2.5 font-semibold">{c}</th>)}
                       </tr>
                     </thead>
                     <tbody>
                       {dots.map((d) => {
-                        const per = d.personas as unknown as { nombres: string; apellido_paterno: string; tipo_documento: string; numero_documento: string } | null
+                        const per = d.personas as unknown as { id: string; nombres: string; apellido_paterno: string; tipo_documento: string; numero_documento: string } | null
                         const turno = d.turno_dias_trabajo ? `${d.turno_dias_trabajo}x${d.turno_dias_descanso ?? 0}` : '—'
                         const rots = ((d.rotaciones as Rotacion[]) ?? []).slice().sort((a, b) => (a.fecha_inicio ?? '').localeCompare(b.fecha_inicio ?? ''))
                         const prox = rots.find((r) => r.vuelo_ida_fecha) ?? rots[0]
                         const nombre = per ? `${per.nombres} ${per.apellido_paterno}` : '—'
                         const doc = per?.tipo_documento === 'rut' ? formatRut(per.numero_documento) : per?.numero_documento
+                        const ev = ultimoEvento.get(d.id)
 
-                        // Celdas según módulo (mismo orden que COLUMNAS).
                         const personaCell = (
                           <td className="px-5 py-3">
                             <p className="font-medium text-[var(--navy)]">{nombre}</p>
                             <p className="text-xs text-[var(--gray-600)] tabular-nums">{doc}</p>
+                            {ev && <p className="text-[11px] text-emerald-700 mt-0.5">✓ {EVENTO_LABEL[ev.tipo] ?? ev.tipo}{ev.detalle ? ` · ${ev.detalle}` : ''}</p>}
                           </td>
                         )
                         const turnoCell = <td className="px-5 py-3 text-[var(--gray-600)]">{turno}</td>
@@ -150,7 +184,28 @@ export default async function ConectadosPage() {
                           celdas = <>{personaCell}{turnoCell}{vueloIdaCell}</>
                         }
 
-                        return <tr key={d.id} className="border-b border-[var(--gray-100)] last:border-0">{celdas}</tr>
+                        return (
+                          <tr key={d.id} className="border-b border-[var(--gray-100)] last:border-0">
+                            {celdas}
+                            {escribir && (
+                              <td className="px-5 py-3">
+                                <div className="flex flex-wrap gap-1.5">
+                                  {acciones.map((a) => (
+                                    <form key={a.tipo} action={registrarEvento}>
+                                      <input type="hidden" name="proyecto_id" value={p.id} />
+                                      <input type="hidden" name="dotacion_id" value={d.id} />
+                                      <input type="hidden" name="persona_id" value={per?.id ?? ''} />
+                                      <input type="hidden" name="modulo" value={modulo} />
+                                      <input type="hidden" name="tipo" value={a.tipo} />
+                                      <input type="hidden" name="back" value="/admin/conectados" />
+                                      <button className="px-2.5 py-1 rounded-lg bg-[var(--gray-100)] text-[var(--navy)] text-xs font-semibold hover:bg-[var(--gray-200)]">{a.label}</button>
+                                    </form>
+                                  ))}
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        )
                       })}
                     </tbody>
                   </table>
