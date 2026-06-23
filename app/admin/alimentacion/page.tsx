@@ -3,12 +3,12 @@ import { AlimentacionForm } from './_components/alimentacion-form'
 import { puedeGestionar } from '@/lib/rbac'
 import { UtensilsCrossed } from 'lucide-react'
 
-interface Props { searchParams: Promise<{ error?: string; aplicados?: string }> }
+interface Props { searchParams: Promise<{ error?: string; aplicados?: string; modo?: string }> }
 
 const POS_LABEL: Record<string, string> = { hotel: 'Hotel', faena: 'Faena', colacion: 'Colación', no: 'No' }
 
 export default async function AlimentacionPage({ searchParams }: Props) {
-  const { error, aplicados } = await searchParams
+  const { error, aplicados, modo } = await searchParams
   const supabase = await createClient()
   const [{ data: planes }, { data: dotacionesRaw }, { data: cuadrillasRaw }] = await Promise.all([
     supabase.from('plan_alimentacion').select('*, dotaciones(personas(nombres, apellido_paterno), proyectos(nombre))').order('fecha', { ascending: false }).limit(150),
@@ -32,7 +32,11 @@ export default async function AlimentacionPage({ searchParams }: Props) {
 
       <div className="px-8 pb-8">
         {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
-        {aplicados !== undefined && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Plan aplicado a <strong>{aplicados}</strong> {Number(aplicados) === 1 ? 'persona' : 'personas'}.</div>}
+        {aplicados !== undefined && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
+          {modo === 'turno'
+            ? <>Turno aplicado: <strong>{aplicados}</strong> {Number(aplicados) === 1 ? 'día-persona' : 'días-persona'} configurados.</>
+            : <>Plan aplicado a <strong>{aplicados}</strong> {Number(aplicados) === 1 ? 'persona' : 'personas'}.</>}
+        </div>}
 
         {puedeEscribir && (
         <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6">

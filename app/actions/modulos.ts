@@ -63,18 +63,28 @@ export async function aplicarAlimentacion(formData: FormData) {
   if ((scope === 'persona' || scope === 'cuadrilla') && !ref) {
     redirect('/admin/alimentacion?error=' + encodeURIComponent('Selecciona ' + (scope === 'persona' ? 'una persona' : 'una cuadrilla') + '.'))
   }
-  // rpc tipado tras regenerar; cast puntual porque la función es nueva.
-  const { data, error } = await supabase.rpc('aplicar_alimentacion_masivo' as never, {
-    p_fecha:    fecha,
+  const modo = (formData.get('modo') as string) || 'dia'
+  const comidas = {
     p_desayuno: (formData.get('desayuno') as string) || 'no',
     p_almuerzo: (formData.get('almuerzo') as string) || 'no',
     p_cena:     (formData.get('cena') as string) || 'no',
-    p_scope:    scope,
-    p_ref:      ref,
-  } as never)
+  }
+
+  // "Por turno" = todos los días de la rotación que contiene la fecha (opcional
+  // excluir 1er/último día). "Un día" = solo esa fecha. rpc casteado (función nueva).
+  const { data, error } = modo === 'turno'
+    ? await supabase.rpc('aplicar_alimentacion_turno' as never, {
+        p_fecha: fecha, ...comidas, p_scope: scope, p_ref: ref,
+        p_excl_primer: formData.get('excl_primer') === 'on',
+        p_excl_ultimo: formData.get('excl_ultimo') === 'on',
+      } as never)
+    : await supabase.rpc('aplicar_alimentacion_masivo' as never, {
+        p_fecha: fecha, ...comidas, p_scope: scope, p_ref: ref,
+      } as never)
+
   if (error) redirect('/admin/alimentacion?error=' + encodeURIComponent((error as { message: string }).message))
   revalidatePath('/admin/alimentacion')
-  redirect('/admin/alimentacion?aplicados=' + (Number(data) || 0))
+  redirect('/admin/alimentacion?aplicados=' + (Number(data) || 0) + '&modo=' + modo)
 }
 
 // ── Lavandería ─────────────────────────────────────────────────
