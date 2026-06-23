@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck, Link2 } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck, Link2, CalendarRange } from 'lucide-react'
 
 // `modulo` = clave del módulo (user_modulos) para filtrar el menú de sub-usuarios.
 // `adminOnly` = visible solo para admin. Ítems sin ninguna marca = siempre visibles.
@@ -26,6 +26,7 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
       { href: '/admin/dotia',      label: 'Resumen',    exact: true,  icon: <DashIcon />,     adminOnly: true },
       { href: '/admin/personal',   label: 'Personal',   exact: false, icon: <PersonalIcon />, modulo: 'personal' },
       { href: '/admin/proyectos',  label: 'Proyectos',  exact: false, icon: <ProyectoIcon />, adminOnly: true },
+      { href: '/admin/planificacion', label: 'Planificación', exact: false, icon: <PlanIcon />, adminOnly: true },
     ],
   },
   {
@@ -261,6 +262,7 @@ function UserIcon()  { return <Users {...ICON} /> }
 function BellSideIcon() { return <Bell {...ICON} /> }
 function PersonalIcon() { return <IdCard {...ICON} /> }
 function ProyectoIcon() { return <FolderKanban {...ICON} /> }
+function PlanIcon() { return <CalendarRange {...ICON} /> }
 function TransporteIcon() { return <Bus {...ICON} /> }
 function AlimentacionIcon() { return <UtensilsCrossed {...ICON} /> }
 function ColacionIcon() { return <Package {...ICON} /> }
