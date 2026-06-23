@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createPlanAlimentacion } from '@/app/actions/modulos'
+import { puedeGestionar } from '@/lib/rbac'
 import { UtensilsCrossed } from 'lucide-react'
 
 interface Props { searchParams: Promise<{ error?: string; success?: string }> }
@@ -23,6 +24,7 @@ export default async function AlimentacionPage({ searchParams }: Props) {
     supabase.from('plan_alimentacion').select('*, dotaciones(personas(nombres, apellido_paterno), proyectos(nombre))').order('fecha', { ascending: false }).limit(150),
     supabase.from('dotaciones').select('id, personas(nombres, apellido_paterno)').order('created_at', { ascending: false }),
   ])
+  const puedeEscribir = await puedeGestionar('alimentacion')
 
   return (
     <div>
@@ -36,6 +38,7 @@ export default async function AlimentacionPage({ searchParams }: Props) {
         {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
         {success && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Plan guardado.</div>}
 
+        {puedeEscribir && (
         <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6">
           <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Planificar comidas de un día</h2>
           <form action={createPlanAlimentacion} className="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
@@ -64,6 +67,7 @@ export default async function AlimentacionPage({ searchParams }: Props) {
           </form>
           <p className="text-xs text-[var(--gray-600)] mt-2">Cada comida puede ser en hotel, faena, reemplazada por colación, o ninguna.</p>
         </div>
+        )}
 
         {!planes?.length ? (
           <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">

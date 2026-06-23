@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createColacion, toggleColacionEntregada } from '@/app/actions/modulos'
+import { puedeGestionar } from '@/lib/rbac'
 import { Package, Check } from 'lucide-react'
 
 interface Props { searchParams: Promise<{ error?: string; success?: string }> }
@@ -18,6 +19,7 @@ export default async function ColacionesPage({ searchParams }: Props) {
     supabase.from('colaciones').select('*, proyectos(nombre)').order('fecha', { ascending: false }).limit(150),
     supabase.from('proyectos').select('id, nombre').order('nombre'),
   ])
+  const puedeEscribir = await puedeGestionar('colaciones')
 
   return (
     <div>
@@ -31,6 +33,7 @@ export default async function ColacionesPage({ searchParams }: Props) {
         {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
         {success && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Colación registrada.</div>}
 
+        {puedeEscribir && (
         <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6">
           <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Registrar colaciones</h2>
           <form action={createColacion} className="grid grid-cols-2 md:grid-cols-7 gap-3 items-end">
@@ -65,6 +68,7 @@ export default async function ColacionesPage({ searchParams }: Props) {
             <button type="submit" className="px-4 py-2 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">Registrar</button>
           </form>
         </div>
+        )}
 
         {!colaciones?.length ? (
           <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
@@ -95,11 +99,15 @@ export default async function ColacionesPage({ searchParams }: Props) {
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{c.sentido}</td>
                       <td className="px-5 py-3.5 tabular-nums font-medium text-[var(--navy)]">{c.cantidad}</td>
                       <td className="px-5 py-3.5">
-                        <form action={toggle}>
-                          <button className={`badge ${c.entregada ? 'badge-green' : 'badge-gray'} hover:opacity-80`}>
-                            {c.entregada ? <span className="inline-flex items-center gap-1"><Check size={11} strokeWidth={3} /> Entregada</span> : 'Marcar entregada'}
-                          </button>
-                        </form>
+                        {puedeEscribir ? (
+                          <form action={toggle}>
+                            <button className={`badge ${c.entregada ? 'badge-green' : 'badge-gray'} hover:opacity-80`}>
+                              {c.entregada ? <span className="inline-flex items-center gap-1"><Check size={11} strokeWidth={3} /> Entregada</span> : 'Marcar entregada'}
+                            </button>
+                          </form>
+                        ) : (
+                          <span className={`badge ${c.entregada ? 'badge-green' : 'badge-gray'}`}>{c.entregada ? 'Entregada' : 'Pendiente'}</span>
+                        )}
                       </td>
                     </tr>
                   )

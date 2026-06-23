@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Plus, IdCard, Search, Upload } from 'lucide-react'
 import { formatRut } from '@/lib/rut'
 import { Pagination } from '@/app/_components/pagination'
+import { puedeGestionar } from '@/lib/rbac'
 
 interface Props {
   searchParams: Promise<{ q?: string; page?: string; success?: string; creadas?: string; reusadas?: string; errores?: string; omitidas?: string }>
@@ -44,6 +45,7 @@ export default async function PersonalPage({ searchParams }: Props) {
   const docLabel = (r: Row) => (r.tipo_documento === 'rut' ? formatRut(r.numero_documento) : r.numero_documento)
   const pageHref = (p: number) => `/admin/personal?${new URLSearchParams({ ...(term ? { q: term } : {}), page: String(p) })}`
   const cupoPct = cupo.limite ? Math.min(100, Math.round((cupo.usadas / cupo.limite) * 100)) : 0
+  const puedeEscribir = await puedeGestionar('personal')
 
   return (
     <div>
@@ -55,16 +57,18 @@ export default async function PersonalPage({ searchParams }: Props) {
             {total} {total === 1 ? 'persona' : 'personas'} en tu directorio
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link href="/admin/personal/importar" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
-            <Upload size={16} strokeWidth={2.25} />
-            Importar Excel
-          </Link>
-          <Link href="/admin/personal/nuevo" className="btn-primary">
-            <Plus size={16} strokeWidth={2.25} />
-            Nueva persona
-          </Link>
-        </div>
+        {puedeEscribir && (
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/admin/personal/importar" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+              <Upload size={16} strokeWidth={2.25} />
+              Importar Excel
+            </Link>
+            <Link href="/admin/personal/nuevo" className="btn-primary">
+              <Plus size={16} strokeWidth={2.25} />
+              Nueva persona
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="px-8 pb-8">

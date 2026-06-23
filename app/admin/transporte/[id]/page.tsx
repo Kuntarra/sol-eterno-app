@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { addPasajero, marcarPasajero, updateTrasladoEstado } from '@/app/actions/transporte'
+import { puedeGestionar } from '@/lib/rbac'
 import { ArrowLeft, Plus, Check, MapPin, X } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -48,6 +49,7 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
   const addPax = addPasajero.bind(null, id)
   const setEstado = updateTrasladoEstado.bind(null, id)
   const veh = t.vehiculos as unknown as { tipo: string; identificador: string | null; capacidad: number } | null
+  const puedeEscribir = await puedeGestionar('transporte')
 
   return (
     <div className="p-8 max-w-4xl">
@@ -63,20 +65,23 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
             {veh ? ` · ${veh.tipo}${veh.identificador ? ' ' + veh.identificador : ''} (cap. ${veh.capacidad})` : ''}
           </p>
         </div>
-        <form action={setEstado} className="flex items-center gap-2 shrink-0">
-          <select name="estado" defaultValue={t.estado} className={INPUT}>
-            <option value="planificado">Planificado</option>
-            <option value="en_curso">En curso</option>
-            <option value="completado">Completado</option>
-            <option value="cancelado">Cancelado</option>
-          </select>
-          <button type="submit" className="px-3 py-2 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-medium hover:bg-[var(--gray-100)]">Cambiar</button>
-        </form>
+        {puedeEscribir && (
+          <form action={setEstado} className="flex items-center gap-2 shrink-0">
+            <select name="estado" defaultValue={t.estado} className={INPUT}>
+              <option value="planificado">Planificado</option>
+              <option value="en_curso">En curso</option>
+              <option value="completado">Completado</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+            <button type="submit" className="px-3 py-2 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-medium hover:bg-[var(--gray-100)]">Cambiar</button>
+          </form>
+        )}
       </div>
 
       {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
 
       {/* Agregar pasajero */}
+      {puedeEscribir && (
       <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6">
         <form action={addPax} className="flex items-end gap-3">
           <div className="flex-1">
@@ -95,6 +100,7 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
           <p className="text-xs text-[var(--gray-600)] mt-2">No hay personas asignadas{t.proyecto_id ? ' a este proyecto' : ''}. Asígnalas en Proyectos primero.</p>
         )}
       </div>
+      )}
 
       {/* Manifiesto */}
       <h2 className="text-sm font-semibold text-[var(--navy)] mb-3">Pasajeros ({pasajeros?.length ?? 0})</h2>
@@ -113,11 +119,13 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
                   <p className="text-sm font-medium text-[var(--navy)] truncate">{p ? `${p.nombres} ${p.apellido_paterno}` : '—'}</p>
                   <span className={`badge ${PAX_BADGE[px.estado] ?? 'badge-gray'}`}>{PAX_LABEL[px.estado] ?? px.estado}</span>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <form action={subio}><button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--amber)]/15 text-[var(--amber-dark)] text-xs font-semibold hover:bg-[var(--amber)]/25" title="Marcar a bordo"><Check size={13} strokeWidth={2.5} /> Subió</button></form>
-                  <form action={dejado}><button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-semibold hover:bg-green-200" title="Marcar dejado"><MapPin size={13} strokeWidth={2.5} /> Dejado</button></form>
-                  <form action={noShow}><button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--gray-100)] text-[var(--gray-600)] text-xs font-semibold hover:bg-[var(--gray-200)]" title="No se presentó"><X size={13} strokeWidth={2.5} /></button></form>
-                </div>
+                {puedeEscribir && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <form action={subio}><button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--amber)]/15 text-[var(--amber-dark)] text-xs font-semibold hover:bg-[var(--amber)]/25" title="Marcar a bordo"><Check size={13} strokeWidth={2.5} /> Subió</button></form>
+                    <form action={dejado}><button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-semibold hover:bg-green-200" title="Marcar dejado"><MapPin size={13} strokeWidth={2.5} /> Dejado</button></form>
+                    <form action={noShow}><button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--gray-100)] text-[var(--gray-600)] text-xs font-semibold hover:bg-[var(--gray-200)]" title="No se presentó"><X size={13} strokeWidth={2.5} /></button></form>
+                  </div>
+                )}
               </div>
             )
           })}

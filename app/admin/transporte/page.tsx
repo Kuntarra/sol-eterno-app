@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Plus, Bus, Truck } from 'lucide-react'
 import { Pagination } from '@/app/_components/pagination'
+import { puedeGestionar } from '@/lib/rbac'
 
 const TIPO_LABEL: Record<string, string> = { movilizacion: 'Movilización', diario: 'Diario a faena' }
 const ESTADO_BADGE: Record<string, string> = {
@@ -23,6 +24,7 @@ export default async function TransportePage({ searchParams }: { searchParams: P
 
   const total = count ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const puedeEscribir = await puedeGestionar('transporte')
 
   return (
     <div>
@@ -32,14 +34,16 @@ export default async function TransportePage({ searchParams }: { searchParams: P
           <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Transporte</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">{total} traslados</p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link href="/admin/transporte/flota" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
-            <Bus size={16} strokeWidth={2.25} /> Flota
-          </Link>
-          <Link href="/admin/transporte/nuevo" className="btn-primary">
-            <Plus size={16} strokeWidth={2.25} /> Nuevo traslado
-          </Link>
-        </div>
+        {puedeEscribir && (
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/admin/transporte/flota" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+              <Bus size={16} strokeWidth={2.25} /> Flota
+            </Link>
+            <Link href="/admin/transporte/nuevo" className="btn-primary">
+              <Plus size={16} strokeWidth={2.25} /> Nuevo traslado
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="px-8 pb-8">

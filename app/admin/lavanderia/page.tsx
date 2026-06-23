@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createBolsa, createPrenda, avanzarBolsa } from '@/app/actions/modulos'
+import { puedeGestionar } from '@/lib/rbac'
 import { Shirt, ArrowRight } from 'lucide-react'
 
 interface Props { searchParams: Promise<{ error?: string; success?: string }> }
@@ -21,6 +22,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
     supabase.from('prendas_catalogo').select('*').eq('activo', true).order('nombre'),
     supabase.from('dotaciones').select('id, personas(nombres, apellido_paterno)').order('created_at', { ascending: false }),
   ])
+  const puedeEscribir = await puedeGestionar('lavanderia')
 
   return (
     <div>
@@ -34,6 +36,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
         {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
         {success && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Guardado.</div>}
 
+        {puedeEscribir && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Nueva bolsa */}
           <div className="lg:col-span-2 bg-white rounded-xl border border-[var(--gray-200)] p-5">
@@ -65,6 +68,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
             </div>
           </div>
         </div>
+        )}
 
         {!bolsas?.length ? (
           <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
@@ -92,14 +96,16 @@ export default async function LavanderiaPage({ searchParams }: Props) {
                       <td className="px-5 py-3.5 text-[var(--gray-600)] tabular-nums text-xs">{new Date(b.created_at).toLocaleDateString('es-CL')}</td>
                       <td className="px-5 py-3.5"><span className={`badge ${ESTADO_BADGE[b.estado]}`}>{ESTADO_LABEL[b.estado]}</span></td>
                       <td className="px-5 py-3.5">
-                        {b.estado !== 'entregada' ? (
+                        {b.estado === 'entregada' ? (
+                          <span className="text-xs text-[var(--gray-600)]">Completada</span>
+                        ) : puedeEscribir ? (
                           <form action={avanzar}>
                             <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--navy)] text-white text-xs font-semibold hover:bg-[var(--navy-dark)]">
                               {ESTADO_LABEL[b.estado === 'recepcionada' ? 'en_lavanderia' : b.estado === 'en_lavanderia' ? 'en_proceso' : 'entregada']}
                               <ArrowRight size={12} strokeWidth={2.5} />
                             </button>
                           </form>
-                        ) : <span className="text-xs text-[var(--gray-600)]">Completada</span>}
+                        ) : <span className="text-xs text-[var(--gray-600)]">—</span>}
                       </td>
                     </tr>
                   )
