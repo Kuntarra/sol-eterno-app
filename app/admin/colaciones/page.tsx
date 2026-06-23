@@ -94,7 +94,7 @@ export default async function ColacionesPage({ searchParams }: Props) {
                   return (
                     <tr key={c.id} className="border-b border-[var(--gray-100)] last:border-0">
                       <td className="px-5 py-3.5 tabular-nums text-[var(--gray-600)]">{c.fecha ?? '—'}</td>
-                      <td className="px-5 py-3.5 text-[var(--gray-600)]">{(c.proyectos as unknown as { nombre: string } | null)?.nombre ?? '—'}</td>
+                      <td className="px-5 py-3.5 text-[var(--gray-600)]">{c.proyectos?.nombre ?? '—'}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{PUNTO_LABEL[c.punto_entrega] ?? c.punto_entrega}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{c.sentido}</td>
                       <td className="px-5 py-3.5 tabular-nums font-medium text-[var(--navy)]">{c.cantidad}</td>

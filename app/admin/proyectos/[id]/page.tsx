@@ -103,7 +103,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
             <select id="persona_id" name="persona_id" required className={INPUT} defaultValue="">
               <option value="" disabled>Selecciona…</option>
               {(directorio ?? []).map((d) => {
-                const p = d.personas as unknown as { nombres: string; apellido_paterno: string; apellido_materno: string | null } | null
+                const p = d.personas
                 return (
                   <option key={d.persona_id} value={d.persona_id}>
                     {p ? `${p.nombres} ${p.apellido_paterno}` : d.persona_id}
@@ -166,7 +166,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
             </thead>
             <tbody>
               {dotaciones.map((d) => {
-                const p = d.personas as unknown as { nombres: string; apellido_paterno: string; numero_documento: string; tipo_documento: string } | null
+                const p = d.personas
                 const turno = d.turno_dias_trabajo ? `${d.turno_dias_trabajo}x${d.turno_dias_descanso ?? 0}` : '—'
                 const nRot = ((d.rotaciones as { id: string }[]) ?? []).length
                 return (
@@ -179,7 +179,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
                         {p?.tipo_documento === 'rut' ? formatRut(p.numero_documento) : p?.numero_documento}
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-[var(--gray-600)]">{(d.oficios as unknown as { nombre: string } | null)?.nombre ?? '—'}</td>
+                    <td className="px-5 py-3.5 text-[var(--gray-600)]">{d.oficios?.nombre ?? '—'}</td>
                     <td className="px-5 py-3.5 text-[var(--gray-600)]">{turno}</td>
                     <td className="px-5 py-3.5 text-[var(--gray-600)] text-xs tabular-nums">
                       {d.fecha_inicio_contrato ?? '—'} → {d.fecha_fin_contrato ?? '—'}

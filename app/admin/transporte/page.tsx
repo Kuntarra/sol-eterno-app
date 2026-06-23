@@ -71,8 +71,8 @@ export default async function TransportePage({ searchParams }: { searchParams: P
               </thead>
               <tbody>
                 {traslados.map((t) => {
-                  const pax = ((t.traslado_pasajeros as { id: string }[]) ?? []).length
-                  const veh = t.vehiculos as unknown as { tipo: string; identificador: string | null } | null
+                  const pax = (t.traslado_pasajeros ?? []).length
+                  const veh = t.vehiculos
                   return (
                     <tr key={t.id} className="border-b border-[var(--gray-100)] last:border-0 hover:bg-[var(--gray-100)]/50">
                       <td className="px-5 py-3.5 tabular-nums">
@@ -82,7 +82,7 @@ export default async function TransportePage({ searchParams }: { searchParams: P
                       </td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{TIPO_LABEL[t.tipo] ?? t.tipo} · {t.sentido}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)] text-xs">{[t.origen, t.destino].filter(Boolean).join(' → ') || '—'}</td>
-                      <td className="px-5 py-3.5 text-[var(--gray-600)]">{(t.proyectos as unknown as { nombre: string } | null)?.nombre ?? '—'}</td>
+                      <td className="px-5 py-3.5 text-[var(--gray-600)]">{t.proyectos?.nombre ?? '—'}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{veh ? `${veh.tipo}${veh.identificador ? ' · ' + veh.identificador : ''}` : '—'}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{pax}</td>
                       <td className="px-5 py-3.5"><span className={`badge ${ESTADO_BADGE[t.estado] ?? 'badge-gray'}`}>{t.estado}</span></td>

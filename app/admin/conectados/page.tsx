@@ -149,7 +149,7 @@ export default async function ConectadosPage() {
                     </thead>
                     <tbody>
                       {dots.map((d) => {
-                        const per = d.personas as unknown as { id: string; nombres: string; apellido_paterno: string; tipo_documento: string; numero_documento: string } | null
+                        const per = d.personas
                         const turno = d.turno_dias_trabajo ? `${d.turno_dias_trabajo}x${d.turno_dias_descanso ?? 0}` : '—'
                         const rots = ((d.rotaciones as Rotacion[]) ?? []).slice().sort((a, b) => (a.fecha_inicio ?? '').localeCompare(b.fecha_inicio ?? ''))
                         const prox = rots.find((r) => r.vuelo_ida_fecha) ?? rots[0]

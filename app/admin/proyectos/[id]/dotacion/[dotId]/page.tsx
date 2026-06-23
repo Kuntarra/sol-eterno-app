@@ -59,7 +59,7 @@ export default async function DotacionDetallePage({ params }: Props) {
     recepcionada: 'Recepcionada', nota: 'Nota',
   }
 
-  const p = dot.personas as unknown as { nombres: string; apellido_paterno: string; apellido_materno: string | null; tipo_documento: string; numero_documento: string } | null
+  const p = dot.personas
   const nombre = p ? `${p.nombres} ${p.apellido_paterno}${p.apellido_materno ? ' ' + p.apellido_materno : ''}` : '—'
   const turno = dot.turno_dias_trabajo ? `${dot.turno_dias_trabajo}x${dot.turno_dias_descanso ?? 0}` : '—'
 
@@ -72,7 +72,7 @@ export default async function DotacionDetallePage({ params }: Props) {
         <div>
           <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{nombre}</h1>
           <p className="text-sm text-[var(--gray-600)]">
-            {(dot.oficios as unknown as { nombre: string } | null)?.nombre ?? 'Sin oficio'} · {(dot.proyectos as unknown as { nombre: string } | null)?.nombre}
+            {dot.oficios?.nombre ?? 'Sin oficio'} · {dot.proyectos?.nombre}
           </p>
         </div>
       </div>

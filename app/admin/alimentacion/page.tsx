@@ -47,7 +47,7 @@ export default async function AlimentacionPage({ searchParams }: Props) {
               <select id="dotacion_id" name="dotacion_id" required className={`${INPUT} w-full`} defaultValue="">
                 <option value="" disabled>Selecciona…</option>
                 {(dotaciones ?? []).map((d) => {
-                  const p = d.personas as unknown as { nombres: string; apellido_paterno: string } | null
+                  const p = d.personas
                   return <option key={d.id} value={d.id}>{p ? `${p.nombres} ${p.apellido_paterno}` : d.id}</option>
                 })}
               </select>
@@ -88,8 +88,7 @@ export default async function AlimentacionPage({ searchParams }: Props) {
               </thead>
               <tbody>
                 {planes.map((pl) => {
-                  const dot = pl.dotaciones as unknown as { personas: { nombres: string; apellido_paterno: string } | null } | null
-                  const p = dot?.personas
+                  const p = pl.dotaciones?.personas
                   return (
                     <tr key={pl.id} className="border-b border-[var(--gray-100)] last:border-0">
                       <td className="px-5 py-3.5 tabular-nums text-[var(--gray-600)]">{pl.fecha}</td>

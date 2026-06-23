@@ -47,7 +47,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
                 <select id="dotacion_id" name="dotacion_id" required className={`${INPUT} w-full`} defaultValue="">
                   <option value="" disabled>Selecciona…</option>
                   {(dotaciones ?? []).map((d) => {
-                    const p = d.personas as unknown as { nombres: string; apellido_paterno: string } | null
+                    const p = d.personas
                     return <option key={d.id} value={d.id}>{p ? `${p.nombres} ${p.apellido_paterno}` : d.id}</option>
                   })}
                 </select>
@@ -88,7 +88,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
               </thead>
               <tbody>
                 {bolsas.map((b) => {
-                  const p = b.personas as unknown as { nombres: string; apellido_paterno: string } | null
+                  const p = b.personas
                   const avanzar = avanzarBolsa.bind(null, b.id, b.estado)
                   return (
                     <tr key={b.id} className="border-b border-[var(--gray-100)] last:border-0">
