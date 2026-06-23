@@ -119,9 +119,12 @@ export async function importPersonas(formData: FormData) {
     return ''
   }
 
-  let creadas = 0, reusadas = 0, errores = 0, omitidas = 0
-  let { disponibles } = await getCupoPersonas() // cupo restante para personas NUEVAS
-  const oficioCache = new Map<string, string>()
+  // Se valida y normaliza cada fila en memoria (rápido, sin tocar la base) y
+  // se envía TODO en una sola llamada: la función SQL importar_personas hace el
+  // dedup, los oficios, el cupo y el directorio en un único viaje. Antes era un
+  // bucle con ~4 consultas por fila (≈16.000 viajes para 4.000 personas).
+  let errores = 0
+  const filas: Record<string, string>[] = []
 
   for (let i = 2; i <= ws.rowCount; i++) {
     const row = ws.getRow(i)
@@ -132,56 +135,28 @@ export async function importPersonas(formData: FormData) {
 
     if (!isValidRut(rut) || !nombres || !apPat) { errores++; continue }
 
-    const apMat = cellOf(row, ['apellido materno', 'apellidomaterno', 'materno']) || null
-    const tel = cellOf(row, ['telefono', 'fono', 'celular']) || null
-    const nacionalidad = cellOf(row, ['nacionalidad', 'pais']) || null
-    const oficioNombre = cellOf(row, ['oficio', 'rol', 'cargo'])
-
     const c = cleanRut(rut)
-    const numero = c.slice(0, -1) + '-' + c.slice(-1)
-
-    const { data: personaId, error: pErr } = await supabase.rpc('find_or_create_persona', {
-      p_tipo_documento: 'rut',
-      p_numero_documento: numero,
-      p_nombres: nombres,
-      p_apellido_paterno: apPat,
-      p_apellido_materno: apMat ?? undefined,
-      p_telefono: tel ?? undefined,
-      p_pais_documento: 'CL',
-      p_nacionalidad: nacionalidad ?? undefined,
+    filas.push({
+      numero: c.slice(0, -1) + '-' + c.slice(-1),
+      nombres,
+      apellido_paterno: apPat,
+      apellido_materno: cellOf(row, ['apellido materno', 'apellidomaterno', 'materno']),
+      telefono: cellOf(row, ['telefono', 'fono', 'celular']),
+      nacionalidad: cellOf(row, ['nacionalidad', 'pais']),
+      oficio: cellOf(row, ['oficio', 'rol', 'cargo']),
     })
-    if (pErr || !personaId) { errores++; continue }
+  }
 
-    // Oficio (find-or-create con caché)
-    let oficioId: string | null = null
-    if (oficioNombre) {
-      const key = norm(oficioNombre)
-      if (oficioCache.has(key)) {
-        oficioId = oficioCache.get(key)!
-      } else {
-        const { data: ex } = await supabase.from('oficios').select('id').ilike('nombre', oficioNombre).limit(1).maybeSingle()
-        if (ex) oficioId = ex.id
-        else {
-          const { data: nu } = await supabase.from('oficios').insert({ nombre: oficioNombre }).select('id').single()
-          oficioId = nu?.id ?? null
-        }
-        if (oficioId) oficioCache.set(key, oficioId)
-      }
+  let creadas = 0, reusadas = 0, omitidas = 0
+  if (filas.length) {
+    const { data, error } = await supabase.rpc('importar_personas', { p_rows: filas })
+    if (error) {
+      redirect('/admin/personal/importar?error=' + encodeURIComponent(error.message))
     }
-
-    const { data: existingDir } = await supabase
-      .from('persona_directorio').select('id').eq('persona_id', personaId).maybeSingle()
-
-    // Cupo: una persona NUEVA consume cupo; si no queda, se omite (las ya
-    // existentes en el directorio no consumen y siguen actualizándose).
-    if (!existingDir && disponibles <= 0) { omitidas++; continue }
-
-    const { error: dErr } = await supabase
-      .from('persona_directorio')
-      .upsert({ persona_id: personaId, oficio_id: oficioId }, { onConflict: 'tenant_id,persona_id' })
-
-    if (dErr) { errores++; continue }
-    if (existingDir) reusadas++; else { creadas++; disponibles-- }
+    const res = (data ?? {}) as { creadas?: number; reusadas?: number; omitidas?: number }
+    creadas = res.creadas ?? 0
+    reusadas = res.reusadas ?? 0
+    omitidas = res.omitidas ?? 0
   }
 
   revalidatePath('/admin/personal')

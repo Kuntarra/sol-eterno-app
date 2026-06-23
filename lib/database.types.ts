@@ -1927,6 +1927,7 @@ export type Database = {
       get_my_tenant: { Args: never; Returns: string }
       get_receptionist_company_ids: { Args: never; Returns: string[] }
       get_receptionist_room_ids: { Args: never; Returns: string[] }
+      importar_personas: { Args: { p_rows: Json }; Returns: Json }
       is_super_admin: { Args: never; Returns: boolean }
       nivel_modulo: { Args: { p_modulo: string }; Returns: string }
       personas_vinculadas: { Args: never; Returns: string[] }

@@ -71,11 +71,14 @@ export default async function ConectadosPage() {
     .from('dotaciones')
     .select('id, proyecto_id, turno_dias_trabajo, turno_dias_descanso, personas(id, nombres, apellido_paterno, tipo_documento, numero_documento), rotaciones(numero, fecha_inicio, fecha_fin_esperada, vuelo_ida_numero, vuelo_ida_fecha, vuelo_ida_hora, vuelo_ida_aeropuerto, vuelo_vuelta_numero, vuelo_vuelta_fecha, vuelo_vuelta_hora)')
 
-  // Último evento por dotación (bitácora compartida)
+  // Último evento por dotación (bitácora compartida). Se acota a los eventos
+  // recientes: la bitácora es append-only y crece sin tope, así que traerla
+  // entera escalaría mal. Con orden desc + cap basta para el "último evento".
   const { data: eventos } = await supabase
     .from('eventos_bitacora')
     .select('dotacion_id, tipo, detalle, autor_nombre, created_at')
     .order('created_at', { ascending: false })
+    .limit(2000)
   const ultimoEvento = new Map<string, NonNullable<typeof eventos>[number]>()
   for (const e of eventos ?? []) {
     if (e.dotacion_id && !ultimoEvento.has(e.dotacion_id)) ultimoEvento.set(e.dotacion_id, e)

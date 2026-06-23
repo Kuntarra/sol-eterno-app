@@ -24,34 +24,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const fullName = profile?.full_name ?? user.email ?? 'Admin'
 
-  // Tipo de empresa: define si se ofrece la vista "Proyectos conectados".
-  const { data: tnt } = await supabase.from('tenants').select('tipo').eq('id', profile?.tenant_id).maybeSingle()
-  const tenantTipo = tnt?.tipo ?? 'empresa_proyecto'
-
-  // Módulos de MÓDULO (sección "Módulos") visibles en el menú.
-  // Regla: lo que la EMPRESA compró (tenant_modulos) acota a todos; el admin
-  // ve todos los comprados; el sub-usuario ve solo los que tiene asignados,
-  // intersectados con los comprados.
-  const modulosComprados = new Set(await modulosActivosTenant())
-
-  let allowedModulos: string[]
-  if (esModulo) {
-    const { data: ums } = await supabase
-      .from('user_modulos')
-      .select('modulo')
-      .eq('user_id', user.id)
-      .is('proyecto_id', null)
-    allowedModulos = [...new Set((ums ?? []).map((u) => u.modulo))].filter((m) => modulosComprados.has(m))
-  } else {
-    allowedModulos = [...modulosComprados]
-  }
-
-  // ── Notificaciones derivadas de datos ──────────────────────────
+  // Todo lo que sigue depende solo del perfil ya cargado, así que se resuelve
+  // en UNA sola tanda en paralelo (antes eran 4-5 consultas en fila india que
+  // bloqueaban cada navegación dentro de /admin).
   const admin = createAdminClient()
   const tenantId = profile?.tenant_id
   const nowISO = new Date().toISOString()
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
-  const [{ data: overdue }, { count: checkinsHoy }] = await Promise.all([
+
+  const [tntRes, modulosArr, umsRes, overdueRes, checkinsRes] = await Promise.all([
+    // Tipo de empresa: define si se ofrece la vista "Proyectos conectados".
+    supabase.from('tenants').select('tipo').eq('id', tenantId).maybeSingle(),
+    // Módulos comprados por la empresa (acota el menú).
+    modulosActivosTenant(),
+    // Asignaciones del sub-usuario (solo si es de tipo "modulo").
+    esModulo
+      ? supabase.from('user_modulos').select('modulo').eq('user_id', user.id).is('proyecto_id', null)
+      : Promise.resolve({ data: [] as { modulo: string }[] }),
+    // Notificaciones: estadías vencidas.
     admin.from('stays')
       .select('id, estimated_checkout, guests(first_name, last_name_paterno), rooms(number, properties(name))')
       .eq('tenant_id', tenantId)
@@ -60,8 +50,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .lt('estimated_checkout', nowISO)
       .order('estimated_checkout', { ascending: true })
       .limit(6),
+    // Notificaciones: check-ins de hoy.
     admin.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('checked_in_at', todayStart.toISOString()),
   ])
+
+  const tenantTipo = tntRes.data?.tipo ?? 'empresa_proyecto'
+
+  // Regla del menú: lo que la EMPRESA compró acota a todos; el admin ve todo lo
+  // comprado; el sub-usuario ve solo lo asignado intersectado con lo comprado.
+  const modulosComprados = new Set(modulosArr)
+  const allowedModulos = esModulo
+    ? [...new Set((umsRes.data ?? []).map((u) => u.modulo))].filter((m) => modulosComprados.has(m))
+    : [...modulosComprados]
+
+  const overdue = overdueRes.data
+  const checkinsHoy = checkinsRes.count
 
   const fmtD = (iso: string | null) =>
     iso ? new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' }) : ''

@@ -52,14 +52,23 @@ export async function guardarPermisos(personaId: string, formData: FormData) {
   if (!prof) redirect(back + '?error=' + encodeURIComponent('Primero crea el acceso de la persona.'))
   const userId = prof.id
 
-  for (const m of MODULO_KEYS) {
-    const on = formData.get(`mod_${m}`) === 'on'
-    const nivel = (formData.get(`nivel_${m}`) as string) || 'visor'
-    // Reemplaza la asignación de alcance general (proyecto nulo) de ese módulo
-    await supabase.from('user_modulos').delete().eq('user_id', userId).eq('modulo', m).is('proyecto_id', null)
-    if (on) {
-      await supabase.from('user_modulos').insert({ user_id: userId, modulo: m, nivel })
-    }
+  // Reemplaza en bloque las asignaciones de alcance general (proyecto nulo):
+  // un solo DELETE de todos los módulos + un solo INSERT de los marcados,
+  // en vez de un par de viajes a la base por cada módulo.
+  await supabase
+    .from('user_modulos')
+    .delete()
+    .eq('user_id', userId)
+    .is('proyecto_id', null)
+    .in('modulo', [...MODULO_KEYS])
+
+  const filas = MODULO_KEYS.filter((m) => formData.get(`mod_${m}`) === 'on').map((m) => ({
+    user_id: userId,
+    modulo: m,
+    nivel: (formData.get(`nivel_${m}`) as string) || 'visor',
+  }))
+  if (filas.length) {
+    await supabase.from('user_modulos').insert(filas)
   }
 
   revalidatePath(back)
