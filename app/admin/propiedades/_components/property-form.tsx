@@ -1,5 +1,6 @@
 'use client'
 
+import { INPUT, LABEL } from '@/lib/ui'
 import { useState } from 'react'
 import Link from 'next/link'
 import { City, Property, PropertyType, PROPERTY_TYPE_LABELS, SERVICES_BY_TYPE, Services } from '@/lib/types'
@@ -14,8 +15,6 @@ interface Props {
   submitLabel: string
 }
 
-const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
-const LABEL = 'block text-sm font-medium text-[var(--gray-900)] mb-1.5'
 
 export function PropertyForm({ action, cities, property, cancelHref, submitLabel }: Props) {
   const [type, setType] = useState<PropertyType>(property?.type ?? 'hotel')

@@ -1,3 +1,4 @@
+import { INPUT, LABEL } from '@/lib/ui'
 import { createPersona } from '@/app/actions/personal'
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft } from 'lucide-react'
@@ -7,8 +8,6 @@ interface Props {
   searchParams: Promise<{ error?: string }>
 }
 
-const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
-const LABEL = 'block text-sm font-medium text-[var(--gray-900)] mb-1.5'
 
 export default async function NuevaPersonaPage({ searchParams }: Props) {
   const { error } = await searchParams
