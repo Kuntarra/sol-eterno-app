@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyTenantId } from '@/lib/tenant'
 import Link from 'next/link'
 import { SearchBar } from './_components/search-bar'
-import { CheckCircle2, Download } from 'lucide-react'
+import { CheckCircle2, Download, Building2 } from 'lucide-react'
 import { formatDateTime as formatDate } from '@/lib/format'
 import { STAY_FILTER_LABELS as FILTER_LABELS } from '@/lib/types'
 import { Pagination } from '@/app/_components/pagination'
@@ -114,9 +114,12 @@ export default async function EstadiasPage({
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
-            <span className="section-label">Registros</span>
+            <span className="section-label">Alojamiento</span>
             <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Estadías</h1>
             <p className="text-sm text-[var(--gray-600)] mt-1">Gestión y corrección de registros</p>
+            <Link href="/admin/propiedades" className="inline-flex items-center gap-1.5 mt-2 text-sm font-semibold text-[var(--navy)] hover:underline">
+              <Building2 size={15} strokeWidth={2} /> Gestionar propiedades →
+            </Link>
           </div>
           <div className="flex gap-4 shrink-0">
             {/* Check-ins hoy */}

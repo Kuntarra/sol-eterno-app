@@ -91,7 +91,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar fullName={fullName} role={esAdmin ? 'admin' : 'modulo'} allowedModulos={allowedModulos} tenantTipo={tenantTipo} />
+      <AdminSidebar fullName={fullName} role={esAdmin ? 'admin' : 'modulo'} allowedModulos={allowedModulos} tenantTipo={tenantTipo} isSuper={!!profile?.is_super_admin} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminTopBar fullName={fullName} notifications={notifications} />
         <main className="flex-1 overflow-auto bg-[var(--gray-100)] pt-16 pb-16 md:pt-0 md:pb-0">
