@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
 import { MODULOS } from '@/lib/modulos'
+import { BitacoraTimeline } from './_components/bitacora-timeline'
 
 interface Props { params: Promise<{ id: string }>; searchParams: Promise<{ success?: string; error?: string }> }
 
@@ -21,7 +22,7 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
     .maybeSingle()
   if (!persona) notFound()
 
-  const [{ data: dir }, { data: dotaciones }, { data: login }] = await Promise.all([
+  const [{ data: dir }, { data: dotaciones }, { data: login }, { data: eventos }] = await Promise.all([
     supabase.from('persona_directorio').select('activa, oficios(nombre)').eq('persona_id', id).maybeSingle(),
     supabase
       .from('dotaciones')
@@ -29,7 +30,19 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
       .eq('persona_id', id)
       .order('created_at', { ascending: false }),
     supabase.from('user_profiles').select('id, email').eq('persona_id', id).maybeSingle(),
+    supabase
+      .from('eventos_bitacora')
+      .select('id, modulo, tipo, detalle, autor_nombre, created_at, proyectos(nombre)')
+      .eq('persona_id', id)
+      .order('created_at', { ascending: false })
+      .limit(50),
   ])
+
+  const eventosVivos = (eventos ?? []).map((e) => ({
+    id: e.id, modulo: e.modulo, tipo: e.tipo, detalle: e.detalle,
+    autor_nombre: e.autor_nombre, created_at: e.created_at,
+    proyectos: e.proyectos as { nombre: string } | null,
+  }))
 
   // Permisos actuales (alcance general) del login de la persona
   const permisos: Record<string, string> = {}
@@ -85,6 +98,9 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
           ))}
         </div>
       </div>
+
+      {/* Bitácora viva: timeline de eventos en terreno */}
+      <BitacoraTimeline eventos={eventosVivos} />
 
       {/* Proyectos donde está asignada */}
       <h2 className="text-sm font-semibold text-[var(--navy)] mb-3">Proyectos asignados ({dotaciones?.length ?? 0})</h2>
