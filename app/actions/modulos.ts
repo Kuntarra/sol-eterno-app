@@ -51,6 +51,32 @@ export async function createPlanAlimentacion(formData: FormData) {
   redirect('/admin/alimentacion?success=1')
 }
 
+// Aplica el plan de comidas de un día a un alcance (persona/cuadrilla/todos en
+// faena) en un solo viaje a la base (función SQL masiva, escala a miles).
+export async function aplicarAlimentacion(formData: FormData) {
+  if (!(await puedeGestionar('alimentacion'))) redirect('/admin/alimentacion?error=' + encodeURIComponent('No tienes permiso de supervisor en Alimentación.'))
+  const supabase = await createClient()
+  const scope = (formData.get('scope') as string) || 'persona'
+  const ref = (formData.get('ref') as string) || null
+  const fecha = formData.get('fecha') as string
+  if (!fecha) redirect('/admin/alimentacion?error=' + encodeURIComponent('Falta la fecha.'))
+  if ((scope === 'persona' || scope === 'cuadrilla') && !ref) {
+    redirect('/admin/alimentacion?error=' + encodeURIComponent('Selecciona ' + (scope === 'persona' ? 'una persona' : 'una cuadrilla') + '.'))
+  }
+  // rpc tipado tras regenerar; cast puntual porque la función es nueva.
+  const { data, error } = await supabase.rpc('aplicar_alimentacion_masivo' as never, {
+    p_fecha:    fecha,
+    p_desayuno: (formData.get('desayuno') as string) || 'no',
+    p_almuerzo: (formData.get('almuerzo') as string) || 'no',
+    p_cena:     (formData.get('cena') as string) || 'no',
+    p_scope:    scope,
+    p_ref:      ref,
+  } as never)
+  if (error) redirect('/admin/alimentacion?error=' + encodeURIComponent((error as { message: string }).message))
+  revalidatePath('/admin/alimentacion')
+  redirect('/admin/alimentacion?aplicados=' + (Number(data) || 0))
+}
+
 // ── Lavandería ─────────────────────────────────────────────────
 export async function createPrenda(formData: FormData) {
   const supabase = await createClient()
