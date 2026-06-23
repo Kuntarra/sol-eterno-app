@@ -24,6 +24,33 @@ export async function createColacion(formData: FormData) {
   redirect('/admin/colaciones?success=1')
 }
 
+// Genera una colación por PERSONA para un alcance (persona/cuadrilla/todos en
+// faena) en un punto de entrega, en un solo viaje (función SQL masiva).
+export async function aplicarColaciones(formData: FormData) {
+  if (!(await puedeGestionar('colaciones'))) redirect('/admin/colaciones?error=' + encodeURIComponent('No tienes permiso de supervisor en Colaciones.'))
+  const supabase = await createClient()
+  const scope = (formData.get('scope') as string) || 'persona'
+  const ref = (formData.get('ref') as string) || null
+  const fecha = formData.get('fecha') as string
+  if (!fecha) redirect('/admin/colaciones?error=' + encodeURIComponent('Falta la fecha.'))
+  if ((scope === 'persona' || scope === 'cuadrilla') && !ref) {
+    redirect('/admin/colaciones?error=' + encodeURIComponent('Selecciona ' + (scope === 'persona' ? 'una persona' : 'una cuadrilla') + '.'))
+  }
+  const cant = parseInt((formData.get('cantidad') as string) || '1', 10)
+  const { data, error } = await supabase.rpc('aplicar_colaciones_masivo' as never, {
+    p_fecha:     fecha,
+    p_punto:     (formData.get('punto_entrega') as string) || 'otro',
+    p_sentido:   (formData.get('sentido') as string) || 'entrada',
+    p_contenido: (formData.get('contenido') as string) || '',
+    p_cantidad:  Number.isFinite(cant) ? cant : 1,
+    p_scope:     scope,
+    p_ref:       ref,
+  } as never)
+  if (error) redirect('/admin/colaciones?error=' + encodeURIComponent((error as { message: string }).message))
+  revalidatePath('/admin/colaciones')
+  redirect('/admin/colaciones?generadas=' + (Number(data) || 0))
+}
+
 export async function toggleColacionEntregada(id: string, entregada: boolean) {
   const supabase = await createClient()
   await supabase.from('colaciones').update({
