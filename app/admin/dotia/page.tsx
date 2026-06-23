@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, Plane } from 'lucide-react'
+import { IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, Plane, BedDouble } from 'lucide-react'
 import type { Database } from '@/lib/database.types'
 
 type Tabla = keyof Database['public']['Tables']
@@ -12,9 +12,10 @@ async function count(table: Tabla) {
 }
 
 export default async function DotiaOverviewPage() {
-  const [personas, proyectos, dotaciones, rotaciones, traslados, colaciones, bolsas] = await Promise.all([
+  const [personas, proyectos, dotaciones, rotaciones, estadias, traslados, alimentacion, colaciones, bolsas] = await Promise.all([
     count('persona_directorio'), count('proyectos'), count('dotaciones'),
-    count('rotaciones'), count('traslados'), count('colaciones'), count('lavanderia_bolsas'),
+    count('rotaciones'), count('stays'), count('traslados'),
+    count('plan_alimentacion'), count('colaciones'), count('lavanderia_bolsas'),
   ])
 
   const cards = [
@@ -22,7 +23,9 @@ export default async function DotiaOverviewPage() {
     { label: 'Proyectos', value: proyectos, href: '/admin/proyectos', icon: <FolderKanban size={20} strokeWidth={1.75} /> },
     { label: 'Dotaciones', value: dotaciones, href: '/admin/proyectos', icon: <Plane size={20} strokeWidth={1.75} /> },
     { label: 'Rotaciones', value: rotaciones, href: '/admin/proyectos', icon: <Plane size={20} strokeWidth={1.75} /> },
+    { label: 'Alojamiento', value: estadias, href: '/admin/estadias', icon: <BedDouble size={20} strokeWidth={1.75} /> },
     { label: 'Traslados', value: traslados, href: '/admin/transporte', icon: <Bus size={20} strokeWidth={1.75} /> },
+    { label: 'Alimentación', value: alimentacion, href: '/admin/alimentacion', icon: <UtensilsCrossed size={20} strokeWidth={1.75} /> },
     { label: 'Colaciones', value: colaciones, href: '/admin/colaciones', icon: <Package size={20} strokeWidth={1.75} /> },
     { label: 'Bolsas lavandería', value: bolsas, href: '/admin/lavanderia', icon: <Shirt size={20} strokeWidth={1.75} /> },
   ]
