@@ -18,26 +18,47 @@ function clampLimite(raw: FormDataEntryValue | null): number {
   return Math.min(10000, Math.max(1, Math.round(n)))
 }
 
+export type CrearOperadorResult = { error?: string } | null
+
+// Traduce los errores de Supabase Auth a mensajes claros en español.
+function traducirErrorAuth(msg: string): string {
+  const m = msg.toLowerCase()
+  if (m.includes('already been registered') || m.includes('already registered') || m.includes('already exists'))
+    return 'Ya existe un usuario con ese correo. Usa otro correo, o revisa si este operador ya fue creado.'
+  if (m.includes('password')) return 'La contraseña no es válida (mínimo 6 caracteres).'
+  if (m.includes('email') && m.includes('invalid')) return 'El correo del administrador no es válido.'
+  return 'No se pudo crear el administrador. Revisa los datos e inténtalo de nuevo.'
+}
+
 // Crea un operador (tenant) nuevo + su primer usuario administrador.
-export async function createTenant(formData: FormData) {
+// Usada con useActionState: devuelve { error } SIN recargar (preserva el
+// formulario); en éxito redirige al panel.
+export async function createTenant(_prev: CrearOperadorResult, formData: FormData): Promise<CrearOperadorResult> {
   await requireSuperAdmin()
   const admin = createAdminClient()
 
   const name          = (formData.get('name') as string)?.trim()
   const rut           = (formData.get('rut') as string)?.trim() || null
-  const contactName   = (formData.get('contact_name') as string)?.trim() || null
-  const contactEmail  = (formData.get('contact_email') as string)?.trim() || null
   const contactPhone  = (formData.get('contact_phone') as string)?.trim() || null
   const billingDay    = formData.get('billing_day') ? Number(formData.get('billing_day')) : null
   const monthlyAmount = formData.get('monthly_amount') ? Number(formData.get('monthly_amount')) : null
   const limitePersonas = clampLimite(formData.get('limite_personas'))
-  const adminEmail    = (formData.get('admin_email') as string)?.trim()
+  const adminEmail    = (formData.get('admin_email') as string)?.trim().toLowerCase()
   const adminPassword = (formData.get('admin_password') as string)
-  const adminName     = (formData.get('admin_name') as string)?.trim() || contactName || name
+  const adminName     = (formData.get('admin_name') as string)?.trim() || name
+  // El contacto suele ser la misma persona del administrador: si se deja en
+  // blanco, se hereda del administrador (evita duplicar el dato).
+  const contactName   = (formData.get('contact_name') as string)?.trim() || adminName || null
+  const contactEmail  = (formData.get('contact_email') as string)?.trim() || adminEmail || null
 
-  if (!name)        redirect('/super/nuevo?error=' + encodeURIComponent('El nombre del operador es obligatorio.'))
+  if (!name) return { error: 'El nombre del operador es obligatorio.' }
   if (!adminEmail || !adminPassword)
-    redirect('/super/nuevo?error=' + encodeURIComponent('El correo y la contraseña del administrador son obligatorios.'))
+    return { error: 'El correo y la contraseña del administrador son obligatorios.' }
+  if (adminPassword.length < 6) return { error: 'La contraseña debe tener al menos 6 caracteres.' }
+
+  // Pre-chequeo: ¿ya existe un usuario con ese correo? (evita crear y revertir)
+  const { data: yaExiste } = await admin.from('user_profiles').select('id').eq('email', adminEmail).maybeSingle()
+  if (yaExiste) return { error: 'Ya existe un usuario con ese correo. Usa otro correo, o revisa si este operador ya fue creado.' }
 
   // Slug único
   let slug = slugify(name)
@@ -50,7 +71,7 @@ export async function createTenant(formData: FormData) {
     contact_phone: contactPhone, billing_day: billingDay, monthly_amount: monthlyAmount,
     limite_personas: limitePersonas,
   }).select('id').single()
-  if (tErr || !tenant) redirect('/super/nuevo?error=' + encodeURIComponent(tErr?.message ?? 'No se pudo crear el operador.'))
+  if (tErr || !tenant) return { error: 'No se pudo crear el operador. Inténtalo de nuevo.' }
 
   // 2) Crear su primer usuario administrador (tenant_id viaja en metadata para el trigger)
   const { data: created, error: uErr } = await admin.auth.admin.createUser({
@@ -58,9 +79,9 @@ export async function createTenant(formData: FormData) {
     user_metadata: { role: 'admin', full_name: adminName, tenant_id: tenant.id },
   })
   if (uErr || !created.user) {
-    // Rollback del tenant si el usuario falla
+    // Rollback del tenant si el usuario falla (no dejar operador huérfano)
     await admin.from('tenants').delete().eq('id', tenant.id)
-    redirect('/super/nuevo?error=' + encodeURIComponent(uErr?.message ?? 'No se pudo crear el administrador.'))
+    return { error: traducirErrorAuth(uErr?.message ?? '') }
   }
 
   await admin.from('user_profiles').upsert({
