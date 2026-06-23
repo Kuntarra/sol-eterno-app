@@ -1,6 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { MODULO_RUTA, type ModuloKey } from '@/lib/modulos'
 import { Building2, Briefcase, Users, User, CalendarDays, Zap, Clock, LogIn, LogOut } from 'lucide-react'
+
+// Los sub-usuarios (rol modulo) no tienen dashboard: entran directo a su módulo.
+async function redirigirSubusuario() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  const { data: prof } = await supabase.from('user_profiles').select('role').eq('id', user.id).maybeSingle()
+  if (prof?.role !== 'modulo') return
+  const { data: ums } = await supabase.from('user_modulos').select('modulo').eq('user_id', user.id).is('proyecto_id', null)
+  const primer = (ums ?? []).map((u) => u.modulo).find((m): m is ModuloKey => m in MODULO_RUTA)
+  redirect(primer ? MODULO_RUTA[primer] : '/admin/conectados')
+}
 
 function relativeTime(iso: string | null) {
   if (!iso) return ''
@@ -15,6 +29,7 @@ function relativeTime(iso: string | null) {
 }
 
 export default async function AdminDashboard() {
+  await redirigirSubusuario()
   const supabase = await createClient()
 
   const now             = new Date()

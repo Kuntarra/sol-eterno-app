@@ -13,3 +13,13 @@ export type ModuloKey = (typeof MODULOS)[number]['k']
 
 // Solo las claves, para validaciones y recorridos.
 export const MODULO_KEYS: ModuloKey[] = MODULOS.map((m) => m.k)
+
+// Ruta de la pantalla principal de cada módulo (para enrutar sub-usuarios).
+export const MODULO_RUTA: Record<ModuloKey, string> = {
+  personal: '/admin/personal',
+  transporte: '/admin/transporte',
+  hotel: '/admin/estadias',
+  alimentacion: '/admin/alimentacion',
+  colaciones: '/admin/colaciones',
+  lavanderia: '/admin/lavanderia',
+}
