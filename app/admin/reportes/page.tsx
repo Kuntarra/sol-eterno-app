@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
+import Link from 'next/link'
 import { ROOM_TYPE_LABELS } from "@/lib/types"
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getMyTenantId } from '@/lib/tenant'
+import { getMyTenantId, modulosActivosTenant } from '@/lib/tenant'
 import { PrintButton } from './_components/print-button'
 import { ReportFilters } from './_components/report-filters'
-import { Bed, Moon, Users, CalendarDays, FileSpreadsheet } from 'lucide-react'
+import { Bed, Moon, Users, CalendarDays, FileSpreadsheet, Bus, BedDouble, UtensilsCrossed, Package, Shirt } from 'lucide-react'
 import { formatDateShort as fmt } from '@/lib/format'
 
 const MONTHS = [
@@ -66,6 +67,17 @@ export default async function ReportesPage({
 
   const admin = createAdminClient()
   const tenantId = await getMyTenantId()
+
+  // ── Multi-módulo: conteos del período por cada módulo activo ──
+  const modulosActivos = await modulosActivosTenant()
+  const hotelActivo = modulosActivos.includes('hotel')
+  const periodoInicioISO = periodoInicio.toISOString()
+  const [trasCount, alimCount, colaCount, lavaCount] = await Promise.all([
+    admin.from('traslados').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('fecha', desdeStr).lte('fecha', hastaStr),
+    admin.from('plan_alimentacion').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('fecha', desdeStr).lte('fecha', hastaStr),
+    admin.from('colaciones').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('fecha', desdeStr).lte('fecha', hastaStr),
+    admin.from('lavanderia_bolsas').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('created_at', periodoInicioISO).lte('created_at', hasta),
+  ])
 
   // Traemos estadías que solapan desde el período anterior (para comparar)
   const desde = prevInicio.toISOString()
@@ -208,6 +220,15 @@ export default async function ReportesPage({
   const circ = 2 * Math.PI * 52
   const dash = (ocupacionPct / 100) * circ
 
+  // ── Tarjetas de resumen por módulo activo (solo las que correspondan) ──
+  type ModuloResumen = { label: string; icon: ReactNode; value: number; unit: string; href: string }
+  const moduloResumen: ModuloResumen[] = []
+  if (hotelActivo) moduloResumen.push({ label: 'Alojamiento', icon: <BedDouble {...RPT_ICON} />, value: stays.length, unit: 'estadías', href: '/admin/estadias' })
+  if (modulosActivos.includes('transporte'))   moduloResumen.push({ label: 'Transporte',   icon: <Bus {...RPT_ICON} />,             value: trasCount.count ?? 0, unit: 'traslados',  href: '/admin/transporte' })
+  if (modulosActivos.includes('alimentacion')) moduloResumen.push({ label: 'Alimentación', icon: <UtensilsCrossed {...RPT_ICON} />,  value: alimCount.count ?? 0, unit: 'planes',     href: '/admin/alimentacion' })
+  if (modulosActivos.includes('colaciones'))   moduloResumen.push({ label: 'Colaciones',   icon: <Package {...RPT_ICON} />,         value: colaCount.count ?? 0, unit: 'colaciones', href: '/admin/colaciones' })
+  if (modulosActivos.includes('lavanderia'))   moduloResumen.push({ label: 'Lavandería',   icon: <Shirt {...RPT_ICON} />,           value: lavaCount.count ?? 0, unit: 'bolsas',     href: '/admin/lavanderia' })
+
   return (
     <div className="min-h-screen bg-[var(--gray-100)]">
 
@@ -251,6 +272,35 @@ export default async function ReportesPage({
       </div>
 
       <div id="reporte-contenido" className="max-w-7xl mx-auto px-8 py-8 space-y-7">
+
+        {/* ── Resumen por módulo (multi-módulo) ── */}
+        {moduloResumen.length > 0 && (
+          <div>
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--navy)] mb-4">
+              <span className="w-1 h-4 rounded-full bg-[var(--amber)]" />Resumen por módulo
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {moduloResumen.map((m) => (
+                <Link key={m.label} href={m.href}
+                  className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200 block">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--navy-5)] text-[var(--navy)] flex items-center justify-center mb-3">{m.icon}</div>
+                  <p className="font-display text-[1.8rem] font-semibold leading-none text-[var(--navy)] data-number">{m.value.toLocaleString('es-CL')}</p>
+                  <p className="text-sm font-semibold text-[var(--navy)] mt-2">{m.label}</p>
+                  <p className="text-xs text-[var(--gray-500)]">{m.unit} en el período</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!hotelActivo && (
+          <p className="text-sm text-[var(--gray-500)] bg-white rounded-2xl border border-[var(--gray-200)] px-6 py-4">
+            El detalle de ocupación corresponde al módulo Alojamiento (no activo en esta empresa). Arriba ves el resumen de los módulos contratados.
+          </p>
+        )}
+
+        {/* ── Detalle de Alojamiento (solo si el módulo está activo) ── */}
+        {hotelActivo && (<>
 
         {/* ── Héroe unificado: ocupación + KPIs operativos ── */}
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
@@ -446,6 +496,8 @@ export default async function ReportesPage({
             </div>
           )}
         </div>
+
+        </>)}
 
         <p className="text-center text-xs text-[var(--gray-400)] pb-4">
           Sol Eterno · Generado el {new Date().toLocaleDateString('es-CL', { day:'2-digit', month:'long', year:'numeric' })}
