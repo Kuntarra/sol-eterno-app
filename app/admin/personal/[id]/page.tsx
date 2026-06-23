@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { crearAccesoPersona, guardarPermisos } from '@/app/actions/acceso'
+import { setPersonaActiva } from '@/app/actions/personal'
 import { SubmitButton } from '@/app/_components/submit-button'
-import { ArrowLeft, IdCard, Phone, Globe, Cake, ShieldAlert, FolderKanban, Lock, KeyRound, Save, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, IdCard, Phone, Globe, Cake, ShieldAlert, FolderKanban, Lock, KeyRound, Save, CheckCircle2, Power } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
@@ -21,6 +22,13 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
     .eq('id', id)
     .maybeSingle()
   if (!persona) notFound()
+
+  // ¿El que mira es administración? (solo ella cambia el estado de la persona)
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: prof } = user
+    ? await supabase.from('user_profiles').select('role, is_super_admin').eq('id', user.id).maybeSingle()
+    : { data: null }
+  const esAdmin = prof?.role === 'admin' || !!prof?.is_super_admin
 
   const [{ data: dir }, { data: dotaciones }, { data: login }, { data: eventos }] = await Promise.all([
     supabase.from('persona_directorio').select('activa, oficios(nombre)').eq('persona_id', id).maybeSingle(),
@@ -52,6 +60,7 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
   }
   const crearAcceso = crearAccesoPersona.bind(null, id)
   const guardarPerms = guardarPermisos.bind(null, id)
+  const toggleActiva = setPersonaActiva.bind(null, id, !(dir?.activa ?? true))
 
   const nombre = `${persona.nombres} ${persona.apellido_paterno}${persona.apellido_materno ? ' ' + persona.apellido_materno : ''}`
   const doc = persona.tipo_documento === 'rut' ? formatRut(persona.numero_documento) : persona.numero_documento
@@ -98,6 +107,30 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
           ))}
         </div>
       </div>
+
+      {/* Estado en el directorio (solo administración) */}
+      {esAdmin && (
+        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-[var(--navy)]">Estado en el directorio</h2>
+              <span className={`badge ${dir?.activa ? 'badge-green' : 'badge-gray'}`}>{dir?.activa ? 'Activa' : 'Inactiva'}</span>
+              {success === 'estado' && <span className="text-xs text-green-600 inline-flex items-center gap-1"><CheckCircle2 size={13} strokeWidth={2} /> Estado actualizado</span>}
+            </div>
+            <p className="text-xs text-[var(--gray-600)] mt-1">
+              {dir?.activa
+                ? 'Activa — continúa en la rotación de turnos.'
+                : 'Inactiva — sigue en la base de datos, pero fuera de la rotación de turnos.'}
+            </p>
+          </div>
+          <form action={toggleActiva}>
+            <SubmitButton pendingText="Guardando…"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${dir?.activa ? 'bg-white border border-[var(--gray-200)] text-[var(--gray-700)] hover:bg-[var(--gray-100)]' : 'bg-[var(--navy)] text-white hover:bg-[var(--navy-dark)]'}`}>
+              <Power size={15} strokeWidth={2.25} /> {dir?.activa ? 'Marcar inactiva' : 'Reactivar'}
+            </SubmitButton>
+          </form>
+        </div>
+      )}
 
       {/* Bitácora viva: timeline de eventos en terreno */}
       <BitacoraTimeline eventos={eventosVivos} />

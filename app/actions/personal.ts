@@ -4,9 +4,30 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { cleanRut, isValidRut } from '@/lib/rut'
-import { getCupoPersonas } from '@/lib/tenant'
+import { getCupoPersonas, getMyTenantId } from '@/lib/tenant'
 
 const NUEVO = '/admin/personal/nuevo'
+
+// Activa/desactiva una persona en el directorio. Solo la ADMINISTRACIÓN
+// (admin de la empresa o super admin) puede cambiarlo. Inactivo = sigue en la
+// base pero ya no continúa la rotación de turnos.
+export async function setPersonaActiva(personaId: string, activa: boolean) {
+  const supabase = await createClient()
+  const back = `/admin/personal/${personaId}`
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: prof } = await supabase.from('user_profiles').select('role, is_super_admin').eq('id', user.id).single()
+  if (prof?.role !== 'admin' && !prof?.is_super_admin) {
+    redirect(back + '?error=' + encodeURIComponent('Solo la administración puede cambiar el estado de una persona.'))
+  }
+  await supabase
+    .from('persona_directorio')
+    .update({ activa })
+    .eq('persona_id', personaId)
+    .eq('tenant_id', await getMyTenantId())
+  revalidatePath(back)
+  redirect(back + '?success=estado')
+}
 
 // Crea (o reutiliza) una persona global por documento y la agrega
 // al directorio de mi empresa, con su oficio.
