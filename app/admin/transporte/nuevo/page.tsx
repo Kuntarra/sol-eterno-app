@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createTraslado } from '@/app/actions/transporte'
+import { listProyectoOptions, listVehiculoOptions } from '@/lib/data/transporte'
+import { TIPO_VEHICULO_LABEL } from '@/lib/vehiculos'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -13,9 +15,9 @@ const LABEL = 'block text-sm font-medium text-[var(--gray-900)] mb-1.5'
 export default async function NuevoTrasladoPage({ searchParams }: Props) {
   const { error } = await searchParams
   const supabase = await createClient()
-  const [{ data: proyectos }, { data: vehiculos }] = await Promise.all([
-    supabase.from('proyectos').select('id, nombre').order('nombre'),
-    supabase.from('vehiculos').select('id, tipo, identificador').eq('activo', true).order('tipo'),
+  const [proyectos, vehiculos] = await Promise.all([
+    listProyectoOptions(supabase),
+    listVehiculoOptions(supabase),
   ])
 
   return (
@@ -57,7 +59,7 @@ export default async function NuevoTrasladoPage({ searchParams }: Props) {
             <label htmlFor="vehiculo_id" className={LABEL}>Vehículo</label>
             <select id="vehiculo_id" name="vehiculo_id" className={INPUT} defaultValue="">
               <option value="">—</option>
-              {(vehiculos ?? []).map((v) => <option key={v.id} value={v.id}>{v.tipo}{v.identificador ? ` · ${v.identificador}` : ''}</option>)}
+              {(vehiculos ?? []).map((v) => <option key={v.id} value={v.id}>{TIPO_VEHICULO_LABEL[v.tipo] ?? v.tipo}{v.identificador ? ` · ${v.identificador}` : ''}</option>)}
             </select>
           </div>
           <div>

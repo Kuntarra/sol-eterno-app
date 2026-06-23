@@ -3,27 +3,22 @@ import Link from 'next/link'
 import { Plus, Bus, Truck } from 'lucide-react'
 import { Pagination } from '@/app/_components/pagination'
 import { puedeGestionar } from '@/lib/rbac'
+import { PAGE_SIZE, parsePage, rangeFor, totalPages as totalPagesFor } from '@/lib/pagination'
+import { listTraslados } from '@/lib/data/transporte'
 
 const TIPO_LABEL: Record<string, string> = { movilizacion: 'Movilización', diario: 'Diario a faena' }
 const ESTADO_BADGE: Record<string, string> = {
   planificado: 'badge-gray', en_curso: 'badge-amber', completado: 'badge-green', cancelado: 'badge-gray',
 }
 
-const PAGE_SIZE = 50
-
 export default async function TransportePage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page } = await searchParams
-  const pageNum = Math.max(1, Number(page) || 1)
-  const from = (pageNum - 1) * PAGE_SIZE
+  const pageNum = parsePage(page)
+  const { from } = rangeFor(pageNum)
   const supabase = await createClient()
-  const { data: traslados, count } = await supabase
-    .from('traslados')
-    .select('*, proyectos(nombre), vehiculos(tipo, identificador), traslado_pasajeros(id)', { count: 'exact' })
-    .order('fecha', { ascending: false })
-    .range(from, from + PAGE_SIZE - 1)
+  const { rows: traslados, total } = await listTraslados(supabase, from, PAGE_SIZE)
 
-  const total = count ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const totalPages = totalPagesFor(total)
   const puedeEscribir = await puedeGestionar('transporte')
 
   return (
@@ -47,7 +42,7 @@ export default async function TransportePage({ searchParams }: { searchParams: P
       </div>
 
       <div className="px-8 pb-8">
-        {!traslados?.length ? (
+        {!traslados.length ? (
           <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
             <div className="w-16 h-16 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Truck size={28} strokeWidth={1.5} stroke="var(--gray-600)" />

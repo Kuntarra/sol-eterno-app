@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { addPasajero, marcarPasajero, updateTrasladoEstado } from '@/app/actions/transporte'
+import { getTraslado, listDotacionesCandidatas, listPasajeros } from '@/lib/data/transporte'
 import { puedeGestionar } from '@/lib/rbac'
 import { ArrowLeft, Plus, Check, MapPin, X } from 'lucide-react'
 import Link from 'next/link'
@@ -23,27 +24,13 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
   const { error } = await searchParams
   const supabase = await createClient()
 
-  const { data: t } = await supabase
-    .from('traslados')
-    .select('*, proyectos(nombre), vehiculos(tipo, identificador, capacidad)')
-    .eq('id', id)
-    .maybeSingle()
+  const t = await getTraslado(supabase, id)
   if (!t) notFound()
 
   // Dotaciones candidatas (del proyecto si lo hay) + pasajeros actuales
-  const dotQuery = supabase
-    .from('dotaciones')
-    .select('id, personas(nombres, apellido_paterno)')
-    .order('created_at', { ascending: false })
-  if (t.proyecto_id) dotQuery.eq('proyecto_id', t.proyecto_id)
-
-  const [{ data: dotaciones }, { data: pasajeros }] = await Promise.all([
-    dotQuery,
-    supabase
-      .from('traslado_pasajeros')
-      .select('id, estado, lugar_bajada, personas(nombres, apellido_paterno)')
-      .eq('traslado_id', id)
-      .order('created_at'),
+  const [dotaciones, pasajeros] = await Promise.all([
+    listDotacionesCandidatas(supabase, t.proyecto_id),
+    listPasajeros(supabase, id),
   ])
 
   const addPax = addPasajero.bind(null, id)
