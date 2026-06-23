@@ -100,3 +100,17 @@ export function insertPasajero(supabase: ServerClient, values: PasajeroInput) {
 export function updatePasajeroEstado(supabase: ServerClient, pasajeroId: string, patch: Record<string, unknown>) {
   return supabase.from('traslado_pasajeros').update(patch as never).eq('id', pasajeroId)
 }
+
+// ── Tramos (legs) de una movilización ─────────────────────────────────────────
+type TramoInput = { orden: number; modo: string; origen: string | null; destino: string | null; fecha: string | null; hora: string | null; notas: string | null }
+export function insertTramos(supabase: ServerClient, trasladoId: string, tramos: TramoInput[]) {
+  return supabase.from('traslado_tramos').insert(tramos.map((t) => ({ ...t, traslado_id: trasladoId })))
+}
+export async function listTramos(supabase: ServerClient, trasladoId: string) {
+  const { data } = await supabase
+    .from('traslado_tramos')
+    .select('id, orden, modo, origen, destino, fecha, hora, notas')
+    .eq('traslado_id', trasladoId)
+    .order('orden')
+  return data ?? []
+}

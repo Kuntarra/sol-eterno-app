@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { addPasajero, marcarPasajero, updateTrasladoEstado } from '@/app/actions/transporte'
-import { getTraslado, listDotacionesCandidatas, listPasajeros } from '@/lib/data/transporte'
+import { getTraslado, listDotacionesCandidatas, listPasajeros, listTramos } from '@/lib/data/transporte'
 import { puedeGestionar } from '@/lib/rbac'
-import { ArrowLeft, Plus, Check, MapPin, X } from 'lucide-react'
+import { ArrowLeft, Plus, Check, MapPin, X, Plane, Bus, Car, Footprints, MoreHorizontal } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -27,11 +27,17 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
   const t = await getTraslado(supabase, id)
   if (!t) notFound()
 
-  // Dotaciones candidatas (del proyecto si lo hay) + pasajeros actuales
-  const [dotaciones, pasajeros] = await Promise.all([
+  // Dotaciones candidatas (del proyecto si lo hay) + pasajeros + tramos
+  const [dotaciones, pasajeros, tramos] = await Promise.all([
     listDotacionesCandidatas(supabase, t.proyecto_id),
     listPasajeros(supabase, id),
+    listTramos(supabase, id),
   ])
+
+  const MODO_META: Record<string, { label: string; Icon: typeof Plane }> = {
+    vuelo: { label: 'Vuelo', Icon: Plane }, bus: { label: 'Bus', Icon: Bus },
+    auto: { label: 'Auto', Icon: Car }, caminata: { label: 'A pie', Icon: Footprints }, otro: { label: 'Otro', Icon: MoreHorizontal },
+  }
 
   const addPax = addPasajero.bind(null, id)
   const setEstado = updateTrasladoEstado.bind(null, id)
@@ -66,6 +72,37 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
       </div>
 
       {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
+
+      {/* Tramos del viaje (movilización multimodal) */}
+      {tramos.length > 0 && (
+        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-5 mb-6">
+          <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Tramos del viaje</h2>
+          <ol className="relative">
+            {tramos.map((tr, i) => {
+              const meta = MODO_META[tr.modo] ?? MODO_META.otro
+              const { Icon } = meta
+              const last = i === tramos.length - 1
+              return (
+                <li key={tr.id} className="relative flex gap-4 pb-5 last:pb-0">
+                  {!last && <span className="absolute left-[19px] top-11 bottom-0 w-px bg-[var(--gray-200)]" aria-hidden />}
+                  <span className="relative z-10 w-10 h-10 rounded-xl bg-[var(--navy)]/5 text-[var(--navy)] ring-4 ring-white flex items-center justify-center shrink-0">
+                    <Icon size={17} strokeWidth={2} />
+                  </span>
+                  <div className="flex-1 min-w-0 pt-1">
+                    <p className="text-sm font-semibold text-[var(--navy)]">
+                      {meta.label}: {[tr.origen, tr.destino].filter(Boolean).join(' → ') || '—'}
+                    </p>
+                    <p className="text-xs text-[var(--gray-500)] mt-0.5 tabular-nums">
+                      {[tr.fecha, tr.hora ? (tr.hora as string).slice(0, 5) : null].filter(Boolean).join(' · ') || 'Sin fecha'}
+                      {tr.notas ? ` · ${tr.notas}` : ''}
+                    </p>
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+      )}
 
       {/* Agregar pasajero */}
       {puedeEscribir && (

@@ -47,6 +47,49 @@ export async function createTraslado(formData: FormData) {
   redirect(`/admin/transporte/${traslado.id}`)
 }
 
+// Movilización multimodal: un traslado tipo 'movilizacion' + sus tramos (legs).
+type TramoForm = { modo?: string; origen?: string; destino?: string; fecha?: string; hora?: string; notas?: string }
+export async function createMovilizacion(formData: FormData) {
+  if (!(await puedeGestionar('transporte'))) redirect(SIN_PERMISO)
+  const back = '/admin/transporte/movilizacion'
+  const supabase = await createClient()
+
+  let tramos: TramoForm[] = []
+  try { tramos = JSON.parse((formData.get('tramos') as string) || '[]') } catch { tramos = [] }
+  tramos = tramos.filter((t) => t && (t.origen || t.destino))
+  if (!tramos.length) fail(back, 'Agrega al menos un tramo con origen y destino.')
+
+  const first = tramos[0]
+  const last = tramos[tramos.length - 1]
+
+  const { data: traslado, error } = await data.insertTraslado(supabase, {
+    proyecto_id:      (formData.get('proyecto_id') as string) || null,
+    vehiculo_id:      (formData.get('vehiculo_id') as string) || null,
+    tipo:             'movilizacion',
+    sentido:          (formData.get('sentido') as string) || 'ida',
+    fecha:            first.fecha || null,
+    hora:             first.hora || null,
+    origen:           first.origen || null,
+    destino:          last.destino || null,
+    conductor_nombre: (formData.get('conductor_nombre') as string) || null,
+  })
+  if (error) fail(back, error.message)
+
+  const { error: e2 } = await data.insertTramos(supabase, traslado.id, tramos.map((t, i) => ({
+    orden: i + 1,
+    modo: t.modo || 'bus',
+    origen: t.origen || null,
+    destino: t.destino || null,
+    fecha: t.fecha || null,
+    hora: t.hora || null,
+    notas: t.notas || null,
+  })))
+  if (e2) fail(back, e2.message)
+
+  revalidatePath('/admin/transporte')
+  redirect(`/admin/transporte/${traslado.id}`)
+}
+
 export async function updateTrasladoEstado(id: string, formData: FormData) {
   const supabase = await createClient()
   await data.updateTrasladoEstado(supabase, id, formData.get('estado') as string)

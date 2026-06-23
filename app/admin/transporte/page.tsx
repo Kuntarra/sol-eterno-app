@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, Bus, Truck } from 'lucide-react'
+import { Plus, Bus, Truck, Route } from 'lucide-react'
 import { Pagination } from '@/app/_components/pagination'
 import { puedeGestionar } from '@/lib/rbac'
 import { PAGE_SIZE, parsePage, rangeFor, totalPages as totalPagesFor } from '@/lib/pagination'
@@ -34,8 +34,11 @@ export default async function TransportePage({ searchParams }: { searchParams: P
             <Link href="/admin/transporte/flota" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
               <Bus size={16} strokeWidth={2.25} /> Flota
             </Link>
-            <Link href="/admin/transporte/nuevo" className="btn-primary">
-              <Plus size={16} strokeWidth={2.25} /> Nuevo traslado
+            <Link href="/admin/transporte/nuevo" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+              <Plus size={16} strokeWidth={2.25} /> Traslado simple
+            </Link>
+            <Link href="/admin/transporte/movilizacion" className="btn-primary">
+              <Route size={16} strokeWidth={2.25} /> Nueva movilización
             </Link>
           </div>
         )}

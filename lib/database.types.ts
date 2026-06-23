@@ -1537,6 +1537,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string | null
           currency: string
+          es_demo: boolean
           id: string
           limite_personas: number
           logo_url: string | null
@@ -1560,6 +1561,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string | null
           currency?: string
+          es_demo?: boolean
           id?: string
           limite_personas?: number
           logo_url?: string | null
@@ -1583,6 +1585,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string | null
           currency?: string
+          es_demo?: boolean
           id?: string
           limite_personas?: number
           logo_url?: string | null
@@ -1661,6 +1664,63 @@ export type Database = {
           },
           {
             foreignKeyName: "traslado_pasajeros_traslado_id_fkey"
+            columns: ["traslado_id"]
+            isOneToOne: false
+            referencedRelation: "traslados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      traslado_tramos: {
+        Row: {
+          created_at: string
+          destino: string | null
+          fecha: string | null
+          hora: string | null
+          id: string
+          modo: string
+          notas: string | null
+          orden: number
+          origen: string | null
+          tenant_id: string
+          traslado_id: string
+        }
+        Insert: {
+          created_at?: string
+          destino?: string | null
+          fecha?: string | null
+          hora?: string | null
+          id?: string
+          modo?: string
+          notas?: string | null
+          orden?: number
+          origen?: string | null
+          tenant_id?: string
+          traslado_id: string
+        }
+        Update: {
+          created_at?: string
+          destino?: string | null
+          fecha?: string | null
+          hora?: string | null
+          id?: string
+          modo?: string
+          notas?: string | null
+          orden?: number
+          origen?: string | null
+          tenant_id?: string
+          traslado_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traslado_tramos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traslado_tramos_traslado_id_fkey"
             columns: ["traslado_id"]
             isOneToOne: false
             referencedRelation: "traslados"
