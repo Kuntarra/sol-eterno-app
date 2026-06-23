@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyTenantId } from '@/lib/tenant'
 import { RoleSwitcher } from '@/app/admin/_components/role-switcher'
+import { DEMO_USERS, DEMO_TENANTS } from '@/lib/demo'
+
+const DEMO_TENANT_IDS: string[] = [DEMO_TENANTS.proyecto, DEMO_TENANTS.proveedor]
 
 export async function AdminOverlay() {
   const supabase = await createClient()
@@ -10,22 +13,48 @@ export async function AdminOverlay() {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('role')
+    .select('role, is_super_admin, tenant_id')
     .eq('id', user.id)
     .single()
+  if (!profile) return null
 
-  if (profile?.role !== 'admin') return null
+  const enDemo = profile.tenant_id != null && DEMO_TENANT_IDS.includes(profile.tenant_id)
+  const esAdmin = profile.role === 'admin'
+
+  // El conmutador se muestra al super admin, a un admin (para impersonar
+  // recepción/cliente) o a quien esté DENTRO del modo demo (para salir/saltar).
+  if (!esAdmin && !profile.is_super_admin && !enDemo) return null
 
   const admin = createAdminClient()
-  const tenantId = await getMyTenantId()
-  const { data: users } = await admin
-    .from('user_profiles')
-    .select('id, full_name, role, email')
-    .eq('tenant_id', tenantId)
-    .neq('id', user.id)
-    .in('role', ['receptionist', 'client'])
-    .order('role')
-    .order('full_name')
 
-  return <RoleSwitcher users={users ?? []} />
+  // Modalidades demo: une la matriz estática con los IDs reales (por email).
+  let demoModalities: { id: string; label: string; group: string }[] = []
+  if (profile.is_super_admin || enDemo) {
+    const { data: rows } = await admin
+      .from('user_profiles')
+      .select('id, email')
+      .in('tenant_id', DEMO_TENANT_IDS)
+    const byEmail = new Map((rows ?? []).map((r) => [r.email, r.id]))
+    demoModalities = DEMO_USERS.flatMap((u) => {
+      const id = byEmail.get(u.email)
+      return id ? [{ id, label: u.label, group: u.group as string }] : []
+    })
+  }
+
+  // Usuarios legado (recepción/cliente) para la impersonación clásica.
+  let users: { id: string; full_name: string | null; role: string; email: string | null }[] = []
+  if (esAdmin && !enDemo) {
+    const tenantId = await getMyTenantId()
+    const { data } = await admin
+      .from('user_profiles')
+      .select('id, full_name, role, email')
+      .eq('tenant_id', tenantId)
+      .neq('id', user.id)
+      .in('role', ['receptionist', 'client'])
+      .order('role')
+      .order('full_name')
+    users = data ?? []
+  }
+
+  return <RoleSwitcher users={users} demoModalities={demoModalities} enDemo={enDemo} />
 }
