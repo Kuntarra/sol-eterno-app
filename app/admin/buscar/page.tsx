@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { getMyTenantId } from '@/lib/tenant'
+import { createClient } from '@/lib/supabase/server'
 import { Users, Building2, Briefcase, ArrowRight, Search } from 'lucide-react'
 
 export const metadata = { title: 'Buscar · Sol Eterno' }
@@ -17,23 +16,20 @@ export default async function BuscarPage({
   let companies: any[] = []
 
   if (q) {
-    const admin = createAdminClient()
-    const tenantId = await getMyTenantId()
+    // RLS aísla por empresa automáticamente (sin llave maestra ni filtro manual).
+    const supabase = await createClient()
     const like = `%${q}%`
     const [g, p, c] = await Promise.all([
-      admin.from('guests')
+      supabase.from('guests')
         .select('id, first_name, last_name_paterno, rut')
-        .eq('tenant_id', tenantId)
         .or(`first_name.ilike.${like},last_name_paterno.ilike.${like},rut.ilike.${like}`)
         .limit(12),
-      admin.from('properties')
+      supabase.from('properties')
         .select('id, name, cities(name)')
-        .eq('tenant_id', tenantId)
         .ilike('name', like)
         .limit(8),
-      admin.from('companies')
+      supabase.from('companies')
         .select('id, name')
-        .eq('tenant_id', tenantId)
         .ilike('name', like)
         .limit(8),
     ])
