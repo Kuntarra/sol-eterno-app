@@ -5,8 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyTenantId } from '@/lib/tenant'
-
-const MODULOS = ['personal', 'transporte', 'hotel', 'alimentacion', 'colaciones', 'lavanderia']
+import { MODULO_KEYS } from '@/lib/modulos'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -53,7 +52,7 @@ export async function guardarPermisos(personaId: string, formData: FormData) {
   if (!prof) redirect(back + '?error=' + encodeURIComponent('Primero crea el acceso de la persona.'))
   const userId = prof.id
 
-  for (const m of MODULOS) {
+  for (const m of MODULO_KEYS) {
     const on = formData.get(`mod_${m}`) === 'on'
     const nivel = (formData.get(`nivel_${m}`) as string) || 'visor'
     // Reemplaza la asignación de alcance general (proyecto nulo) de ese módulo

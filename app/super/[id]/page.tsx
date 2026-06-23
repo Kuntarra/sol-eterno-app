@@ -5,10 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { updateTenant, toggleTenantActive, markTenantPaid, updateTenantModulos } from '@/app/actions/tenants'
 import { ArrowLeft, Building2, BedDouble, Users, CheckCircle2, Boxes } from 'lucide-react'
 
-const MODULOS_DEF = [
-  { k: 'personal', label: 'Personal' }, { k: 'transporte', label: 'Transporte' }, { k: 'hotel', label: 'Hotel' },
-  { k: 'alimentacion', label: 'Alimentación' }, { k: 'colaciones', label: 'Colaciones' }, { k: 'lavanderia', label: 'Lavandería' },
-]
+import { MODULOS as MODULOS_DEF } from '@/lib/modulos'
 
 const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
 const LABEL = 'block text-xs font-semibold text-[var(--gray-600)] mb-1.5'

@@ -5,13 +5,9 @@ import { ArrowLeft, IdCard, Phone, Globe, Cake, ShieldAlert, FolderKanban, Lock,
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
+import { MODULOS } from '@/lib/modulos'
 
 interface Props { params: Promise<{ id: string }>; searchParams: Promise<{ success?: string; error?: string }> }
-
-const MODULOS = [
-  { k: 'personal', label: 'Personal' }, { k: 'transporte', label: 'Transporte' }, { k: 'hotel', label: 'Hotel' },
-  { k: 'alimentacion', label: 'Alimentación' }, { k: 'colaciones', label: 'Colaciones' }, { k: 'lavanderia', label: 'Lavandería' },
-]
 
 export default async function FichaPersonaPage({ params, searchParams }: Props) {
   const { id } = await params

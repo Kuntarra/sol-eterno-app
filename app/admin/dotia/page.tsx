@@ -1,8 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, Plane } from 'lucide-react'
+import type { Database } from '@/lib/database.types'
 
-async function count(table: string) {
+type Tabla = keyof Database['public']['Tables']
+
+async function count(table: Tabla) {
   const supabase = await createClient()
   const { count } = await supabase.from(table).select('*', { count: 'exact', head: true })
   return count ?? 0

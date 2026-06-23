@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft } from "lucide-react"
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { City, Room, Property, PROPERTY_TYPE_LABELS, PROPERTY_TYPE_COLORS, ROOM_TYPE_LABELS } from '@/lib/types'
+import { City, Room, Property, PropertyType, PROPERTY_TYPE_LABELS, PROPERTY_TYPE_COLORS, ROOM_TYPE_LABELS } from '@/lib/types'
 import { PropertyIcon } from '@/app/admin/_components/property-icon'
 import { PropertyForm } from '../_components/property-form'
 import { updateProperty, togglePropertyActive } from '@/app/actions/properties'
@@ -47,7 +47,7 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
           <Link href="/admin/propiedades" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
             <ArrowLeft size={18} strokeWidth={2} />
           </Link>
-          <PropertyIcon type={property.type} size="sm" />
+          <PropertyIcon type={property.type as PropertyType} size="sm" />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{property.name}</h1>

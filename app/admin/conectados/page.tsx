@@ -28,6 +28,7 @@ export default async function ConectadosPage() {
 
   const dotsPorProyecto = new Map<string, NonNullable<typeof dotaciones>>()
   for (const d of dotaciones ?? []) {
+    if (!d.proyecto_id) continue
     const arr = dotsPorProyecto.get(d.proyecto_id) ?? []
     arr.push(d)
     dotsPorProyecto.set(d.proyecto_id, arr)

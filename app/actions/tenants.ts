@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireSuperAdmin } from '@/lib/super'
+import { MODULO_KEYS } from '@/lib/modulos'
 
 function slugify(s: string) {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -69,7 +70,7 @@ export async function createTenant(formData: FormData) {
   // Por defecto la empresa nace con todos los módulos activos; el super-admin
   // los ajusta luego (y elige tipo proveedor) en la ficha de la empresa.
   await admin.from('tenant_modulos').insert(
-    MODULOS.map((m) => ({ tenant_id: tenant.id, modulo: m, activo: true })),
+    MODULO_KEYS.map((m) => ({ tenant_id: tenant.id, modulo: m, activo: true })),
   )
 
   revalidatePath('/super')
@@ -109,8 +110,6 @@ export async function toggleTenantActive(id: string, active: boolean) {
   revalidatePath(`/super/${id}`)
 }
 
-const MODULOS = ['personal', 'transporte', 'hotel', 'alimentacion', 'colaciones', 'lavanderia']
-
 // Guarda el TIPO de empresa (empresa_proyecto | proveedor) y los MÓDULOS
 // contratados. Define qué ve el admin de esa empresa (y sus sub-usuarios).
 export async function updateTenantModulos(id: string, formData: FormData) {
@@ -124,7 +123,7 @@ export async function updateTenantModulos(id: string, formData: FormData) {
 
   // Upsert por módulo: marcado = activo, desmarcado = inactivo (no se borra,
   // así conserva historial/configuración del módulo si vuelve a activarse).
-  const rows = MODULOS.map((m) => ({
+  const rows = MODULO_KEYS.map((m) => ({
     tenant_id: id,
     modulo: m,
     activo: formData.get(`mod_${m}`) === 'on',

@@ -53,11 +53,11 @@ export async function createPersona(formData: FormData) {
     p_numero_documento: numero,
     p_nombres: nombres,
     p_apellido_paterno: apPat,
-    p_apellido_materno: apMat,
-    p_telefono: telefono,
+    p_apellido_materno: apMat ?? undefined,
+    p_telefono: telefono ?? undefined,
     p_pais_documento: tipo === 'rut' ? 'CL' : ((formData.get('pais_documento') as string) || 'CL'),
-    p_fecha_nacimiento: fechaNacimiento,
-    p_nacionalidad: nacionalidad,
+    p_fecha_nacimiento: fechaNacimiento ?? undefined,
+    p_nacionalidad: nacionalidad ?? undefined,
   })
   if (pErr) redirect(NUEVO + '?error=' + encodeURIComponent(pErr.message))
 
@@ -145,10 +145,10 @@ export async function importPersonas(formData: FormData) {
       p_numero_documento: numero,
       p_nombres: nombres,
       p_apellido_paterno: apPat,
-      p_apellido_materno: apMat,
-      p_telefono: tel,
+      p_apellido_materno: apMat ?? undefined,
+      p_telefono: tel ?? undefined,
       p_pais_documento: 'CL',
-      p_nacionalidad: nacionalidad,
+      p_nacionalidad: nacionalidad ?? undefined,
     })
     if (pErr || !personaId) { errores++; continue }
 

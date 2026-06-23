@@ -1,15 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { assignModulo, removeModulo } from '@/app/actions/roles'
 import { ShieldCheck, X } from 'lucide-react'
+import { MODULOS } from '@/lib/modulos'
 
 interface Props { searchParams: Promise<{ error?: string; success?: string }> }
 
 const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 const LABEL = 'block text-xs font-medium text-[var(--gray-600)] mb-1'
-const MODULOS = ['personal', 'transporte', 'hotel', 'alimentacion', 'colaciones', 'lavanderia']
-const MOD_LABEL: Record<string, string> = {
-  personal: 'Personal', transporte: 'Transporte', hotel: 'Hotel', alimentacion: 'Alimentación', colaciones: 'Colaciones', lavanderia: 'Lavandería',
-}
+const MOD_LABEL: Record<string, string> = Object.fromEntries(MODULOS.map((m) => [m.k, m.label]))
 const NIVEL_LABEL: Record<string, string> = {
   admin_modulo: 'Supervisor de módulo', actuador: 'Revisor', visor: 'Visualizador',
 }
@@ -60,7 +58,7 @@ export default async function RolesPage({ searchParams }: Props) {
                 <div>
                   <label htmlFor="modulo" className={LABEL}>Módulo</label>
                   <select id="modulo" name="modulo" className={`${INPUT} w-full`} defaultValue="personal">
-                    {MODULOS.map((m) => <option key={m} value={m}>{MOD_LABEL[m]}</option>)}
+                    {MODULOS.map((m) => <option key={m.k} value={m.k}>{m.label}</option>)}
                   </select>
                 </div>
                 <div>

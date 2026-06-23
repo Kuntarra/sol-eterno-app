@@ -129,7 +129,9 @@ export async function updateStay(stayId: string, formData: FormData) {
   // Permitir borrar checked_out_at si se envió vacío explícitamente
   if (formData.get('clear_checkout') === '1') payload.checked_out_at = null
 
-  const { error } = await supabase.from('stays').update(payload).eq('id', stayId)
+  // payload es un objeto dinámico (solo campos enviados); el cast evita el
+  // chequeo de exceso de propiedades del tipo Update generado.
+  const { error } = await supabase.from('stays').update(payload as never).eq('id', stayId)
   if (error) redirect('/admin/estadias/' + stayId + '/editar?error=' + encodeURIComponent(error.message))
 
   revalidatePath('/admin/estadias')

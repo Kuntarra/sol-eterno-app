@@ -73,6 +73,6 @@ export async function marcarPasajero(trasladoId: string, pasajeroId: string, acc
   const patch: Record<string, unknown> = { estado: accion }
   if (accion === 'subio') patch.subio_at = new Date().toISOString()
   if (accion === 'dejado') patch.dejado_at = new Date().toISOString()
-  await supabase.from('traslado_pasajeros').update(patch).eq('id', pasajeroId)
+  await supabase.from('traslado_pasajeros').update(patch as never).eq('id', pasajeroId)
   revalidatePath(`/admin/transporte/${trasladoId}`)
 }
