@@ -34,17 +34,32 @@ export default async function PersonalPage({ searchParams }: Props) {
   const offset = (pageNum - 1) * PAGE_SIZE
 
   // Búsqueda + paginación EN LA BASE (escala a miles): función buscar_directorio.
-  const [{ data }, cupo] = await Promise.all([
+  // "En faena hoy" = la persona tiene una rotación cuyo período contiene hoy
+  // (situación Laboral); si está activa pero sin rotación vigente = Descanso.
+  const hoy = new Date().toISOString().slice(0, 10)
+  const [{ data }, cupo, { data: faena }] = await Promise.all([
     supabase.rpc('buscar_directorio', { p_q: term, p_limit: PAGE_SIZE, p_offset: offset }),
     getCupoPersonas(),
+    supabase.from('rotaciones').select('dotaciones!inner(persona_id)').lte('fecha_inicio', hoy).gte('fecha_fin_esperada', hoy),
   ])
   const rows = (data ?? []) as Row[]
   const total = rows[0]?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
+  const laboralSet = new Set(
+    ((faena ?? []) as unknown as { dotaciones: { persona_id: string } | null }[])
+      .map((x) => x.dotaciones?.persona_id)
+      .filter((id): id is string => !!id),
+  )
+  // Estado mostrado: Inactivo (fuera de rotación) · Laboral (en faena) · Descanso (días libres).
+  const estadoDe = (r: Row): 'inactivo' | 'laboral' | 'descanso' =>
+    !r.activa ? 'inactivo' : laboralSet.has(r.persona_id) ? 'laboral' : 'descanso'
+
   const docLabel = (r: Row) => (r.tipo_documento === 'rut' ? formatRut(r.numero_documento) : r.numero_documento)
   const pageHref = (p: number) => `/admin/personal?${new URLSearchParams({ ...(term ? { q: term } : {}), page: String(p) })}`
   const cupoPct = cupo.limite ? Math.min(100, Math.round((cupo.usadas / cupo.limite) * 100)) : 0
+  // Semáforo estándar: verde < 75%, ámbar 75–89%, rojo ≥ 90%.
+  const cupoColor = cupoPct >= 90 ? 'bg-red-500' : cupoPct >= 75 ? 'bg-[var(--amber)]' : 'bg-emerald-500'
   const puedeEscribir = await puedeGestionar('personal')
 
   return (
@@ -72,16 +87,33 @@ export default async function PersonalPage({ searchParams }: Props) {
       </div>
 
       <div className="px-8 pb-8">
-        {/* Cupo contratado */}
+        {/* Cupo contratado (según el plan) */}
         <div className="mb-6 bg-white rounded-xl border border-[var(--gray-200)] p-4 max-w-md">
           <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="font-semibold text-[var(--gray-600)]">Cupo de personas</span>
-            <span className="tabular-nums text-[var(--navy)] font-semibold">{cupo.usadas} / {cupo.limite}</span>
+            <span className="font-semibold text-[var(--gray-600)]">Cupo de personas (plan)</span>
+            <span className="tabular-nums text-[var(--navy)] font-semibold">{cupo.usadas} / {cupo.limite} · {cupoPct}%</span>
           </div>
-          <div className="h-2 rounded-full bg-[var(--gray-100)] overflow-hidden">
-            <div className={`h-full rounded-full ${cupoPct >= 100 ? 'bg-red-500' : cupoPct >= 85 ? 'bg-[var(--amber)]' : 'bg-emerald-500'}`} style={{ width: `${cupoPct}%` }} />
+          <div className="h-2.5 rounded-full bg-[var(--gray-100)] overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-300 ${cupoColor}`} style={{ width: `${cupoPct}%` }} />
           </div>
-          {cupo.disponibles <= 0 && <p className="text-[11px] text-red-600 mt-1.5">Cupo lleno. El administrador del sistema puede ampliarlo.</p>}
+          <div className="flex items-center justify-between mt-1.5">
+            <span className="text-[11px] text-[var(--gray-500)]">{cupo.usadas.toLocaleString('es-CL')} en uso · {cupo.disponibles.toLocaleString('es-CL')} disponibles</span>
+            {cupoPct >= 100
+              ? <span className="text-[11px] font-semibold text-red-600">Cupo lleno · pide ampliarlo</span>
+              : cupoPct >= 90
+              ? <span className="text-[11px] font-semibold text-red-600">Cerca del límite</span>
+              : cupoPct >= 75
+              ? <span className="text-[11px] font-semibold text-amber-700">Uso alto</span>
+              : null}
+          </div>
+        </div>
+
+        {/* Leyenda de estados */}
+        <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--gray-600)]">
+          <span className="font-semibold text-[var(--gray-500)] uppercase tracking-wide">Estados:</span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-sky-500" /> En faena <span className="text-[var(--gray-400)]">(en su turno)</span></span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> Descanso <span className="text-[var(--gray-400)]">(días libres)</span></span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[var(--gray-400)]" /> Inactivo <span className="text-[var(--gray-400)]">(fuera de rotación)</span></span>
         </div>
 
         {success && (
@@ -146,9 +178,12 @@ export default async function PersonalPage({ searchParams }: Props) {
                         <td className="px-5 py-3.5 text-[var(--gray-600)] tabular-nums">{docLabel(r)}</td>
                         <td className="px-5 py-3.5 text-[var(--gray-600)]">{r.oficio ?? '—'}</td>
                         <td className="px-5 py-3.5">
-                          <span className={`badge ${r.activa ? 'badge-green' : 'badge-gray'}`}>
-                            {r.activa ? 'Activa' : 'Inactiva'}
-                          </span>
+                          {(() => {
+                            const e = estadoDe(r)
+                            if (e === 'inactivo') return <span className="badge badge-gray">Inactivo</span>
+                            if (e === 'laboral')  return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-700"><span className="w-1.5 h-1.5 rounded-full bg-sky-500" /> En faena</span>
+                            return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Descanso</span>
+                          })()}
                         </td>
                       </tr>
                     )
