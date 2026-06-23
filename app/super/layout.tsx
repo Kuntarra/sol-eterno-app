@@ -16,12 +16,12 @@ export default async function SuperLayout({ children }: { children: React.ReactN
             </span>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--amber)]">Consola SaaS</p>
-              <h1 className="font-display text-lg font-semibold leading-tight">Panel de Operadores</h1>
+              <h1 className="font-display text-lg font-semibold leading-tight">Super Admin</h1>
             </div>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <Link href="/super" className="text-white/80 hover:text-white transition-colors">Operadores</Link>
-            <Link href="/super/edp" className="text-white/80 hover:text-white transition-colors">EDP / Cobros</Link>
+            <Link href="/super" className="text-white/80 hover:text-white transition-colors">Clientes</Link>
+            <Link href="/super/edp" className="text-white/80 hover:text-white transition-colors">Cobros</Link>
             <span className="text-white/60 hidden sm:inline">{fullName}</span>
             <Link href="/admin" className="inline-flex items-center gap-1.5 text-white/80 hover:text-white transition-colors">
               <ArrowLeft size={15} strokeWidth={2} />

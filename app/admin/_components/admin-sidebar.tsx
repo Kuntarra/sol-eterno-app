@@ -34,6 +34,8 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
     items: [
       { href: '/admin/transporte',  label: 'Transporte',   exact: false, icon: <TransporteIcon />,  modulo: 'transporte' },
       { href: '/admin/estadias',    label: 'Hotel',        exact: false, icon: <BuildIcon />,        modulo: 'hotel' },
+      { href: '/admin/propiedades', label: 'Propiedades',  exact: false, icon: <BuildIcon />,        modulo: 'hotel', adminOnly: true },
+      { href: '/admin/clientes',    label: 'Clientes',     exact: false, icon: <BriefIcon />,        modulo: 'hotel', adminOnly: true },
       { href: '/admin/alimentacion', label: 'Alimentación', exact: false, icon: <AlimentacionIcon />, modulo: 'alimentacion' },
       { href: '/admin/colaciones',  label: 'Colaciones',   exact: false, icon: <ColacionIcon />,     modulo: 'colaciones' },
       { href: '/admin/lavanderia',  label: 'Lavandería',   exact: false, icon: <LavanderiaIcon />,   modulo: 'lavanderia' },
@@ -42,8 +44,6 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
   {
     label: 'Configuración',
     items: [
-      { href: '/admin/propiedades',   label: 'Propiedades',   exact: false, icon: <BuildIcon />,     adminOnly: true },
-      { href: '/admin/clientes',      label: 'Clientes',      exact: false, icon: <BriefIcon />,     adminOnly: true },
       { href: '/admin/usuarios',      label: 'Usuarios',      exact: false, icon: <UserIcon />,      adminOnly: true },
       { href: '/admin/roles',         label: 'Roles',         exact: false, icon: <RolesIcon />,     adminOnly: true },
       { href: '/admin/notificaciones', label: 'Notificaciones', exact: false, icon: <BellSideIcon />, adminOnly: true },
@@ -64,6 +64,9 @@ function visibleGroups(role: string, allowedModulos: string[] | null, tenantTipo
       ...g,
       items: g.items.filter((it) => {
         if (it.proveedorOnly) return tenantTipo === 'proveedor'
+        // Ítem que pertenece a un módulo pero solo para el admin (ej. Propiedades
+        // = parte de Hotel): requiere ser admin Y tener el módulo activo.
+        if (it.adminOnly && it.modulo) return role === 'admin' && allowed.has(it.modulo)
         if (it.adminOnly) return role === 'admin'
         if (it.modulo) return allowed.has(it.modulo)
         return true

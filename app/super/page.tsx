@@ -45,15 +45,15 @@ export default async function SuperPage({
       {params.success && (
         <div className="mb-5 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-700 font-medium flex items-center gap-2">
           <CheckCircle2 size={15} strokeWidth={2.25} className="shrink-0" />
-          {params.success === 'creado' ? 'Operador creado correctamente.' : 'Cambios guardados.'}
+          {params.success === 'creado' ? 'Cliente creado correctamente.' : 'Cambios guardados.'}
         </div>
       )}
 
       {/* Encabezado + KPIs */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
         <div>
-          <h2 className="font-display text-[1.9rem] font-semibold text-[var(--navy)] tracking-tight leading-tight">Operadores</h2>
-          <p className="text-sm text-[var(--gray-600)] mt-1">{tenants.length} operador{tenants.length !== 1 ? 'es' : ''} · {activos} activo{activos !== 1 ? 's' : ''}</p>
+          <h2 className="font-display text-[1.9rem] font-semibold text-[var(--navy)] tracking-tight leading-tight">Clientes</h2>
+          <p className="text-sm text-[var(--gray-600)] mt-1">{tenants.length} cliente{tenants.length !== 1 ? 's' : ''} · {activos} activo{activos !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="bg-white rounded-xl border border-[var(--gray-200)] px-5 py-3 shadow-[var(--shadow-xs)]">
@@ -62,7 +62,7 @@ export default async function SuperPage({
           </div>
           <Link href="/super/nuevo" className="btn-primary shrink-0">
             <Plus size={16} strokeWidth={2.25} />
-            Nuevo operador
+            Nuevo cliente
           </Link>
         </div>
       </div>
@@ -70,9 +70,9 @@ export default async function SuperPage({
       {/* Tabla de operadores */}
       {!tenants.length ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
-          <p className="text-sm font-semibold text-[var(--navy)] mb-1">Aún no hay operadores</p>
+          <p className="text-sm font-semibold text-[var(--navy)] mb-1">Aún no hay clientes</p>
           <p className="text-xs text-[var(--gray-600)] mb-4">Crea el primero para empezar a gestionar.</p>
-          <Link href="/super/nuevo" className="text-sm text-[var(--navy)] font-semibold hover:underline">Crear operador →</Link>
+          <Link href="/super/nuevo" className="text-sm text-[var(--navy)] font-semibold hover:underline">Crear cliente →</Link>
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
