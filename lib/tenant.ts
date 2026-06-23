@@ -34,9 +34,12 @@ export async function getCupoPersonas(): Promise<{ usadas: number; limite: numbe
 // RLS deja a cada usuario leer los de su propia empresa.
 export async function modulosActivosTenant(): Promise<string[]> {
   const supabase = await createClient()
+  // Filtrar por MI empresa: el super admin ve (RLS) los módulos de todas las
+  // empresas, así que sin este filtro el menú mezclaría módulos de otros tenants.
   const { data } = await supabase
     .from('tenant_modulos')
     .select('modulo')
+    .eq('tenant_id', await getMyTenantId())
     .eq('activo', true)
   return (data ?? []).map((r) => r.modulo)
 }

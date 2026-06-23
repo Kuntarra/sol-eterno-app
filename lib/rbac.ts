@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getMyTenantId } from '@/lib/tenant'
 import { redirect } from 'next/navigation'
 
 export type NivelModulo = 'admin_modulo' | 'actuador' | 'visor' | null
@@ -28,9 +29,13 @@ export async function puedeAdministrar(modulo: string): Promise<boolean> {
 // Admin/super con el módulo comprado pasan (nivel_modulo = 'admin_modulo').
 export async function requireAccesoModulo(modulo: string): Promise<void> {
   const supabase = await createClient()
+  // Filtrar por MI empresa: un super admin ve los tenant_modulos de TODAS las
+  // empresas (RLS), así que sin este filtro maybeSingle() encontraría varias
+  // filas (Sol Eterno + demos), fallaría y rebotaría al dashboard.
   const { data: comprado } = await supabase
     .from('tenant_modulos')
     .select('id')
+    .eq('tenant_id', await getMyTenantId())
     .eq('modulo', modulo)
     .eq('activo', true)
     .maybeSingle()
