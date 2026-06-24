@@ -31,8 +31,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const tenantId = profile?.tenant_id
   const nowISO = new Date().toISOString()
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
 
-  const [tntRes, modulosArr, umsRes, overdueRes, checkinsRes] = await Promise.all([
+  const [tntRes, modulosArr, umsRes, overdueRes, checkinsRes, matchMineRes, matchProvRes] = await Promise.all([
     // Tipo de empresa: define si se ofrece la vista "Proyectos conectados".
     supabase.from('tenants').select('tipo').eq('id', tenantId).maybeSingle(),
     // Módulos comprados por la empresa (acota el menú).
@@ -52,6 +53,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .limit(6),
     // Notificaciones: check-ins de hoy.
     admin.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('checked_in_at', todayStart.toISOString()),
+    // Match — como MANDANTE: proveedores que se sumaron a mis proyectos (últimos 7 días).
+    admin.from('proyecto_proveedores')
+      .select('proveedor_nombre, estado, created_at, proyecto_id, proyectos(nombre)')
+      .eq('tenant_id', tenantId).gte('created_at', sevenDaysAgo)
+      .order('created_at', { ascending: false }).limit(6),
+    // Match — como PROVEEDOR: proyectos a los que me conectaron (últimos 7 días).
+    admin.from('proyecto_proveedores')
+      .select('estado, created_at, proyecto_id, proyectos(nombre)')
+      .eq('tenant_proveedor_id', tenantId).gte('created_at', sevenDaysAgo)
+      .order('created_at', { ascending: false }).limit(6),
   ])
 
   const tenantTipo = tntRes.data?.tipo ?? 'empresa_proyecto'
@@ -86,6 +97,26 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       title: `Estadía vencida · ${`${g?.first_name ?? ''} ${g?.last_name_paterno ?? ''}`.trim() || '—'}`,
       detail: `Hab. ${r?.number ?? '—'}${r?.properties?.name ? ` · ${r.properties.name}` : ''} · checkout est. ${fmtD(s.estimated_checkout)}`,
       href: '/admin/estadias?filter=activas',
+    })
+  }
+  // Match: avisos a ambas partes (últimos 7 días).
+  const sello = (e: string) => (e === 'activo' ? 'Socio Dotia' : 'Invitado')
+  for (const v of matchMineRes.data ?? []) {
+    const proy = (v.proyectos as any)?.nombre ?? 'tu proyecto'
+    notifications.push({
+      kind: 'info',
+      title: `Proveedor conectado · ${v.proveedor_nombre ?? '—'}`,
+      detail: `${sello(v.estado)} · ${proy}`,
+      href: `/admin/proyectos/${v.proyecto_id}`,
+    })
+  }
+  for (const v of matchProvRes.data ?? []) {
+    const proy = (v.proyectos as any)?.nombre ?? 'un proyecto'
+    notifications.push({
+      kind: 'info',
+      title: `Te conectaron a ${proy}`,
+      detail: `Estás como ${sello(v.estado)}`,
+      href: '/admin/conectados',
     })
   }
 

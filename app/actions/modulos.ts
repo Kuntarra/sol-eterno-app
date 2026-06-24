@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { puedeGestionar } from '@/lib/rbac'
 import { getMyTenantId } from '@/lib/tenant'
 
@@ -334,15 +335,18 @@ export async function conectarPorCodigo(formData: FormData) {
   // resuelve con una función SECURITY DEFINER acotada al código exacto.
   const { data: proy, error: errBusca } = await supabase.rpc('buscar_proyecto_por_codigo' as never, { p_codigo: codigo } as never)
   if (errBusca) redirect(back + '?error=' + encodeURIComponent((errBusca as { message: string }).message))
-  const proyecto = (Array.isArray(proy) ? proy[0] : proy) as { id: string; nombre: string } | null
+  const proyecto = (Array.isArray(proy) ? proy[0] : proy) as { id: string; nombre: string; tenant_id: string } | null
   if (!proyecto?.id) redirect(back + '?error=' + encodeURIComponent('No existe un proyecto con ese código. Revísalo con el Mandante.'))
 
   const tenantId = await getMyTenantId()
   const { data: yo } = await supabase.from('tenants').select('rut, name').eq('id', tenantId).maybeSingle()
   if (!yo?.rut) redirect(back + '?error=' + encodeURIComponent('Tu empresa no tiene RUT registrado. Pídele al administrador del sistema que lo complete.'))
 
-  // Evitar duplicar el vínculo para el mismo proyecto + módulo.
-  const { data: existe } = await supabase
+  // El vínculo PERTENECE al Mandante dueño del proyecto (no al proveedor): por
+  // eso se inserta con el cliente admin fijando tenant_id = dueño. Si no, el
+  // Mandante no vería al proveedor en su proyecto (RLS por tenant_id).
+  const admin = createAdminClient()
+  const { data: existe } = await admin
     .from('proyecto_proveedores')
     .select('id')
     .eq('proyecto_id', proyecto.id)
@@ -351,13 +355,14 @@ export async function conectarPorCodigo(formData: FormData) {
     .maybeSingle()
   if (existe) redirect(back + '?conectado=' + encodeURIComponent(proyecto.nombre) + '&ya=1')
 
-  const { error } = await supabase.from('proyecto_proveedores').insert({
+  const { error } = await admin.from('proyecto_proveedores').insert({
     proyecto_id:         proyecto.id,
     proveedor_rut:       yo.rut,
     proveedor_nombre:    yo.name,
     tenant_proveedor_id: tenantId,
     modulo,
     estado:              'activo',
+    tenant_id:           proyecto.tenant_id, // dueño = Mandante
   })
   if (error) redirect(back + '?error=' + encodeURIComponent(error.message))
   revalidatePath(back)
