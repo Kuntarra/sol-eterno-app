@@ -75,6 +75,75 @@ export async function gestionarColaciones(formData: FormData) {
   redirect('/admin/colaciones?generadas=' + (Number(data) || 0))
 }
 
+// Lavandería POR TURNO (masivo): asigna una planilla a una cuadrilla o a todos
+// los en faena, creando una bolsa por persona con las MISMAS cantidades y las
+// fechas de turno calculadas por persona (entrega = fin del turno vigente;
+// siguiente rotación = próximo inicio, o fin+descanso si no hay rotación futura).
+function addDiasISO(fecha: string, dias: number) {
+  const d = new Date(fecha + 'T00:00:00'); d.setDate(d.getDate() + dias)
+  return d.toISOString().slice(0, 10)
+}
+export async function asignarPlanillaMasivo(formData: FormData) {
+  if (!(await puedeGestionar('lavanderia'))) redirect('/admin/lavanderia?error=' + encodeURIComponent('No tienes permiso de supervisor en Lavandería.'))
+  const supabase = await createClient()
+  const planillaId = (formData.get('planilla_id') as string) || null
+  const scope = (formData.get('scope') as string) || 'cuadrilla'
+  const ref = (formData.get('ref') as string) || ''
+  const fechaRef = (formData.get('fecha_ref') as string) || new Date().toISOString().slice(0, 10)
+  if (scope === 'cuadrilla' && !ref) redirect('/admin/lavanderia?error=' + encodeURIComponent('Selecciona una cuadrilla.'))
+
+  const nombres = formData.getAll('item_nombre') as string[]
+  const cantidades = formData.getAll('item_cantidad') as string[]
+  const items = nombres
+    .map((nombre, i) => ({ nombre, cantidad: parseInt(cantidades[i] || '0', 10) }))
+    .filter((it) => it.nombre && Number.isFinite(it.cantidad) && it.cantidad > 0)
+  if (!items.length) redirect('/admin/lavanderia?error=' + encodeURIComponent('Indica al menos una cantidad mayor a 0.'))
+
+  // Dotaciones del alcance
+  let dots: { id: string; persona_id: string | null; turno_dias_descanso: number | null }[] = []
+  if (scope === 'cuadrilla') {
+    const { data } = await supabase.from('dotaciones').select('id, persona_id, turno_dias_descanso').eq('cuadrilla_id', ref).eq('estado', 'activa')
+    dots = data ?? []
+  } else {
+    const { data: rots } = await supabase.from('rotaciones').select('dotacion_id').lte('fecha_inicio', fechaRef).gte('fecha_fin_esperada', fechaRef)
+    const ids = [...new Set((rots ?? []).map((r) => r.dotacion_id).filter(Boolean))] as string[]
+    if (ids.length) {
+      const { data } = await supabase.from('dotaciones').select('id, persona_id, turno_dias_descanso').in('id', ids).eq('estado', 'activa')
+      dots = data ?? []
+    }
+  }
+  if (!dots.length) redirect('/admin/lavanderia?asignadas=0')
+
+  // Fechas por persona desde sus rotaciones
+  const dotIds = dots.map((d) => d.id)
+  const { data: rotaciones } = await supabase.from('rotaciones').select('dotacion_id, fecha_inicio, fecha_fin_esperada').in('dotacion_id', dotIds)
+  const finVigente: Record<string, string> = {}
+  const proximoInicio: Record<string, string> = {}
+  const ultimoFin: Record<string, string> = {}
+  for (const r of rotaciones ?? []) {
+    const id = r.dotacion_id as string
+    const ini = r.fecha_inicio as string | null
+    const fin = r.fecha_fin_esperada as string | null
+    if (ini && fin && ini <= fechaRef && fechaRef <= fin && (!finVigente[id] || fin < finVigente[id])) finVigente[id] = fin
+    if (ini && ini > fechaRef && (!proximoInicio[id] || ini < proximoInicio[id])) proximoInicio[id] = ini
+    if (fin && (!ultimoFin[id] || fin > ultimoFin[id])) ultimoFin[id] = fin
+  }
+
+  const bolsas = dots.map((d) => {
+    const fin = finVigente[d.id] ?? ultimoFin[d.id] ?? null
+    const sig = proximoInicio[d.id] ?? (fin && d.turno_dias_descanso ? addDiasISO(fin, d.turno_dias_descanso) : null)
+    return { dotacion_id: d.id, persona_id: d.persona_id, planilla_id: planillaId, fecha_entrega: fin, fecha_siguiente_rotacion: sig }
+  })
+  const { data: created, error } = await supabase.from('lavanderia_bolsas').insert(bolsas).select('id')
+  if (error || !created) redirect('/admin/lavanderia?error=' + encodeURIComponent(error?.message ?? 'No se pudieron crear las bolsas.'))
+
+  const itemsRows = created.flatMap((b) => items.map((it) => ({ bolsa_id: b.id, nombre: it.nombre, cantidad: it.cantidad })))
+  const { error: errItems } = await supabase.from('lavanderia_bolsa_items').insert(itemsRows)
+  if (errItems) redirect('/admin/lavanderia?error=' + encodeURIComponent(errItems.message))
+  revalidatePath('/admin/lavanderia')
+  redirect('/admin/lavanderia?asignadas=' + created.length)
+}
+
 export async function toggleColacionEntregada(id: string, entregada: boolean) {
   const supabase = await createClient()
   await supabase.from('colaciones').update({

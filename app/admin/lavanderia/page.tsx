@@ -7,7 +7,7 @@ import { Plus, X, Trash2, Printer, ClipboardList, FileSpreadsheet, AlertTriangle
 
 const MAX_ITEMS = 24
 
-interface Props { searchParams: Promise<{ error?: string; success?: string; asignada?: string; creada?: string; aviso?: string }> }
+interface Props { searchParams: Promise<{ error?: string; success?: string; asignada?: string; asignadas?: string; creada?: string; aviso?: string }> }
 
 const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 const SIN_PROP = 'Sin alojamiento asignado'
@@ -18,16 +18,18 @@ function addDays(fecha: string, dias: number) {
 }
 
 export default async function LavanderiaPage({ searchParams }: Props) {
-  const { error, success, asignada, creada, aviso } = await searchParams
+  const { error, success, asignada, asignadas, creada, aviso } = await searchParams
   const supabase = await createClient()
   const hoy = new Date().toISOString().slice(0, 10)
-  const [{ data: planillas }, { data: dotacionesRaw }, { data: rotaciones }, { data: bolsas }, { data: stays }] = await Promise.all([
+  const [{ data: planillas }, { data: dotacionesRaw }, { data: rotaciones }, { data: bolsas }, { data: stays }, { data: cuadrillasRaw }] = await Promise.all([
     supabase.from('lavanderia_planillas').select('id, nombre, lavanderia_planilla_items(id, nombre, orden)').eq('activa', true).order('created_at', { ascending: false }),
     supabase.from('dotaciones').select('id, turno_dias_descanso, personas(nombres, apellido_paterno)').eq('estado', 'activa').order('created_at', { ascending: false }),
     supabase.from('rotaciones').select('dotacion_id, fecha_inicio, fecha_fin_esperada'),
     supabase.from('lavanderia_bolsas').select('id, dotacion_id, estado, created_at').order('created_at', { ascending: false }).limit(500),
     supabase.from('stays').select('dotacion_id, rooms(properties(name))').is('checked_out_at', null),
+    supabase.from('cuadrillas').select('id, nombre').eq('activa', true).order('nombre'),
   ])
+  const cuadrillas = (cuadrillasRaw ?? []).map((c) => ({ id: c.id, nombre: c.nombre }))
   const puedeEscribir = await puedeGestionar('lavanderia')
 
   const dotaciones = (dotacionesRaw ?? []).map((d) => {
@@ -102,6 +104,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
         {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
         {success && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Guardado.</div>}
         {creada && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Planilla creada con <strong>{creada}</strong> {Number(creada) === 1 ? 'ítem' : 'ítems'} desde el Excel.</div>}
+        {asignadas && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">{Number(asignadas) === 0 ? 'No había personas en ese alcance.' : <>Se asignaron <strong>{asignadas}</strong> {Number(asignadas) === 1 ? 'bolsa' : 'bolsas'} (una por persona).</>}</div>}
         {aviso && <div className="mb-6 px-4 py-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800 flex items-center gap-2"><AlertTriangle size={16} /> La planilla supera los {MAX_ITEMS} ítems recomendados: la boleta puede perder la cuadratura al imprimir.</div>}
         {asignada && (
           <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center justify-between gap-3">
@@ -192,7 +195,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
                     </form>
 
                     {/* Asignar a una persona */}
-                    <AsignarPlanilla planillaId={pl.id} items={items.map((i) => ({ id: i.id, nombre: i.nombre }))} dotaciones={dotaciones} entregaMap={entregaMap} sigRotMap={sigRotMap} />
+                    <AsignarPlanilla planillaId={pl.id} items={items.map((i) => ({ id: i.id, nombre: i.nombre }))} dotaciones={dotaciones} cuadrillas={cuadrillas} entregaMap={entregaMap} sigRotMap={sigRotMap} />
                   </div>
                 )
               })}
