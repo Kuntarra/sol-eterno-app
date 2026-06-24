@@ -1,32 +1,30 @@
 import { createClient } from '@/lib/supabase/server'
-import { createPlanilla, addPlanillaItem, deletePlanillaItem, deletePlanilla, avanzarBolsa } from '@/app/actions/modulos'
+import { createPlanilla, addPlanillaItem, deletePlanillaItem, deletePlanilla } from '@/app/actions/modulos'
 import { AsignarPlanilla } from './_components/asignar-planilla'
+import { ResumenLavanderia, type GrupoResumen, type EstadoLav } from './_components/resumen'
 import { puedeGestionar } from '@/lib/rbac'
-import { Shirt, ArrowRight, Plus, X, Trash2, Printer, ClipboardList } from 'lucide-react'
+import { Plus, X, Trash2, Printer, ClipboardList } from 'lucide-react'
 
 interface Props { searchParams: Promise<{ error?: string; success?: string; asignada?: string }> }
 
 const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
-const ESTADO_LABEL: Record<string, string> = {
-  recepcionada: 'Recepcionada', en_lavanderia: 'En lavandería', en_proceso: 'En proceso', entregada: 'Entregada',
-}
-const ESTADO_BADGE: Record<string, string> = {
-  recepcionada: 'badge-gray', en_lavanderia: 'badge-amber', en_proceso: 'badge-amber', entregada: 'badge-green',
-}
+const SIN_PROP = 'Sin alojamiento asignado'
 
-function fmtFecha(d: string | null) {
-  return d ? new Date(d + 'T00:00:00').toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+function addDays(fecha: string, dias: number) {
+  const d = new Date(fecha + 'T00:00:00'); d.setDate(d.getDate() + dias)
+  return d.toISOString().slice(0, 10)
 }
 
 export default async function LavanderiaPage({ searchParams }: Props) {
   const { error, success, asignada } = await searchParams
   const supabase = await createClient()
   const hoy = new Date().toISOString().slice(0, 10)
-  const [{ data: planillas }, { data: dotacionesRaw }, { data: rotaciones }, { data: bolsas }] = await Promise.all([
+  const [{ data: planillas }, { data: dotacionesRaw }, { data: rotaciones }, { data: bolsas }, { data: stays }] = await Promise.all([
     supabase.from('lavanderia_planillas').select('id, nombre, lavanderia_planilla_items(id, nombre, orden)').eq('activa', true).order('created_at', { ascending: false }),
-    supabase.from('dotaciones').select('id, personas(nombres, apellido_paterno)').eq('estado', 'activa').order('created_at', { ascending: false }),
+    supabase.from('dotaciones').select('id, turno_dias_descanso, personas(nombres, apellido_paterno)').eq('estado', 'activa').order('created_at', { ascending: false }),
     supabase.from('rotaciones').select('dotacion_id, fecha_inicio, fecha_fin_esperada'),
-    supabase.from('lavanderia_bolsas').select('*, personas(nombres, apellido_paterno), lavanderia_planillas(nombre)').order('created_at', { ascending: false }).limit(150),
+    supabase.from('lavanderia_bolsas').select('id, dotacion_id, estado, created_at').order('created_at', { ascending: false }).limit(500),
+    supabase.from('stays').select('dotacion_id, rooms(properties(name))').is('checked_out_at', null),
   ])
   const puedeEscribir = await puedeGestionar('lavanderia')
 
@@ -35,25 +33,60 @@ export default async function LavanderiaPage({ searchParams }: Props) {
     return { id: d.id, nombre: p ? `${p.nombres} ${p.apellido_paterno}` : d.id }
   })
 
-  // Siguiente rotación por dotación (default editable de la boleta). Prioridad:
-  // 1) fin del turno VIGENTE (cuando sale a descanso) si hoy cae dentro de él;
-  // 2) si está en descanso, el próximo inicio futuro (cuando vuelve a entrar);
-  // 3) respaldo: el último fin conocido.
-  const vigente: Record<string, string> = {}
-  const futuro: Record<string, string> = {}
+  // ── Fechas automáticas (defaults editables de la boleta) ──
+  // Ciclo real: la ropa se entrega a lavandería el ÚLTIMO día del turno y se
+  // devuelve el PRIMER día del turno siguiente.
+  //   fecha de entrega   → fin del turno vigente (último día) / último fin.
+  //   siguiente rotación → próximo inicio futuro (devolución); si no hay
+  //                        rotación futura cargada, se deriva = fin + descanso.
+  const finVigente: Record<string, string> = {}
+  const proximoInicio: Record<string, string> = {}
   const ultimoFin: Record<string, string> = {}
   for (const r of rotaciones ?? []) {
     const id = r.dotacion_id as string
     const ini = r.fecha_inicio as string | null
     const fin = r.fecha_fin_esperada as string | null
-    if (ini && fin && ini <= hoy && hoy <= fin && (!vigente[id] || fin < vigente[id])) vigente[id] = fin
-    if (ini && ini > hoy && (!futuro[id] || ini < futuro[id])) futuro[id] = ini
+    if (ini && fin && ini <= hoy && hoy <= fin && (!finVigente[id] || fin < finVigente[id])) finVigente[id] = fin
+    if (ini && ini > hoy && (!proximoInicio[id] || ini < proximoInicio[id])) proximoInicio[id] = ini
     if (fin && (!ultimoFin[id] || fin > ultimoFin[id])) ultimoFin[id] = fin
   }
-  const nextRota: Record<string, string> = {}
-  for (const id of new Set([...Object.keys(vigente), ...Object.keys(futuro), ...Object.keys(ultimoFin)])) {
-    nextRota[id] = vigente[id] ?? futuro[id] ?? ultimoFin[id]
+  const descanso: Record<string, number> = {}
+  for (const d of dotacionesRaw ?? []) descanso[d.id] = (d.turno_dias_descanso as number) ?? 0
+  const entregaMap: Record<string, string> = {}
+  const sigRotMap: Record<string, string> = {}
+  for (const d of dotaciones) {
+    const fin = finVigente[d.id] ?? ultimoFin[d.id]
+    if (fin) entregaMap[d.id] = fin
+    if (proximoInicio[d.id]) sigRotMap[d.id] = proximoInicio[d.id]
+    else if (fin && descanso[d.id]) sigRotMap[d.id] = addDays(fin, descanso[d.id])
   }
+
+  // ── Resumen del proyecto: estado de lavandería por persona / propiedad ──
+  const latestBolsa: Record<string, { id: string; estado: string }> = {}
+  for (const b of bolsas ?? []) {
+    const id = b.dotacion_id as string | null
+    if (id && !latestBolsa[id]) latestBolsa[id] = { id: b.id, estado: b.estado }
+  }
+  const propByDot: Record<string, string> = {}
+  for (const s of stays ?? []) {
+    const id = s.dotacion_id as string | null
+    const name = (s.rooms as { properties: { name: string } | null } | null)?.properties?.name
+    if (id && !propByDot[id]) propByDot[id] = name ?? SIN_PROP
+  }
+  const estadoDe = (id: string): EstadoLav => {
+    const b = latestBolsa[id]
+    if (!b) return 'sin_bolsa'
+    return b.estado === 'entregada' ? 'entregada' : 'en_proceso'
+  }
+  const gruposMap = new Map<string, GrupoResumen>()
+  for (const d of dotaciones) {
+    const prop = propByDot[d.id] ?? SIN_PROP
+    if (!gruposMap.has(prop)) gruposMap.set(prop, { propiedad: prop, personas: [] })
+    gruposMap.get(prop)!.personas.push({ dotacionId: d.id, nombre: d.nombre, estado: estadoDe(d.id), bolsaId: latestBolsa[d.id]?.id ?? null })
+  }
+  const grupos = [...gruposMap.values()].sort((a, b) =>
+    a.propiedad === SIN_PROP ? 1 : b.propiedad === SIN_PROP ? -1 : a.propiedad.localeCompare(b.propiedad),
+  )
 
   return (
     <div>
@@ -69,7 +102,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
         {asignada && (
           <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center justify-between gap-3">
             <span>Asignación grabada.</span>
-            <a href={`/print/lavanderia/${asignada}`} target="_blank" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--navy)] text-white text-xs font-semibold hover:bg-[var(--navy-dark)]"><Printer size={13} /> Imprimir</a>
+            <a href={`/print/lavanderia/${asignada}`} target="_blank" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--navy)] text-white text-xs font-semibold hover:bg-[var(--navy-dark)]"><Printer size={13} /> Imprimir boleta</a>
           </div>
         )}
 
@@ -128,7 +161,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
                     </form>
 
                     {/* Asignar a una persona */}
-                    <AsignarPlanilla planillaId={pl.id} items={items.map((i) => ({ id: i.id, nombre: i.nombre }))} dotaciones={dotaciones} nextRota={nextRota} />
+                    <AsignarPlanilla planillaId={pl.id} items={items.map((i) => ({ id: i.id, nombre: i.nombre }))} dotaciones={dotaciones} entregaMap={entregaMap} sigRotMap={sigRotMap} />
                   </div>
                 )
               })}
@@ -137,61 +170,8 @@ export default async function LavanderiaPage({ searchParams }: Props) {
         </section>
         )}
 
-        {/* Bolsas asignadas */}
-        <h2 className="text-base font-semibold text-[var(--navy)] mb-4">Bolsas asignadas</h2>
-        {!bolsas?.length ? (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
-            <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-3"><Shirt size={24} strokeWidth={1.5} stroke="var(--gray-600)" /></div>
-            <p className="text-sm text-[var(--gray-600)]">Sin bolsas registradas</p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--gray-200)] text-left text-[var(--gray-600)]">
-                  <th className="px-5 py-3 font-semibold">Persona</th>
-                  <th className="px-5 py-3 font-semibold">Planilla</th>
-                  <th className="px-5 py-3 font-semibold">Entrega</th>
-                  <th className="px-5 py-3 font-semibold">Sig. rotación</th>
-                  <th className="px-5 py-3 font-semibold">Estado</th>
-                  <th className="px-5 py-3 font-semibold">Avanzar</th>
-                  <th className="px-5 py-3 font-semibold text-right">Boleta</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bolsas.map((b) => {
-                  const p = b.personas as { nombres: string; apellido_paterno: string } | null
-                  const pl = b.lavanderia_planillas as { nombre: string } | null
-                  const avanzar = avanzarBolsa.bind(null, b.id, b.estado)
-                  return (
-                    <tr key={b.id} className="border-b border-[var(--gray-100)] last:border-0">
-                      <td className="px-5 py-3.5 font-medium text-[var(--navy)]">{p ? `${p.nombres} ${p.apellido_paterno}` : '—'}</td>
-                      <td className="px-5 py-3.5 text-[var(--gray-600)]">{pl?.nombre ?? '—'}</td>
-                      <td className="px-5 py-3.5 text-[var(--gray-600)] text-xs">{fmtFecha(b.fecha_entrega ?? (b.created_at ? b.created_at.slice(0, 10) : null))}</td>
-                      <td className="px-5 py-3.5 text-[var(--gray-600)] text-xs">{fmtFecha(b.fecha_siguiente_rotacion)}</td>
-                      <td className="px-5 py-3.5"><span className={`badge ${ESTADO_BADGE[b.estado]}`}>{ESTADO_LABEL[b.estado]}</span></td>
-                      <td className="px-5 py-3.5">
-                        {b.estado === 'entregada' ? (
-                          <span className="text-xs text-[var(--gray-600)]">Completada</span>
-                        ) : puedeEscribir ? (
-                          <form action={avanzar}>
-                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--navy)] text-white text-xs font-semibold hover:bg-[var(--navy-dark)]">
-                              {ESTADO_LABEL[b.estado === 'recepcionada' ? 'en_lavanderia' : b.estado === 'en_lavanderia' ? 'en_proceso' : 'entregada']}
-                              <ArrowRight size={12} strokeWidth={2.5} />
-                            </button>
-                          </form>
-                        ) : <span className="text-xs text-[var(--gray-600)]">—</span>}
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        <a href={`/print/lavanderia/${b.id}`} target="_blank" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--gray-200)] text-[var(--navy)] text-xs font-semibold hover:bg-[var(--gray-100)]"><Printer size={13} /> Imprimir</a>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+        {/* Resumen del estado de lavandería */}
+        <ResumenLavanderia grupos={grupos} />
       </div>
     </div>
   )

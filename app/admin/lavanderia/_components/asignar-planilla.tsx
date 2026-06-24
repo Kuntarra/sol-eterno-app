@@ -14,17 +14,19 @@ interface Props {
   planillaId: string
   items: Item[]
   dotaciones: Opt[]
-  nextRota: Record<string, string>
+  entregaMap: Record<string, string>
+  sigRotMap: Record<string, string>
 }
 
-export function AsignarPlanilla({ planillaId, items, dotaciones, nextRota }: Props) {
+export function AsignarPlanilla({ planillaId, items, dotaciones, entregaMap, sigRotMap }: Props) {
   const hoy = new Date().toISOString().slice(0, 10)
   const [abierto, setAbierto] = useState(false)
   const [dotacion, setDotacion] = useState('')
+  const [entrega, setEntrega] = useState(hoy)
   const [sigRot, setSigRot] = useState('')
   const [cant, setCant] = useState<Record<string, number>>(() => Object.fromEntries(items.map((i) => [i.id, 1])))
 
-  const onPersona = (id: string) => { setDotacion(id); setSigRot(nextRota[id] ?? '') }
+  const onPersona = (id: string) => { setDotacion(id); setEntrega(entregaMap[id] ?? hoy); setSigRot(sigRotMap[id] ?? '') }
   const set = (id: string, v: number) => setCant((c) => ({ ...c, [id]: Math.max(0, v) }))
 
   if (!items.length) {
@@ -58,12 +60,13 @@ export function AsignarPlanilla({ planillaId, items, dotaciones, nextRota }: Pro
         </div>
         <div>
           <label className={LABEL}>Fecha de entrega</label>
-          <input type="date" name="fecha_entrega" defaultValue={hoy} className={`${INPUT} w-full`} />
+          <input type="date" name="fecha_entrega" value={entrega} onChange={(e) => setEntrega(e.target.value)} className={`${INPUT} w-full`} />
+          <p className="text-[11px] text-[var(--gray-500)] mt-1">Normalmente el último día del turno; cámbiala si es otro día.</p>
         </div>
         <div>
           <label className={LABEL}>Siguiente rotación</label>
           <input type="date" name="fecha_siguiente_rotacion" value={sigRot} onChange={(e) => setSigRot(e.target.value)} className={`${INPUT} w-full`} />
-          <p className="text-[11px] text-[var(--gray-500)] mt-1">Se calcula del turno; confírmala con el huésped.</p>
+          <p className="text-[11px] text-[var(--gray-500)] mt-1">Primer día del próximo turno (devolución); confírmala con el huésped.</p>
         </div>
       </div>
 

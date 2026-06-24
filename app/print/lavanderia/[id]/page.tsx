@@ -45,72 +45,62 @@ export default async function BoletaLavanderiaPage({ params }: Props) {
 
   const css = `
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#212529;background:#fff}
-    .sheet{padding:10px 16px}
-    .copia{page-break-inside:avoid;break-inside:avoid}
+    html,body{font-family:Arial,Helvetica,sans-serif;color:#212529;background:#fff}
+    .sheet{width:100%}
+    .copia{padding:6mm 8mm;height:139mm;overflow:hidden;page-break-inside:avoid;break-inside:avoid;display:flex;flex-direction:column}
+    .copia--top{border-bottom:1px dashed #adb5bd}
     table{border-collapse:collapse;width:100%}
-    th,td{text-align:left;padding:5px 12px}
-    thead th{background:#f1f3f5;font-size:10px;font-weight:700;color:${G};text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #dee2e6}
+    th,td{text-align:left;padding:3px 8px;font-size:11px}
+    thead th{background:#f1f3f5;font-size:9px;font-weight:700;color:${G};text-transform:uppercase;letter-spacing:.04em}
     tbody tr{border-bottom:1px solid #f1f3f5}
-    tfoot td{background:#f1f3f5;font-weight:700;border-top:2px solid #dee2e6}
-    .field-label{font-size:9px;color:${G};text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:1px}
-    .field-value{font-size:12px;color:${N};font-weight:600}
-    .cut{display:flex;align-items:center;gap:8px;color:#adb5bd;font-size:9px;margin:6px 0;letter-spacing:.1em;text-transform:uppercase}
-    .cut::before,.cut::after{content:'';flex:1;border-top:1px dashed #ced4da}
-    @page{size:letter portrait;margin:1cm}
+    tfoot td{background:#f1f3f5;font-weight:700}
+    .fl{font-size:8px;color:${G};text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+    .fv{font-size:11px;color:${N};font-weight:600}
+    @page{size:letter portrait;margin:0}
     @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
   `
 
-  const Boleta = ({ label }: { label: string }) => (
-    <div className="copia">
+  const Boleta = ({ label, top }: { label: string; top?: boolean }) => (
+    <div className={`copia${top ? ' copia--top' : ''}`}>
       {/* Header */}
-      <div style={{ background: N, color: '#fff', padding: '11px 18px', borderRadius: 9, marginBottom: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div style={{ background: N, color: '#fff', padding: '8px 14px', borderRadius: 7, marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontSize: 9, color: 'rgba(255,255,255,.5)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 2 }}>Boleta de entrega · Lavandería</div>
-          <div style={{ fontSize: 18, fontWeight: 700 }}>{planilla?.nombre ?? 'Bolsa de ropa'}</div>
+          <div style={{ fontSize: 8, color: 'rgba(255,255,255,.5)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Boleta de lavandería · Sol Eterno</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginTop: 1 }}>{planilla?.nombre ?? 'Bolsa de ropa'}</div>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <span style={{ display: 'inline-block', background: A, color: N, fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '.05em' }}>{label}</span>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,.6)', marginTop: 3 }}>Sol Eterno · {hoy}</div>
-        </div>
+        <span style={{ background: A, color: N, fontSize: 9, fontWeight: 700, padding: '3px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '.04em', whiteSpace: 'nowrap' }}>{label}</span>
       </div>
 
-      {/* Datos de la persona */}
-      <div style={{ border: '1px solid #e9ecef', borderRadius: 9, padding: '11px 16px', marginBottom: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div style={{ gridColumn: '1 / -1' }}>
-          <div className="field-label">Nombre</div>
-          <div className="field-value" style={{ fontSize: 14 }}>{nombre}</div>
+      {/* Persona */}
+      <div style={{ border: '1px solid #e9ecef', borderRadius: 7, padding: '8px 12px', marginBottom: 7 }}>
+        <div style={{ marginBottom: 6 }}><span className="fl">Nombre</span><div className="fv" style={{ fontSize: 13 }}>{nombre}</div></div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          <div><span className="fl">RUT / Doc.</span><div className="fv" style={{ fontFamily: 'monospace' }}>{doc}</div></div>
+          <div><span className="fl">Teléfono</span><div className="fv">{p?.telefono || '—'}</div></div>
+          <div><span className="fl">Propiedad</span><div className="fv">{room?.properties?.name ?? '—'}</div></div>
+          <div><span className="fl">Habitación</span><div className="fv">{room?.number ?? '—'}</div></div>
         </div>
-        <div><div className="field-label">RUT / Documento</div><div className="field-value" style={{ fontFamily: 'monospace' }}>{doc}</div></div>
-        <div><div className="field-label">Teléfono</div><div className="field-value">{p?.telefono || '—'}</div></div>
-        <div><div className="field-label">Propiedad</div><div className="field-value">{room?.properties?.name ?? '—'}</div></div>
-        <div><div className="field-label">Habitación</div><div className="field-value">{room?.number ?? '—'}</div></div>
       </div>
 
       {/* Fechas */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
-        <div style={{ border: '1px solid #e9ecef', borderRadius: 9, padding: '10px 14px' }}>
-          <div className="field-label">Fecha de entrega</div>
-          <div className="field-value" style={{ fontSize: 13 }}>{fmt(entrega)}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 7, marginBottom: 7 }}>
+        <div style={{ border: '1px solid #e9ecef', borderRadius: 7, padding: '7px 11px' }}>
+          <span className="fl">Fecha de entrega</span><div className="fv" style={{ fontSize: 12 }}>{fmt(entrega)}</div>
         </div>
-        <div style={{ border: `1px solid ${A}`, background: '#fffaf0', borderRadius: 9, padding: '10px 14px' }}>
-          <div className="field-label" style={{ color: '#9a6b14' }}>Siguiente rotación · confirmar con huésped</div>
-          <div className="field-value" style={{ fontSize: 13 }}>{fmt(bolsa.fecha_siguiente_rotacion)}</div>
-          <div style={{ fontSize: 9, color: G, marginTop: 3 }}>Ante cualquier cambio, el huésped debe avisar con antelación.</div>
+        <div style={{ border: `1px solid ${A}`, background: '#fffaf0', borderRadius: 7, padding: '7px 11px' }}>
+          <span className="fl" style={{ color: '#9a6b14' }}>Siguiente rotación · confirmar con huésped</span>
+          <div className="fv" style={{ fontSize: 12 }}>{fmt(bolsa.fecha_siguiente_rotacion)}</div>
+          <div style={{ fontSize: 8, color: G, marginTop: 1 }}>Ante cambios, el huésped debe avisar con antelación.</div>
         </div>
       </div>
 
-      {/* Contenido de la bolsa */}
-      <div style={{ border: '1px solid #e9ecef', borderRadius: 9, overflow: 'hidden', marginBottom: 12 }}>
-        <div style={{ background: N, color: '#fff', padding: '6px 14px', fontSize: 11, fontWeight: 700 }}>Contenido de la bolsa</div>
+      {/* Contenido */}
+      <div style={{ border: '1px solid #e9ecef', borderRadius: 7, overflow: 'hidden', flex: 1 }}>
         <table>
-          <thead><tr><th>Ítem</th><th style={{ textAlign: 'right' }}>Cantidad</th></tr></thead>
+          <thead><tr><th>Ítem ({items.length})</th><th style={{ textAlign: 'right' }}>Cant.</th></tr></thead>
           <tbody>
             {items.map((it, i) => (
-              <tr key={i}>
-                <td style={{ fontWeight: 600, color: N }}>{it.nombre}</td>
-                <td style={{ textAlign: 'right', fontWeight: 700, color: N }}>{it.cantidad}</td>
-              </tr>
+              <tr key={i}><td style={{ fontWeight: 600, color: N }}>{it.nombre}</td><td style={{ textAlign: 'right', fontWeight: 700, color: N }}>{it.cantidad}</td></tr>
             ))}
           </tbody>
           <tfoot><tr><td>Total de prendas</td><td style={{ textAlign: 'right' }}>{total}</td></tr></tfoot>
@@ -118,10 +108,10 @@ export default async function BoletaLavanderiaPage({ params }: Props) {
       </div>
 
       {/* Firmas */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 36 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, marginTop: 10 }}>
         {['Entrega (recepción)', 'Recibe conforme (huésped)'].map((l) => (
           <div key={l} style={{ textAlign: 'center' }}>
-            <div style={{ borderTop: '1px solid #adb5bd', paddingTop: 5, fontSize: 10, color: G }}>{l}</div>
+            <div style={{ borderTop: '1px solid #adb5bd', paddingTop: 3, fontSize: 9, color: G }}>{l}</div>
           </div>
         ))}
       </div>
@@ -132,9 +122,8 @@ export default async function BoletaLavanderiaPage({ params }: Props) {
     <div className="sheet">
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <AutoPrint />
-      <Boleta label="Original" />
-      <div className="cut">✂ corte</div>
-      <Boleta label="Copia" />
+      <Boleta label="Para ingresar a la bolsa" top />
+      <Boleta label="Recepción" />
     </div>
   )
 }
