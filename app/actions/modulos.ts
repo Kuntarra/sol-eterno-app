@@ -51,15 +51,22 @@ export async function aplicarColaciones(formData: FormData) {
   redirect('/admin/colaciones?generadas=' + (Number(data) || 0))
 }
 
-// Genera (1 clic) las colaciones de SALIDA sugeridas: personas que terminan
-// turno en la fecha y tienen bus de vuelta asignado.
-export async function generarColacionesSalida(formData: FormData) {
+// Automático por TURNO (1 clic): genera las colaciones del día derivadas de las
+// rotaciones, no del bus. Modo 'inicio_fin' = colación de entrada el día que
+// inicia el turno + de salida el día que termina; 'todos' = una por día en faena.
+export async function gestionarColaciones(formData: FormData) {
   if (!(await puedeGestionar('colaciones'))) redirect('/admin/colaciones?error=' + encodeURIComponent('No tienes permiso de supervisor en Colaciones.'))
   const supabase = await createClient()
   const fecha = formData.get('fecha') as string
+  const modo = (formData.get('modo') as string) || 'inicio_fin'
+  const scope = (formData.get('scope') as string) || 'todos'
+  const ref = (formData.get('ref') as string) || null
   if (!fecha) redirect('/admin/colaciones?error=' + encodeURIComponent('Falta la fecha.'))
-  const { data, error } = await supabase.rpc('generar_colaciones_salida' as never, {
-    p_fecha: fecha, p_generar: true, p_punto: (formData.get('punto') as string) || 'transporte_vuelta',
+  if ((scope === 'persona' || scope === 'cuadrilla') && !ref) {
+    redirect('/admin/colaciones?error=' + encodeURIComponent('Selecciona ' + (scope === 'persona' ? 'una persona' : 'una cuadrilla') + '.'))
+  }
+  const { data, error } = await supabase.rpc('gestionar_colaciones_dia' as never, {
+    p_fecha: fecha, p_modo: modo, p_scope: scope, p_ref: ref, p_generar: true,
   } as never)
   if (error) redirect('/admin/colaciones?error=' + encodeURIComponent((error as { message: string }).message))
   revalidatePath('/admin/colaciones')
@@ -163,6 +170,77 @@ export async function avanzarBolsa(id: string, estadoActual: string) {
     .update({ estado: FLUJO[estadoActual] ?? estadoActual, updated_at: new Date().toISOString() })
     .eq('id', id)
   revalidatePath('/admin/lavanderia')
+}
+
+// ── Lavandería · planillas (plantillas de ropa reutilizables) ──
+export async function createPlanilla(formData: FormData) {
+  if (!(await puedeGestionar('lavanderia'))) redirect('/admin/lavanderia?error=' + encodeURIComponent('No tienes permiso de supervisor en Lavandería.'))
+  const supabase = await createClient()
+  const nombre = (formData.get('nombre') as string)?.trim()
+  if (!nombre) redirect('/admin/lavanderia?error=' + encodeURIComponent('Escribe un nombre para la planilla.'))
+  const { error } = await supabase.from('lavanderia_planillas').insert({ nombre })
+  if (error) redirect('/admin/lavanderia?error=' + encodeURIComponent(error.message))
+  revalidatePath('/admin/lavanderia')
+  redirect('/admin/lavanderia?success=planilla')
+}
+
+export async function addPlanillaItem(formData: FormData) {
+  if (!(await puedeGestionar('lavanderia'))) redirect('/admin/lavanderia?error=' + encodeURIComponent('No tienes permiso de supervisor en Lavandería.'))
+  const supabase = await createClient()
+  const planillaId = formData.get('planilla_id') as string
+  const nombre = (formData.get('nombre') as string)?.trim()
+  if (!planillaId || !nombre) redirect('/admin/lavanderia?error=' + encodeURIComponent('Falta el ítem.'))
+  const { count } = await supabase.from('lavanderia_planilla_items').select('id', { count: 'exact', head: true }).eq('planilla_id', planillaId)
+  const { error } = await supabase.from('lavanderia_planilla_items').insert({ planilla_id: planillaId, nombre, orden: count ?? 0 })
+  if (error) redirect('/admin/lavanderia?error=' + encodeURIComponent(error.message))
+  revalidatePath('/admin/lavanderia')
+  redirect('/admin/lavanderia?success=item')
+}
+
+export async function deletePlanillaItem(id: string) {
+  if (!(await puedeGestionar('lavanderia'))) return
+  const supabase = await createClient()
+  await supabase.from('lavanderia_planilla_items').delete().eq('id', id)
+  revalidatePath('/admin/lavanderia')
+}
+
+export async function deletePlanilla(id: string) {
+  if (!(await puedeGestionar('lavanderia'))) return
+  const supabase = await createClient()
+  await supabase.from('lavanderia_planillas').delete().eq('id', id)
+  revalidatePath('/admin/lavanderia')
+}
+
+// Asigna una planilla a una persona = crea una bolsa (con planilla + fechas) y
+// su contenido (ítems con cantidades). La bolsa conserva el flujo de estados.
+export async function asignarPlanilla(formData: FormData) {
+  if (!(await puedeGestionar('lavanderia'))) redirect('/admin/lavanderia?error=' + encodeURIComponent('No tienes permiso de supervisor en Lavandería.'))
+  const supabase = await createClient()
+  const planillaId = formData.get('planilla_id') as string
+  const dotacionId = formData.get('dotacion_id') as string
+  if (!dotacionId) redirect('/admin/lavanderia?error=' + encodeURIComponent('Selecciona una persona.'))
+  const nombres = formData.getAll('item_nombre') as string[]
+  const cantidades = formData.getAll('item_cantidad') as string[]
+  const items = nombres
+    .map((nombre, i) => ({ nombre, cantidad: parseInt(cantidades[i] || '0', 10) }))
+    .filter((it) => it.nombre && Number.isFinite(it.cantidad) && it.cantidad > 0)
+  if (!items.length) redirect('/admin/lavanderia?error=' + encodeURIComponent('Indica al menos una cantidad mayor a 0.'))
+
+  const { data: dot } = await supabase.from('dotaciones').select('persona_id').eq('id', dotacionId).maybeSingle()
+  const { data: bolsa, error } = await supabase.from('lavanderia_bolsas').insert({
+    dotacion_id:              dotacionId,
+    persona_id:               dot?.persona_id ?? null,
+    planilla_id:              planillaId || null,
+    fecha_entrega:            (formData.get('fecha_entrega') as string) || null,
+    fecha_siguiente_rotacion: (formData.get('fecha_siguiente_rotacion') as string) || null,
+  }).select('id').single()
+  if (error || !bolsa) redirect('/admin/lavanderia?error=' + encodeURIComponent(error?.message ?? 'No se pudo crear la bolsa.'))
+
+  const { error: errItems } = await supabase.from('lavanderia_bolsa_items')
+    .insert(items.map((it) => ({ bolsa_id: bolsa.id, nombre: it.nombre, cantidad: it.cantidad })))
+  if (errItems) redirect('/admin/lavanderia?error=' + encodeURIComponent(errItems.message))
+  revalidatePath('/admin/lavanderia')
+  redirect('/admin/lavanderia?asignada=' + bolsa.id)
 }
 
 // ── Vínculos (match proveedor por RUT) ─────────────────────────

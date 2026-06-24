@@ -595,8 +595,11 @@ export type Database = {
           dotacion_id: string | null
           entregada_por: string | null
           estado: string
+          fecha_entrega: string | null
+          fecha_siguiente_rotacion: string | null
           id: string
           persona_id: string | null
+          planilla_id: string | null
           tenant_id: string
           updated_at: string
         }
@@ -605,8 +608,11 @@ export type Database = {
           dotacion_id?: string | null
           entregada_por?: string | null
           estado?: string
+          fecha_entrega?: string | null
+          fecha_siguiente_rotacion?: string | null
           id?: string
           persona_id?: string | null
+          planilla_id?: string | null
           tenant_id?: string
           updated_at?: string
         }
@@ -615,8 +621,11 @@ export type Database = {
           dotacion_id?: string | null
           entregada_por?: string | null
           estado?: string
+          fecha_entrega?: string | null
+          fecha_siguiente_rotacion?: string | null
           id?: string
           persona_id?: string | null
+          planilla_id?: string | null
           tenant_id?: string
           updated_at?: string
         }
@@ -633,6 +642,13 @@ export type Database = {
             columns: ["persona_id"]
             isOneToOne: false
             referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lavanderia_bolsas_planilla_id_fkey"
+            columns: ["planilla_id"]
+            isOneToOne: false
+            referencedRelation: "lavanderia_planillas"
             referencedColumns: ["id"]
           },
           {
@@ -689,6 +705,122 @@ export type Database = {
           },
           {
             foreignKeyName: "lavanderia_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lavanderia_planillas: {
+        Row: {
+          activa: boolean
+          created_at: string
+          id: string
+          nombre: string
+          tenant_id: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          id?: string
+          nombre: string
+          tenant_id?: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          id?: string
+          nombre?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lavanderia_planillas_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lavanderia_planilla_items: {
+        Row: {
+          created_at: string
+          id: string
+          nombre: string
+          orden: number
+          planilla_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nombre: string
+          orden?: number
+          planilla_id: string
+          tenant_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nombre?: string
+          orden?: number
+          planilla_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lavanderia_planilla_items_planilla_id_fkey"
+            columns: ["planilla_id"]
+            isOneToOne: false
+            referencedRelation: "lavanderia_planillas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lavanderia_planilla_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lavanderia_bolsa_items: {
+        Row: {
+          bolsa_id: string
+          cantidad: number
+          created_at: string
+          id: string
+          nombre: string
+          tenant_id: string
+        }
+        Insert: {
+          bolsa_id: string
+          cantidad?: number
+          created_at?: string
+          id?: string
+          nombre: string
+          tenant_id?: string
+        }
+        Update: {
+          bolsa_id?: string
+          cantidad?: number
+          created_at?: string
+          id?: string
+          nombre?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lavanderia_bolsa_items_bolsa_id_fkey"
+            columns: ["bolsa_id"]
+            isOneToOne: false
+            referencedRelation: "lavanderia_bolsas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lavanderia_bolsa_items_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
