@@ -96,6 +96,31 @@ export async function updateTrasladoEstado(id: string, formData: FormData) {
   revalidatePath(`/admin/transporte/${id}`)
 }
 
+// Traslado DIARIO hotel↔faena: crea de una vez la IDA (hotel→faena, mañana) y la
+// VUELTA (faena→hotel, tarde) del mismo día. Dos traslados 'diario' enlazados por
+// fecha; el manifiesto y el embarque se gestionan en cada uno.
+export async function createTrasladoDiario(formData: FormData) {
+  if (!(await puedeGestionar('transporte'))) redirect(SIN_PERMISO)
+  const supabase = await createClient()
+  const back = '/admin/transporte/diario'
+  const proyecto_id = (formData.get('proyecto_id') as string) || null
+  const vehiculo_id = (formData.get('vehiculo_id') as string) || null
+  const fecha = (formData.get('fecha') as string) || null
+  const hotel = ((formData.get('hotel') as string) || '').trim() || null
+  const faena = ((formData.get('faena') as string) || '').trim() || null
+  const horaIda = (formData.get('hora_ida') as string) || null
+  const horaVuelta = (formData.get('hora_vuelta') as string) || null
+  const conductor = ((formData.get('conductor_nombre') as string) || '').trim() || null
+  if (!fecha) fail(back, 'Indica la fecha del traslado diario.')
+  const base = { proyecto_id, vehiculo_id, tipo: 'diario', conductor_nombre: conductor }
+  const { error: e1 } = await data.insertTraslado(supabase, { ...base, sentido: 'ida', fecha, hora: horaIda, origen: hotel, destino: faena })
+  if (e1) fail(back, e1.message)
+  const { error: e2 } = await data.insertTraslado(supabase, { ...base, sentido: 'vuelta', fecha, hora: horaVuelta, origen: faena, destino: hotel })
+  if (e2) fail(back, e2.message)
+  revalidatePath('/admin/transporte')
+  redirect('/admin/transporte?diario=1')
+}
+
 // ── Manifiesto (pasajeros) ─────────────────────────────────────
 export async function addPasajero(trasladoId: string, formData: FormData) {
   const supabase = await createClient()
@@ -167,5 +192,15 @@ export async function marcarPasajero(trasladoId: string, pasajeroId: string, acc
   if (accion === 'subio') patch.subio_at = new Date().toISOString()
   if (accion === 'dejado') patch.dejado_at = new Date().toISOString()
   await data.updatePasajeroEstado(supabase, pasajeroId, patch)
+  revalidatePath(`/admin/transporte/${trasladoId}`)
+}
+
+// Marca/desmarca si un pasajero va en un tramo de la movilización (toggle).
+export async function togglePasajeroTramo(trasladoId: string, pasajeroId: string, tramoId: string) {
+  if (!(await puedeGestionar('transporte'))) redirect(SIN_PERMISO)
+  const supabase = await createClient()
+  const existing = await data.getPasajeroTramoId(supabase, pasajeroId, tramoId)
+  if (existing) await data.deletePasajeroTramo(supabase, existing)
+  else await data.insertPasajeroTramo(supabase, pasajeroId, tramoId)
   revalidatePath(`/admin/transporte/${trasladoId}`)
 }

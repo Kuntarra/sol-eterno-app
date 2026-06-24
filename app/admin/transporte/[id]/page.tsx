@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { addPasajero, addPasajerosMasivo, marcarPasajero, updateTrasladoEstado } from '@/app/actions/transporte'
-import { getTraslado, listDotacionesCandidatas, listPasajeros, listTramos, listCuadrillaOptions } from '@/lib/data/transporte'
+import { addPasajero, addPasajerosMasivo, marcarPasajero, togglePasajeroTramo, updateTrasladoEstado } from '@/app/actions/transporte'
+import { getTraslado, listDotacionesCandidatas, listPasajeros, listTramos, listCuadrillaOptions, listPasajeroTramoLinks } from '@/lib/data/transporte'
 import { ManifiestoMasivo } from './_components/manifiesto-masivo'
 import { puedeGestionar } from '@/lib/rbac'
 import { ArrowLeft, Plus, Check, MapPin, X, Plane, Bus, Car, Footprints, MoreHorizontal } from 'lucide-react'
@@ -39,6 +39,14 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
   const MODO_META: Record<string, { label: string; Icon: typeof Plane }> = {
     vuelo: { label: 'Vuelo', Icon: Plane }, bus: { label: 'Bus', Icon: Bus },
     auto: { label: 'Auto', Icon: Car }, caminata: { label: 'A pie', Icon: Footprints }, otro: { label: 'Otro', Icon: MoreHorizontal },
+  }
+
+  // En qué tramos va cada pasajero (movilización multimodal)
+  const links = tramos.length ? await listPasajeroTramoLinks(supabase, tramos.map((tr) => tr.id)) : []
+  const asignados = new Map<string, Set<string>>()
+  for (const l of links) {
+    if (!asignados.has(l.pasajero_id)) asignados.set(l.pasajero_id, new Set())
+    asignados.get(l.pasajero_id)!.add(l.tramo_id)
   }
 
   const addPax = addPasajero.bind(null, id)
@@ -153,6 +161,26 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-[var(--navy)] truncate">{p ? `${p.nombres} ${p.apellido_paterno}` : '—'}</p>
                   <span className={`badge ${PAX_BADGE[px.estado] ?? 'badge-gray'}`}>{PAX_LABEL[px.estado] ?? px.estado}</span>
+                  {tramos.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {tramos.map((tr) => {
+                        const on = asignados.get(px.id)?.has(tr.id) ?? false
+                        const meta = MODO_META[tr.modo] ?? MODO_META.otro
+                        const chip = `inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${on ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-white text-[var(--gray-500)] border-[var(--gray-200)]'}`
+                        if (!puedeEscribir) {
+                          return on ? <span key={tr.id} className={chip}><meta.Icon size={11} strokeWidth={2} /> {meta.label}</span> : null
+                        }
+                        const toggle = togglePasajeroTramo.bind(null, id, px.id, tr.id)
+                        return (
+                          <form action={toggle} key={tr.id}>
+                            <button className={`${chip} ${on ? 'hover:opacity-80' : 'hover:bg-[var(--gray-100)]'}`} title={`${on ? 'Quitar de' : 'Asignar a'} ${meta.label}`}>
+                              <meta.Icon size={11} strokeWidth={2} /> {meta.label}
+                            </button>
+                          </form>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
                 {puedeEscribir && (
                   <div className="flex items-center gap-2 shrink-0">

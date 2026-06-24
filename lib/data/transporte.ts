@@ -139,6 +139,31 @@ export function updatePasajeroEstado(supabase: ServerClient, pasajeroId: string,
   return supabase.from('traslado_pasajeros').update(patch as never).eq('id', pasajeroId)
 }
 
+// ── Pasajero ↔ tramo (en qué tramos va cada pasajero) ─────────────────────────
+export async function listPasajeroTramoLinks(supabase: ServerClient, tramoIds: string[]) {
+  if (!tramoIds.length) return []
+  const { data } = await supabase
+    .from('traslado_pasajero_tramos')
+    .select('pasajero_id, tramo_id')
+    .in('tramo_id', tramoIds)
+  return data ?? []
+}
+export async function getPasajeroTramoId(supabase: ServerClient, pasajeroId: string, tramoId: string) {
+  const { data } = await supabase
+    .from('traslado_pasajero_tramos')
+    .select('id')
+    .eq('pasajero_id', pasajeroId)
+    .eq('tramo_id', tramoId)
+    .maybeSingle()
+  return data?.id ?? null
+}
+export function insertPasajeroTramo(supabase: ServerClient, pasajeroId: string, tramoId: string) {
+  return supabase.from('traslado_pasajero_tramos').insert({ pasajero_id: pasajeroId, tramo_id: tramoId })
+}
+export function deletePasajeroTramo(supabase: ServerClient, id: string) {
+  return supabase.from('traslado_pasajero_tramos').delete().eq('id', id)
+}
+
 // ── Tramos (legs) de una movilización ─────────────────────────────────────────
 type TramoInput = { orden: number; modo: string; origen: string | null; destino: string | null; fecha: string | null; hora: string | null; notas: string | null }
 export function insertTramos(supabase: ServerClient, trasladoId: string, tramos: TramoInput[]) {

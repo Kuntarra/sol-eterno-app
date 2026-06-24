@@ -1806,6 +1806,52 @@ export type Database = {
           },
         ]
       }
+      traslado_pasajero_tramos: {
+        Row: {
+          created_at: string
+          id: string
+          pasajero_id: string
+          tenant_id: string
+          tramo_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pasajero_id: string
+          tenant_id?: string
+          tramo_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pasajero_id?: string
+          tenant_id?: string
+          tramo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traslado_pasajero_tramos_pasajero_id_fkey"
+            columns: ["pasajero_id"]
+            isOneToOne: false
+            referencedRelation: "traslado_pasajeros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traslado_pasajero_tramos_tramo_id_fkey"
+            columns: ["tramo_id"]
+            isOneToOne: false
+            referencedRelation: "traslado_tramos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traslado_pasajero_tramos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       traslado_tramos: {
         Row: {
           created_at: string

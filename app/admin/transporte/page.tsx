@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, Bus, Truck, Route } from 'lucide-react'
+import { Plus, Bus, Truck, Route, Repeat } from 'lucide-react'
 import { Pagination } from '@/app/_components/pagination'
 import { puedeGestionar } from '@/lib/rbac'
 import { PAGE_SIZE, parsePage, rangeFor, totalPages as totalPagesFor } from '@/lib/pagination'
@@ -11,8 +11,8 @@ const ESTADO_BADGE: Record<string, string> = {
   planificado: 'badge-gray', en_curso: 'badge-amber', completado: 'badge-green', cancelado: 'badge-gray',
 }
 
-export default async function TransportePage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
-  const { page } = await searchParams
+export default async function TransportePage({ searchParams }: { searchParams: Promise<{ page?: string; diario?: string }> }) {
+  const { page, diario } = await searchParams
   const pageNum = parsePage(page)
   const { from } = rangeFor(pageNum)
   const supabase = await createClient()
@@ -37,6 +37,9 @@ export default async function TransportePage({ searchParams }: { searchParams: P
             <Link href="/admin/transporte/nuevo" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
               <Plus size={16} strokeWidth={2.25} /> Traslado simple
             </Link>
+            <Link href="/admin/transporte/diario" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+              <Repeat size={16} strokeWidth={2.25} /> Traslado diario
+            </Link>
             <Link href="/admin/transporte/movilizacion" className="btn-primary">
               <Route size={16} strokeWidth={2.25} /> Nueva movilización
             </Link>
@@ -45,6 +48,7 @@ export default async function TransportePage({ searchParams }: { searchParams: P
       </div>
 
       <div className="px-8 pb-8">
+        {diario && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Traslado diario creado: <strong>ida</strong> (hotel → faena) y <strong>vuelta</strong> (faena → hotel) del día.</div>}
         {!traslados.length ? (
           <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
             <div className="w-16 h-16 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
