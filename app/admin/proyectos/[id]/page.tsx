@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { BrandStrip } from '@/app/_components/brand-strip'
 import { createDotacion } from '@/app/actions/dotaciones'
 import { updateProyectoEstado } from '@/app/actions/proyectos'
 import { createVinculo, addRecursoVinculo, deleteRecursoVinculo } from '@/app/actions/modulos'
@@ -45,6 +47,18 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
       .eq('proyecto_id', id)
       .order('created_at', { ascending: false }),
   ])
+
+  // Marcas para el match: logo del Mandante (dueño) + logos de los proveedores
+  // vinculados. Cross-tenant → admin client (RLS no deja leer otros tenants).
+  const provTids = (proveedores ?? []).map((p) => p.tenant_proveedor_id).filter(Boolean) as string[]
+  const adminCli = createAdminClient()
+  const { data: tnts } = await adminCli.from('tenants').select('id, name, logo_url').in('id', [proyecto.tenant_id, ...provTids])
+  const tById = new Map((tnts ?? []).map((t) => [t.id, t]))
+  const mandante = tById.get(proyecto.tenant_id)
+  const sociosMarca = (proveedores ?? []).map((p) => {
+    const t = p.tenant_proveedor_id ? tById.get(p.tenant_proveedor_id as string) : null
+    return { nombre: t?.name ?? p.proveedor_nombre ?? p.proveedor_rut ?? '—', logo: t?.logo_url ?? null }
+  })
 
   const ciudad = (proyecto.cities as { name: string } | null)?.name
   const createDotacionForProject = createDotacion.bind(null, id)
@@ -206,6 +220,10 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
 
       {/* Proveedores vinculados (match por RUT o por código) */}
       <h2 className="text-sm font-semibold text-[var(--ink)] mt-10 mb-3">Proveedores vinculados ({proveedores?.length ?? 0})</h2>
+
+      {!!sociosMarca.length && mandante && (
+        <BrandStrip propia={{ nombre: mandante.name, logo: mandante.logo_url }} rolPropia="Mandante" socios={sociosMarca} rolSocios="Proveedor" />
+      )}
 
       {/* Código del proyecto para enviar al proveedor */}
       <div className="bg-gradient-to-br from-[var(--navy)]/[0.04] to-white rounded-xl border border-[var(--navy)]/15 p-5 mb-4 flex flex-wrap items-center justify-between gap-4">

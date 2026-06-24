@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { formatRut } from '@/lib/rut'
 import { puedeGestionar } from '@/lib/rbac'
 import { modulosActivosTenant, getMyTenantId } from '@/lib/tenant'
 import { registrarEvento } from '@/app/actions/bitacora'
 import { conectarPorCodigo } from '@/app/actions/modulos'
 import { solicitarSocio } from '@/app/actions/invitaciones'
+import { BrandStrip } from '@/app/_components/brand-strip'
 import { Link2, Users, Plane, KeyRound, CheckCircle2, AlertTriangle, Star } from 'lucide-react'
 
 const MODULO_LABEL: Record<string, string> = {
@@ -65,12 +67,21 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
   const supabase = await createClient()
   const misModulos = await modulosActivosTenant()
   const puedeConectar = await puedeGestionar(misModulos[0] ?? 'transporte')
-  const { data: miTenant } = await supabase.from('tenants').select('es_invitado, solicito_socio_at').eq('id', await getMyTenantId()).maybeSingle()
+  const miTenantId = await getMyTenantId()
+  const { data: miTenant } = await supabase.from('tenants').select('name, logo_url, es_invitado, solicito_socio_at').eq('id', miTenantId).maybeSingle()
 
   const { data: proyectos } = await supabase
     .from('proyectos')
-    .select('id, nombre, faena, fecha_inicio, fecha_fin_estimada')
+    .select('id, nombre, faena, fecha_inicio, fecha_fin_estimada, tenant_id')
     .order('created_at', { ascending: false })
+
+  // Marcas de los Mandantes a los que estoy conectado (cross-tenant → admin).
+  const mandanteTids = [...new Set((proyectos ?? []).map((p) => p.tenant_id).filter(Boolean))] as string[]
+  const adminCli = createAdminClient()
+  const { data: mandantesT } = mandanteTids.length
+    ? await adminCli.from('tenants').select('id, name, logo_url').in('id', mandanteTids)
+    : { data: [] as { id: string; name: string; logo_url: string | null }[] }
+  const sociosMarca = (mandantesT ?? []).map((t) => ({ nombre: t.name, logo: t.logo_url }))
 
   const { data: vinculos } = await supabase
     .from('proyecto_proveedores')
@@ -119,6 +130,12 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
           <p className="text-sm text-[var(--gray-600)]">Personal de los proyectos donde te contrataron · registra tu servicio sobre cada persona</p>
         </div>
       </div>
+
+      {!!sociosMarca.length && (
+        <div className="mt-5">
+          <BrandStrip propia={{ nombre: miTenant?.name ?? 'Tu empresa', logo: miTenant?.logo_url ?? null }} rolPropia="Proveedor" socios={sociosMarca} rolSocios="Mandante" />
+        </div>
+      )}
 
       {/* Embudo: el Invitado puede pedir convertirse en Socio Dotia */}
       {miTenant?.es_invitado && (

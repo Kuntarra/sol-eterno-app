@@ -3,7 +3,9 @@ import { notFound } from 'next/navigation'
 import { requireSuperAdmin } from '@/lib/super'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { updateTenant, toggleTenantActive, markTenantPaid, updateTenantModulos, convertirEnSocio } from '@/app/actions/tenants'
-import { ArrowLeft, Building2, BedDouble, Users, CheckCircle2, Boxes, Star } from 'lucide-react'
+import { subirLogoSuper } from '@/app/actions/marca'
+import { LogoUploader } from '@/app/_components/logo-uploader'
+import { ArrowLeft, Building2, BedDouble, Users, CheckCircle2, Boxes, Star, ImageIcon } from 'lucide-react'
 
 import { MODULOS as MODULOS_DEF } from '@/lib/modulos'
 
@@ -41,6 +43,7 @@ export default async function OperadorDetailPage({
   const markPaidWithId = markTenantPaid.bind(null, id)
   const updateModulosWithId = updateTenantModulos.bind(null, id)
   const convertirWithId = convertirEnSocio.bind(null, id)
+  const subirLogoWithId = subirLogoSuper.bind(null, id)
 
   return (
     <div className="max-w-3xl">
@@ -62,7 +65,7 @@ export default async function OperadorDetailPage({
 
       {success && (
         <div className="mb-5 px-4 py-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-700 flex items-center gap-2">
-          <CheckCircle2 size={15} strokeWidth={2.25} /> {success === 'socio' ? '¡Convertido en ★ Socio Dotia! Sus vínculos pasaron a activos.' : 'Cambios guardados.'}
+          <CheckCircle2 size={15} strokeWidth={2.25} /> {success === 'socio' ? '¡Convertido en ★ Socio Dotia! Sus vínculos pasaron a activos.' : success === 'logo' ? 'Logo actualizado.' : 'Cambios guardados.'}
         </div>
       )}
 
@@ -125,6 +128,16 @@ export default async function OperadorDetailPage({
             Marcar pagado (este mes)
           </button>
         </form>
+      </div>
+
+      {/* Logo / marca de la empresa */}
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <ImageIcon size={16} strokeWidth={2} className="text-[var(--navy)]" />
+          <h3 className="text-sm font-bold text-[var(--ink)]">Logo de la empresa</h3>
+        </div>
+        <p className="text-xs text-[var(--gray-600)] mb-4">Se muestra en su panel y, al hacer match, junto al de la otra empresa (comunicación de marca).</p>
+        <LogoUploader action={subirLogoWithId} current={t.logo_url} nombre={t.name} />
       </div>
 
       {/* Tipo de empresa + módulos contratados */}
