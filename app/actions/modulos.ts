@@ -184,6 +184,57 @@ export async function createPlanilla(formData: FormData) {
   redirect('/admin/lavanderia?success=planilla')
 }
 
+// Genera una planilla desde un Excel: cada fila de la primera columna = un ítem.
+// Detecta y omite encabezado si la fila 1 es una palabra conocida. Recomendado
+// máximo 24 ítems (la boleta se cuadra a 2 columnas de 12); si excede, avisa.
+const PLANILLA_MAX_ITEMS = 24
+export async function importPlanilla(formData: FormData) {
+  if (!(await puedeGestionar('lavanderia'))) redirect('/admin/lavanderia?error=' + encodeURIComponent('No tienes permiso de supervisor en Lavandería.'))
+  const supabase = await createClient()
+  const nombre = (formData.get('nombre') as string)?.trim()
+  const file = formData.get('file') as File | null
+  if (!nombre) redirect('/admin/lavanderia?error=' + encodeURIComponent('Escribe un nombre para la planilla.'))
+  if (!file || file.size === 0) redirect('/admin/lavanderia?error=' + encodeURIComponent('Selecciona un archivo Excel (.xlsx).'))
+
+  const ExcelJS = (await import('exceljs')).default
+  const wb = new ExcelJS.Workbook()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await wb.xlsx.load((await file.arrayBuffer()) as any)
+  const ws = wb.worksheets[0]
+  if (!ws) redirect('/admin/lavanderia?error=' + encodeURIComponent('El archivo no tiene hojas.'))
+
+  const norm = (s: unknown) => (s ?? '').toString().trim()
+  const key = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  const HEADERS = ['item', 'items', 'prenda', 'prendas', 'nombre', 'articulo', 'ropa', 'descripcion', 'detalle']
+
+  // Columna a leer: la del encabezado conocido; si no hay, la primera.
+  let colIdx = 1, startRow = 1
+  ws.getRow(1).eachCell((cell, c) => {
+    if (startRow === 1 && HEADERS.includes(key(norm(cell.text)))) { colIdx = c; startRow = 2 }
+  })
+
+  const seen = new Set<string>()
+  const items: string[] = []
+  for (let i = startRow; i <= ws.rowCount; i++) {
+    const v = norm(ws.getRow(i).getCell(colIdx).text)
+    if (!v) continue
+    const k = key(v)
+    if (seen.has(k)) continue
+    seen.add(k)
+    items.push(v)
+  }
+  if (!items.length) redirect('/admin/lavanderia?error=' + encodeURIComponent('No se encontraron ítems en el archivo.'))
+
+  const { data: pl, error: errPl } = await supabase.from('lavanderia_planillas').insert({ nombre }).select('id').single()
+  if (errPl || !pl) redirect('/admin/lavanderia?error=' + encodeURIComponent(errPl?.message ?? 'No se pudo crear la planilla.'))
+  const { error: errItems } = await supabase.from('lavanderia_planilla_items')
+    .insert(items.map((n, i) => ({ planilla_id: pl.id, nombre: n, orden: i })))
+  if (errItems) redirect('/admin/lavanderia?error=' + encodeURIComponent(errItems.message))
+
+  revalidatePath('/admin/lavanderia')
+  redirect('/admin/lavanderia?creada=' + items.length + (items.length > PLANILLA_MAX_ITEMS ? '&aviso=1' : ''))
+}
+
 export async function addPlanillaItem(formData: FormData) {
   if (!(await puedeGestionar('lavanderia'))) redirect('/admin/lavanderia?error=' + encodeURIComponent('No tienes permiso de supervisor en Lavandería.'))
   const supabase = await createClient()

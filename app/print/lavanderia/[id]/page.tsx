@@ -60,6 +60,24 @@ export default async function BoletaLavanderiaPage({ params }: Props) {
     @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
   `
 
+  const dosCols = items.length > 8
+  const mid = Math.ceil(items.length / 2)
+  const colA = dosCols ? items.slice(0, mid) : items
+  const colB = dosCols ? items.slice(mid) : []
+
+  const ColTabla = ({ rows }: { rows: typeof items }) => (
+    <div style={{ border: '1px solid #e9ecef', borderRadius: 7, overflow: 'hidden' }}>
+      <table>
+        <thead><tr><th>Ítem</th><th style={{ textAlign: 'right' }}>Cant.</th></tr></thead>
+        <tbody>
+          {rows.map((it, i) => (
+            <tr key={i}><td style={{ fontWeight: 600, color: N }}>{it.nombre}</td><td style={{ textAlign: 'right', fontWeight: 700, color: N }}>{it.cantidad}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+
   const Boleta = ({ label, top }: { label: string; top?: boolean }) => (
     <div className={`copia${top ? ' copia--top' : ''}`}>
       {/* Header */}
@@ -94,17 +112,16 @@ export default async function BoletaLavanderiaPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Contenido */}
-      <div style={{ border: '1px solid #e9ecef', borderRadius: 7, overflow: 'hidden', flex: 1 }}>
-        <table>
-          <thead><tr><th>Ítem ({items.length})</th><th style={{ textAlign: 'right' }}>Cant.</th></tr></thead>
-          <tbody>
-            {items.map((it, i) => (
-              <tr key={i}><td style={{ fontWeight: 600, color: N }}>{it.nombre}</td><td style={{ textAlign: 'right', fontWeight: 700, color: N }}>{it.cantidad}</td></tr>
-            ))}
-          </tbody>
-          <tfoot><tr><td>Total de prendas</td><td style={{ textAlign: 'right' }}>{total}</td></tr></tfoot>
-        </table>
+      {/* Contenido (2 columnas si hay muchos ítems, para cuadrar en media hoja) */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: dosCols ? '1fr 1fr' : '1fr', gap: 8, flex: 1, alignContent: 'start' }}>
+          <ColTabla rows={colA} />
+          {dosCols && <ColTabla rows={colB} />}
+        </div>
+        <div style={{ background: '#f1f3f5', fontWeight: 700, fontSize: 11, color: N, padding: '5px 12px', borderRadius: 6, marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
+          <span>{items.length} {items.length === 1 ? 'ítem' : 'ítems'}</span>
+          <span>Total de prendas: {total}</span>
+        </div>
       </div>
 
       {/* Firmas */}

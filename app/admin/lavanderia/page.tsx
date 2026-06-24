@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
-import { createPlanilla, addPlanillaItem, deletePlanillaItem, deletePlanilla } from '@/app/actions/modulos'
+import { createPlanilla, importPlanilla, addPlanillaItem, deletePlanillaItem, deletePlanilla } from '@/app/actions/modulos'
 import { AsignarPlanilla } from './_components/asignar-planilla'
 import { ResumenLavanderia, type GrupoResumen, type EstadoLav } from './_components/resumen'
 import { puedeGestionar } from '@/lib/rbac'
-import { Plus, X, Trash2, Printer, ClipboardList } from 'lucide-react'
+import { Plus, X, Trash2, Printer, ClipboardList, FileSpreadsheet, AlertTriangle } from 'lucide-react'
 
-interface Props { searchParams: Promise<{ error?: string; success?: string; asignada?: string }> }
+const MAX_ITEMS = 24
+
+interface Props { searchParams: Promise<{ error?: string; success?: string; asignada?: string; creada?: string; aviso?: string }> }
 
 const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 const SIN_PROP = 'Sin alojamiento asignado'
@@ -16,7 +18,7 @@ function addDays(fecha: string, dias: number) {
 }
 
 export default async function LavanderiaPage({ searchParams }: Props) {
-  const { error, success, asignada } = await searchParams
+  const { error, success, asignada, creada, aviso } = await searchParams
   const supabase = await createClient()
   const hoy = new Date().toISOString().slice(0, 10)
   const [{ data: planillas }, { data: dotacionesRaw }, { data: rotaciones }, { data: bolsas }, { data: stays }] = await Promise.all([
@@ -99,6 +101,8 @@ export default async function LavanderiaPage({ searchParams }: Props) {
       <div className="px-8 pb-8">
         {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
         {success && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Guardado.</div>}
+        {creada && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Planilla creada con <strong>{creada}</strong> {Number(creada) === 1 ? 'ítem' : 'ítems'} desde el Excel.</div>}
+        {aviso && <div className="mb-6 px-4 py-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800 flex items-center gap-2"><AlertTriangle size={16} /> La planilla supera los {MAX_ITEMS} ítems recomendados: la boleta puede perder la cuadratura al imprimir.</div>}
         {asignada && (
           <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center justify-between gap-3">
             <span>Asignación grabada.</span>
@@ -109,15 +113,39 @@ export default async function LavanderiaPage({ searchParams }: Props) {
         {/* Planillas de ropa */}
         {puedeEscribir && (
         <section className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <ClipboardList size={18} strokeWidth={2} className="text-[var(--navy)]" />
-              <h2 className="text-base font-semibold text-[var(--navy)]">Planillas de ropa</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <ClipboardList size={18} strokeWidth={2} className="text-[var(--navy)]" />
+            <h2 className="text-base font-semibold text-[var(--navy)]">Planillas de ropa</h2>
+          </div>
+
+          <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Crear manual */}
+              <form action={createPlanilla}>
+                <label className="block text-xs font-medium text-[var(--gray-600)] mb-1.5">Crear planilla vacía</label>
+                <div className="flex gap-2">
+                  <input name="nombre" placeholder="Planilla 14x14, verano…" className={`${INPUT} flex-1`} required />
+                  <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg whitespace-nowrap"><Plus size={15} strokeWidth={2.5} /> Generar</button>
+                </div>
+                <p className="text-[11px] text-[var(--gray-500)] mt-1.5">Luego le agregas los ítems uno a uno.</p>
+              </form>
+
+              {/* Generar desde Excel */}
+              <form action={importPlanilla} className="md:border-l md:border-[var(--gray-200)] md:pl-5">
+                <label className="block text-xs font-medium text-[var(--gray-600)] mb-1.5">Generar desde Excel</label>
+                <div className="flex flex-wrap gap-2">
+                  <input name="nombre" placeholder="Nombre de la planilla" className={`${INPUT} flex-1 min-w-[8rem]`} required />
+                  <input name="file" type="file" accept=".xlsx,.xls" required className="text-xs text-[var(--gray-600)] file:mr-2 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[var(--gray-100)] file:text-[var(--navy)] file:text-sm file:font-semibold file:cursor-pointer" />
+                  <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[var(--navy)]/30 text-[var(--navy)] text-sm font-semibold rounded-lg hover:bg-[var(--navy)]/5 whitespace-nowrap"><FileSpreadsheet size={15} strokeWidth={2} /> Subir</button>
+                </div>
+                <p className="text-[11px] text-[var(--gray-500)] mt-1.5">Una columna con un ítem por fila (con o sin encabezado).</p>
+              </form>
             </div>
-            <form action={createPlanilla} className="flex gap-2">
-              <input name="nombre" placeholder="Planilla 14x14, Planilla verano…" className={`${INPUT} w-64`} required />
-              <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg whitespace-nowrap"><Plus size={15} strokeWidth={2.5} /> Generar planilla</button>
-            </form>
+
+            <div className="mt-4 pt-4 border-t border-[var(--gray-100)] flex items-start gap-2 text-[11px] text-[var(--gray-500)]">
+              <AlertTriangle size={13} className="text-[var(--amber-dark)] shrink-0 mt-0.5" />
+              <span>No se recomienda más de <strong>{MAX_ITEMS} ítems</strong> por planilla: la boleta se cuadra en 2 columnas de 12 para imprimir en media hoja carta; si se excede, puede deformarse o perder la cuadratura.</span>
+            </div>
           </div>
 
           {!planillas?.length ? (
@@ -134,7 +162,10 @@ export default async function LavanderiaPage({ searchParams }: Props) {
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h3 className="text-sm font-semibold text-[var(--navy)]">{pl.nombre}</h3>
-                        <p className="text-[11px] text-[var(--gray-500)]">{items.length} {items.length === 1 ? 'ítem' : 'ítems'}</p>
+                        <p className="text-[11px] text-[var(--gray-500)] flex items-center gap-1.5">
+                          {items.length} {items.length === 1 ? 'ítem' : 'ítems'}
+                          {items.length > MAX_ITEMS && <span className="inline-flex items-center gap-1 text-amber-700"><AlertTriangle size={11} /> supera {MAX_ITEMS}</span>}
+                        </p>
                       </div>
                       <form action={eliminarPlanilla}><button className="text-[var(--gray-400)] hover:text-red-600" title="Eliminar planilla"><Trash2 size={15} /></button></form>
                     </div>
