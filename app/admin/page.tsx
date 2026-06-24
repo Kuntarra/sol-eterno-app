@@ -2,10 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { MODULO_RUTA, type ModuloKey } from '@/lib/modulos'
-import { getMyTenantId } from '@/lib/tenant'
-import { subirLogo } from '@/app/actions/marca'
-import { LogoUploader } from '@/app/_components/logo-uploader'
-import { Building2, Briefcase, Users, User, CalendarDays, Zap, Clock, LogIn, LogOut, ImageIcon } from 'lucide-react'
+import { Building2, Briefcase, Users, User, CalendarDays, Zap, Clock, LogIn, LogOut } from 'lucide-react'
 
 // Los sub-usuarios (rol modulo) no tienen dashboard: entran directo a su módulo.
 async function redirigirSubusuario() {
@@ -31,11 +28,9 @@ function relativeTime(iso: string | null) {
   return d.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
 }
 
-export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ logo?: string; error?: string }> }) {
+export default async function AdminDashboard() {
   await redirigirSubusuario()
-  const { logo, error: errMsg } = await searchParams
   const supabase = await createClient()
-  const { data: miEmpresa } = await supabase.from('tenants').select('name, logo_url').eq('id', await getMyTenantId()).maybeSingle()
 
   const now             = new Date()
   const thisMonthStart  = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -144,19 +139,6 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         <p className="text-sm text-[var(--gray-600)] mt-1 capitalize">
           Resumen operativo de hoy, {fecha}.
         </p>
-      </div>
-
-      {errMsg && <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(errMsg)}</div>}
-      {logo && <div className="px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Logo actualizado.</div>}
-
-      {/* ── Logo / marca de la empresa ── */}
-      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6">
-        <div className="flex items-center gap-2 mb-1.5">
-          <ImageIcon size={17} strokeWidth={2} className="text-[var(--navy)]" />
-          <h2 className="text-base font-semibold text-[var(--ink)]">Logo de tu empresa</h2>
-        </div>
-        <p className="text-sm text-[var(--gray-600)] mb-4">Aparece en tu panel y, cuando te conectas con otra empresa, junto a su logo (comunicación de marca).</p>
-        <LogoUploader action={subirLogo} current={miEmpresa?.logo_url ?? null} nombre={miEmpresa?.name ?? 'Tu empresa'} />
       </div>
 
       {/* ── KPIs ── */}

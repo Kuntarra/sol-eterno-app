@@ -34,14 +34,15 @@ export async function subirLogo(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const { data: prof } = await supabase.from('user_profiles').select('role, is_super_admin, tenant_id').eq('id', user.id).single()
-  if (prof?.role !== 'admin' && !prof?.is_super_admin) redirect('/admin?error=' + encodeURIComponent('Solo la administración puede cambiar el logo.'))
+  if (prof?.role !== 'admin' && !prof?.is_super_admin) redirect('/admin/marca?error=' + encodeURIComponent('Solo la administración puede cambiar el logo.'))
   const file = formData.get('file') as File | null
-  if (!file || file.size === 0) redirect('/admin?error=' + encodeURIComponent('Selecciona una imagen.'))
+  if (!file || file.size === 0) redirect('/admin/marca?error=' + encodeURIComponent('Selecciona una imagen.'))
   const tenantId = prof.tenant_id ?? (await getMyTenantId())
   const r = await subir(tenantId, file)
-  if (r.error) redirect('/admin?error=' + encodeURIComponent(r.error))
+  if (r.error) redirect('/admin/marca?error=' + encodeURIComponent(r.error))
+  revalidatePath('/admin/marca')
   revalidatePath('/admin', 'layout')
-  redirect('/admin?logo=1')
+  redirect('/admin/marca?logo=1')
 }
 
 // El super admin sube el logo de cualquier empresa desde /super.
