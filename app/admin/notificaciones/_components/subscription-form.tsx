@@ -8,7 +8,7 @@ const HOURS = [6, 7, 8, 9, 12, 13, 18, 20, 21]
 const WEEKDAYS: [number, string][] = [[1, 'Lun'], [2, 'Mar'], [3, 'Mié'], [4, 'Jue'], [5, 'Vie'], [6, 'Sáb'], [7, 'Dom']]
 
 const INPUT = 'input-premium'
-const LABEL = 'block text-sm font-semibold text-[var(--navy)] mb-1.5'
+const LABEL = 'block text-sm font-semibold text-[var(--ink)] mb-1.5'
 
 export function SubscriptionForm({
   companies, properties, projects,
@@ -55,7 +55,7 @@ export function SubscriptionForm({
           {([['movements', 'Movimientos'], ['full', 'Completo (KPIs + ocupación)']] as const).map(([v, l]) => (
             <button key={v} type="button" onClick={() => setReportType(v)}
               className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                reportType === v ? 'bg-white text-[var(--navy)] shadow-[var(--shadow-xs)]' : 'text-[var(--gray-600)] hover:text-[var(--navy)]'
+                reportType === v ? 'bg-[var(--surface)] text-[var(--ink)] shadow-[var(--shadow-xs)]' : 'text-[var(--gray-600)] hover:text-[var(--ink)]'
               }`}>{l}</button>
           ))}
         </div>
@@ -74,7 +74,7 @@ export function SubscriptionForm({
           {([['all', 'Toda la operación'], ['each_project', 'Cada proyecto'], ['project', 'Un proyecto'], ['company', 'Una empresa'], ['property', 'Propiedades']] as const).map(([v, l]) => (
             <button key={v} type="button" onClick={() => setScope(v)}
               className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                scope === v ? 'bg-white text-[var(--navy)] shadow-[var(--shadow-xs)]' : 'text-[var(--gray-600)] hover:text-[var(--navy)]'
+                scope === v ? 'bg-[var(--surface)] text-[var(--ink)] shadow-[var(--shadow-xs)]' : 'text-[var(--gray-600)] hover:text-[var(--ink)]'
               }`}>{l}</button>
           ))}
         </div>
@@ -119,7 +119,7 @@ export function SubscriptionForm({
             {([['daily', 'Diario'], ['weekly', 'Semanal'], ['monthly', 'Mensual']] as const).map(([v, l]) => (
               <button key={v} type="button" onClick={() => setFreq(v)}
                 className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  freq === v ? 'bg-white text-[var(--navy)] shadow-[var(--shadow-xs)]' : 'text-[var(--gray-600)] hover:text-[var(--navy)]'
+                  freq === v ? 'bg-[var(--surface)] text-[var(--ink)] shadow-[var(--shadow-xs)]' : 'text-[var(--gray-600)] hover:text-[var(--ink)]'
                 }`}>{l}</button>
             ))}
           </div>
@@ -137,7 +137,7 @@ export function SubscriptionForm({
           <label className={LABEL}>Días de la semana</label>
           <div className="flex flex-wrap gap-2">
             {WEEKDAYS.map(([v, l]) => (
-              <label key={v} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm cursor-pointer has-[:checked]:border-[var(--navy)] has-[:checked]:bg-[var(--navy-5)]">
+              <label key={v} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm cursor-pointer has-[:checked]:border-[var(--navy)] has-[:checked]:bg-[var(--navy-5)]">
                 <input type="checkbox" name="weekdays" value={v} className="w-4 h-4 rounded accent-[var(--navy)]" />
                 {l}
               </label>

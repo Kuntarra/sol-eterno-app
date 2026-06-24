@@ -70,7 +70,7 @@ export default async function HistorialPage({
     <div className="p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Historial de estadías</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">Historial de estadías</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">
             {stays.length} registros · {activas} activas · {completadas} completadas
           </p>
@@ -78,7 +78,7 @@ export default async function HistorialPage({
         {/* Buscador */}
         <form method="GET" className="flex gap-2">
           <input name="q" defaultValue={q} type="text" placeholder="Buscar por nombre o RUT…"
-            className="px-3.5 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm w-56 focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+            className="px-3.5 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm w-56 focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
           <button type="submit"
             className="px-4 py-2 bg-[var(--navy)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--navy-dark)] transition-colors">
             Buscar
@@ -86,7 +86,7 @@ export default async function HistorialPage({
         </form>
       </div>
 
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden">
         {!stays.length ? (
           <p className="px-6 py-10 text-center text-sm text-[var(--gray-500)]">No se encontraron estadías.</p>
         ) : (
@@ -106,14 +106,14 @@ export default async function HistorialPage({
                   return (
                     <tr key={s.id} className="hover:bg-[var(--gray-50)]">
                       <td className="px-4 py-3 text-xs text-[var(--gray-400)]">{i+1}</td>
-                      <td className="px-4 py-3 font-semibold text-[var(--navy)] whitespace-nowrap">{g?.first_name} {g?.last_name_paterno}</td>
+                      <td className="px-4 py-3 font-semibold text-[var(--ink)] whitespace-nowrap">{g?.first_name} {g?.last_name_paterno}</td>
                       <td className="px-4 py-3 text-xs text-[var(--gray-500)] font-mono">{g?.rut ?? '—'}</td>
                       <td className="px-4 py-3 font-medium text-[var(--gray-700)]">{r?.properties?.name}</td>
                       <td className="px-4 py-3 text-[var(--gray-600)]">{r?.number}</td>
                       <td className="px-4 py-3 text-[var(--gray-600)]">{s.shift_type ?? '—'}</td>
                       <td className="px-4 py-3 whitespace-nowrap">{fmt(s.checked_in_at)}</td>
                       <td className="px-4 py-3 whitespace-nowrap">{s.checked_out_at ? fmt(s.checked_out_at) : '—'}</td>
-                      <td className="px-4 py-3 text-right font-bold text-[var(--navy)]">{noches(s.checked_in_at, s.checked_out_at)}</td>
+                      <td className="px-4 py-3 text-right font-bold text-[var(--ink)]">{noches(s.checked_in_at, s.checked_out_at)}</td>
                       <td className="px-4 py-3">
                         {s.checked_out_at
                           ? <span className="text-xs bg-[var(--gray-100)] text-[var(--gray-500)] px-2 py-0.5 rounded-full">Completada</span>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { createMovilizacion } from '@/app/actions/transporte'
 import { Plane, Bus, Car, Footprints, MoreHorizontal, Plus, X, ArrowDown } from 'lucide-react'
 
-const INPUT = 'w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
+const INPUT = 'w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 const LABEL = 'block text-xs font-medium text-[var(--gray-600)] mb-1'
 
 const MODOS = [
@@ -33,7 +33,7 @@ export function MovilizacionForm({ proyectos, vehiculos }: { proyectos: Opt[]; v
       <input type="hidden" name="tramos" value={JSON.stringify(tramos)} />
 
       {/* Datos generales */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="proyecto_id" className={LABEL}>Proyecto</label>
           <select id="proyecto_id" name="proyecto_id" className={INPUT} defaultValue="">
@@ -65,10 +65,10 @@ export function MovilizacionForm({ proyectos, vehiculos }: { proyectos: Opt[]; v
       <div>
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-sm font-semibold text-[var(--navy)]">Tramos del viaje</h2>
+            <h2 className="text-sm font-semibold text-[var(--ink)]">Tramos del viaje</h2>
             <p className="text-xs text-[var(--gray-600)]">Encadena los tramos en orden: ej. Vuelo Santiago→Iquique, luego Bus Iquique→Faena.</p>
           </div>
-          <button type="button" onClick={add} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)]">
+          <button type="button" onClick={add} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-sm font-semibold hover:bg-[var(--gray-100)]">
             <Plus size={15} strokeWidth={2.5} /> Agregar tramo
           </button>
         </div>
@@ -77,7 +77,7 @@ export function MovilizacionForm({ proyectos, vehiculos }: { proyectos: Opt[]; v
           {tramos.map((t, i) => (
             <div key={i}>
               {i > 0 && <div className="flex justify-center -my-1"><ArrowDown size={16} className="text-[var(--gray-400)]" /></div>}
-              <div className="bg-white rounded-xl border border-[var(--gray-200)] p-4">
+              <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold text-[var(--gray-500)] uppercase tracking-wide">Tramo {i + 1}</span>
                   {tramos.length > 1 && (
@@ -90,7 +90,7 @@ export function MovilizacionForm({ proyectos, vehiculos }: { proyectos: Opt[]; v
                     <div className="flex gap-1">
                       {MODOS.map(({ v, label, Icon }) => (
                         <button type="button" key={v} onClick={() => set(i, { modo: v })} title={label}
-                          className={`flex-1 flex items-center justify-center py-2 rounded-lg border text-xs ${t.modo === v ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-white text-[var(--gray-600)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
+                          className={`flex-1 flex items-center justify-center py-2 rounded-lg border text-xs ${t.modo === v ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-[var(--surface)] text-[var(--gray-600)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
                           <Icon size={15} strokeWidth={2} />
                         </button>
                       ))}
@@ -121,7 +121,7 @@ export function MovilizacionForm({ proyectos, vehiculos }: { proyectos: Opt[]; v
 
       <div className="flex items-center gap-3">
         <button type="submit" className="px-6 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">Crear movilización</button>
-        <a href="/admin/transporte" className="px-6 py-2.5 bg-white hover:bg-[var(--gray-100)] text-[var(--navy)] text-sm font-medium rounded-lg border border-[var(--gray-200)]">Cancelar</a>
+        <a href="/admin/transporte" className="px-6 py-2.5 bg-[var(--surface)] hover:bg-[var(--gray-100)] text-[var(--ink)] text-sm font-medium rounded-lg border border-[var(--gray-200)]">Cancelar</a>
       </div>
     </form>
   )

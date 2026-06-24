@@ -83,7 +83,7 @@ export default async function CheckinPage({
       <div>
         <div className="mb-6">
           <span className="section-label">Recepción</span>
-          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Nuevo check-in</h1>
         </div>
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
           <AlertCircle className="mx-auto mb-4" size={40} strokeWidth={1.5} stroke="#d97706" />
@@ -102,10 +102,10 @@ export default async function CheckinPage({
       <div>
         <div className="mb-6">
           <span className="section-label">Recepción</span>
-          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Nuevo check-in</h1>
         </div>
         <div className="bg-[var(--gray-50)] border border-[var(--gray-200)] rounded-2xl p-8 text-center">
-          <p className="text-sm font-semibold text-[var(--navy)] mb-1">Sin habitaciones configuradas</p>
+          <p className="text-sm font-semibold text-[var(--ink)] mb-1">Sin habitaciones configuradas</p>
           <p className="text-sm text-[var(--gray-600)]">
             Tus propiedades asignadas aún no tienen empresas ni habitaciones configuradas con allocations.
             El administrador debe crear las asignaciones en cada propiedad.
@@ -119,7 +119,7 @@ export default async function CheckinPage({
     <div>
       <div className="mb-6">
         <span className="section-label">Recepción</span>
-        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Nuevo check-in</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Nuevo check-in</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">Registrar ingreso de huésped</p>
       </div>
       <CheckinForm properties={properties} error={params.error} />

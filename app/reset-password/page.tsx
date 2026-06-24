@@ -45,11 +45,11 @@ export default function ResetPasswordPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--navy)] mb-4 shadow-lg">
             <Lock size={26} strokeWidth={1.75} stroke="var(--amber)" />
           </div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Nueva contraseña</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">Nueva contraseña</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">Sol Eterno</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-[var(--gray-200)] p-8">
+        <div className="bg-[var(--surface)] rounded-2xl shadow-sm border border-[var(--gray-200)] p-8">
           {error && (
             <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
               {error}

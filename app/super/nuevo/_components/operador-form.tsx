@@ -5,7 +5,7 @@ import { useActionState } from 'react'
 import { createTenant } from '@/app/actions/tenants'
 import { AlertTriangle } from 'lucide-react'
 
-const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
+const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
 const LABEL = 'block text-xs font-semibold text-[var(--gray-600)] mb-1.5'
 
 export function OperadorForm() {
@@ -21,8 +21,8 @@ export function OperadorForm() {
       )}
 
       {/* Datos del cliente */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-        <h3 className="text-sm font-bold text-[var(--navy)] mb-4">Datos del cliente</h3>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+        <h3 className="text-sm font-bold text-[var(--ink)] mb-4">Datos del cliente</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
             <label className={LABEL}>Nombre del cliente *</label>
@@ -45,8 +45,8 @@ export function OperadorForm() {
       </div>
 
       {/* Facturación y cupo */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-        <h3 className="text-sm font-bold text-[var(--navy)] mb-4">Facturación y cupo</h3>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+        <h3 className="text-sm font-bold text-[var(--ink)] mb-4">Facturación y cupo</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={LABEL}>Cupo de personas contratado *</label>
@@ -65,8 +65,8 @@ export function OperadorForm() {
       </div>
 
       {/* Administrador inicial */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-        <h3 className="text-sm font-bold text-[var(--navy)] mb-1">Administrador inicial</h3>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+        <h3 className="text-sm font-bold text-[var(--ink)] mb-1">Administrador inicial</h3>
         <p className="text-xs text-[var(--gray-600)] mb-4">Esta persona podrá entrar y gestionar la operación de este cliente. Suele ser la misma del contacto.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">

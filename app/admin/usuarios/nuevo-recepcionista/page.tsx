@@ -7,7 +7,7 @@ interface Props {
   searchParams: Promise<{ error?: string }>
 }
 
-const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
+const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
 const LABEL = 'block text-sm font-medium text-[var(--gray-900)] mb-1.5'
 
 export default async function NuevoRecepcionistaPage({ searchParams }: Props) {
@@ -23,11 +23,11 @@ export default async function NuevoRecepcionistaPage({ searchParams }: Props) {
   return (
     <div className="p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/admin/usuarios" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
+        <Link href="/admin/usuarios" className="text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors">
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Nuevo recepcionista</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">Nuevo recepcionista</h1>
           <p className="text-sm text-[var(--gray-600)]">El usuario podrá hacer check-in y check-out en las propiedades asignadas</p>
         </div>
       </div>
@@ -39,8 +39,8 @@ export default async function NuevoRecepcionistaPage({ searchParams }: Props) {
       )}
 
       <form action={createReceptionist} className="space-y-6">
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Datos del usuario</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-5">Datos del usuario</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label htmlFor="full_name" className={LABEL}>Nombre completo *</label>
@@ -57,8 +57,8 @@ export default async function NuevoRecepcionistaPage({ searchParams }: Props) {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-1">Propiedades asignadas</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-1">Propiedades asignadas</h2>
           <p className="text-xs text-[var(--gray-600)] mb-5">El recepcionista solo verá y gestionará estas propiedades</p>
 
           {!properties?.length ? (
@@ -74,7 +74,7 @@ export default async function NuevoRecepcionistaPage({ searchParams }: Props) {
                     className="w-4 h-4 rounded border-[var(--gray-200)] accent-[var(--navy)] cursor-pointer"
                   />
                   <div>
-                    <p className="text-sm font-medium text-[var(--navy)]">{p.name}</p>
+                    <p className="text-sm font-medium text-[var(--ink)]">{p.name}</p>
                     <p className="text-xs text-[var(--gray-600)]">{(p.cities as unknown as { name: string } | null)?.name}</p>
                   </div>
                 </label>
@@ -87,7 +87,7 @@ export default async function NuevoRecepcionistaPage({ searchParams }: Props) {
           <button type="submit" className="px-6 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-light)] text-white text-sm font-semibold rounded-lg transition-colors">
             Crear recepcionista
           </button>
-          <Link href="/admin/usuarios" className="px-6 py-2.5 bg-white hover:bg-[var(--gray-100)] text-[var(--navy)] text-sm font-medium rounded-lg border border-[var(--gray-200)] transition-colors">
+          <Link href="/admin/usuarios" className="px-6 py-2.5 bg-[var(--surface)] hover:bg-[var(--gray-100)] text-[var(--ink)] text-sm font-medium rounded-lg border border-[var(--gray-200)] transition-colors">
             Cancelar
           </Link>
         </div>

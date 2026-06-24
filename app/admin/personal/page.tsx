@@ -67,14 +67,14 @@ export default async function PersonalPage({ searchParams }: Props) {
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-6 flex items-end justify-between gap-6">
         <div>
           <span className="section-label">Dotación</span>
-          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Personal</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Personal</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">
             {total} {total === 1 ? 'persona' : 'personas'} en tu directorio
           </p>
         </div>
         {puedeEscribir && (
           <div className="flex items-center gap-2 shrink-0">
-            <Link href="/admin/personal/importar" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+            <Link href="/admin/personal/importar" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
               <Upload size={16} strokeWidth={2.25} />
               Importar Excel
             </Link>
@@ -88,10 +88,10 @@ export default async function PersonalPage({ searchParams }: Props) {
 
       <div className="px-8 pb-8">
         {/* Cupo contratado (según el plan) */}
-        <div className="mb-6 bg-white rounded-xl border border-[var(--gray-200)] p-4 max-w-md">
+        <div className="mb-6 bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-4 max-w-md">
           <div className="flex items-center justify-between text-xs mb-1.5">
             <span className="font-semibold text-[var(--gray-600)]">Cupo de personas (plan)</span>
-            <span className="tabular-nums text-[var(--navy)] font-semibold">{cupo.usadas} / {cupo.limite} · {cupoPct}%</span>
+            <span className="tabular-nums text-[var(--ink)] font-semibold">{cupo.usadas} / {cupo.limite} · {cupoPct}%</span>
           </div>
           <div className="h-2.5 rounded-full bg-[var(--gray-100)] overflow-hidden">
             <div className={`h-full rounded-full transition-all duration-300 ${cupoColor}`} style={{ width: `${cupoPct}%` }} />
@@ -137,12 +137,12 @@ export default async function PersonalPage({ searchParams }: Props) {
             name="q"
             defaultValue={term}
             placeholder="Buscar por nombre o RUT…"
-            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent"
+            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent"
           />
         </form>
 
         {!rows.length ? (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-16 text-center">
             <div className="w-16 h-16 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
               <IdCard size={28} strokeWidth={1.5} stroke="var(--gray-600)" />
             </div>
@@ -150,14 +150,14 @@ export default async function PersonalPage({ searchParams }: Props) {
               {term ? 'Sin resultados para tu búsqueda' : 'Aún no hay personal registrado'}
             </p>
             {!term && (
-              <Link href="/admin/personal/nuevo" className="text-[var(--navy)] text-sm font-semibold hover:underline">
+              <Link href="/admin/personal/nuevo" className="text-[var(--ink)] text-sm font-semibold hover:underline">
                 Registrar primera persona →
               </Link>
             )}
           </div>
         ) : (
           <>
-            <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[var(--gray-200)] text-left text-[var(--gray-600)]">
@@ -172,7 +172,7 @@ export default async function PersonalPage({ searchParams }: Props) {
                     const nombre = `${r.nombres} ${r.apellido_paterno}${r.apellido_materno ? ' ' + r.apellido_materno : ''}`
                     return (
                       <tr key={r.persona_id} className="border-b border-[var(--gray-100)] last:border-0 hover:bg-[var(--gray-100)]/50 transition-colors">
-                        <td className="px-5 py-3.5 font-medium text-[var(--navy)]">
+                        <td className="px-5 py-3.5 font-medium text-[var(--ink)]">
                           <a href={`/admin/personal/${r.persona_id}`} className="hover:underline">{nombre}</a>
                         </td>
                         <td className="px-5 py-3.5 text-[var(--gray-600)] tabular-nums">{docLabel(r)}</td>

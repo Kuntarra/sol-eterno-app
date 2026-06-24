@@ -10,7 +10,7 @@ import { Repeat, ChevronDown, LogOut, FlaskConical } from 'lucide-react'
 const VIEWS = [
   { label: 'Admin',     href: '/admin',      color: 'bg-[var(--navy)] text-white',         dot: 'bg-[var(--navy)]',  desc: 'Panel administrador' },
   { label: 'Recepción', href: '/recepcion',  color: 'bg-emerald-600 text-white',            dot: 'bg-emerald-500',    desc: 'Vista recepcionista' },
-  { label: 'Cliente',   href: '/alojamiento',color: 'bg-[var(--amber)] text-[var(--navy)]', dot: 'bg-[var(--amber)]', desc: 'Portal empresa' },
+  { label: 'Cliente',   href: '/alojamiento',color: 'bg-[var(--amber)] text-[var(--ink)]', dot: 'bg-[var(--amber)]', desc: 'Portal empresa' },
 ]
 
 interface User { id: string; full_name: string | null; role: string; email: string | null }
@@ -34,7 +34,7 @@ export function RoleSwitcher({ users, demoModalities, enDemo }: { users: User[];
   return (
     <div className="no-print fixed bottom-6 right-6 z-50">
       {open && (
-        <div className="mb-3 bg-white rounded-xl shadow-xl border border-[var(--gray-200)] overflow-hidden w-64">
+        <div className="mb-3 bg-[var(--surface)] rounded-xl shadow-xl border border-[var(--gray-200)] overflow-hidden w-64">
 
           {/* Banner: estás dentro del modo demo */}
           {enDemo && (
@@ -49,7 +49,7 @@ export function RoleSwitcher({ users, demoModalities, enDemo }: { users: User[];
             <div className="flex border-b border-[var(--gray-100)]">
               {(['demo', 'vistas', 'usuarios'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)}
-                  className={`flex-1 text-xs font-semibold py-2.5 capitalize transition-colors ${tab === t ? 'text-[var(--navy)] border-b-2 border-[var(--navy)]' : 'text-[var(--gray-500)] hover:text-[var(--navy)]'}`}>
+                  className={`flex-1 text-xs font-semibold py-2.5 capitalize transition-colors ${tab === t ? 'text-[var(--ink)] border-b-2 border-[var(--navy)]' : 'text-[var(--gray-500)] hover:text-[var(--ink)]'}`}>
                   {t === 'demo' ? 'Modo demo' : t === 'vistas' ? 'Vistas' : 'Usuarios'}
                 </button>
               ))}
@@ -68,7 +68,7 @@ export function RoleSwitcher({ users, demoModalities, enDemo }: { users: User[];
                       <span className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
                         <FlaskConical size={13} strokeWidth={2} className="text-amber-700" />
                       </span>
-                      <span className="text-sm font-medium text-[var(--navy)]">{d.label}</span>
+                      <span className="text-sm font-medium text-[var(--ink)]">{d.label}</span>
                     </button>
                   ))}
                 </div>
@@ -91,7 +91,7 @@ export function RoleSwitcher({ users, demoModalities, enDemo }: { users: User[];
                 className={`flex items-center gap-3 px-4 py-3 hover:bg-[var(--gray-50)] transition-colors ${isActive ? 'bg-[var(--gray-50)]' : ''}`}>
                 <span className={`w-2 h-2 rounded-full shrink-0 ${view.dot}`} style={{ opacity: isActive ? 1 : 0.3 }} />
                 <div>
-                  <p className={`text-sm font-medium ${isActive ? 'text-[var(--navy)]' : 'text-[var(--gray-900)]'}`}>
+                  <p className={`text-sm font-medium ${isActive ? 'text-[var(--ink)]' : 'text-[var(--gray-900)]'}`}>
                     {view.label}{isActive && <span className="ml-1.5 text-xs text-[var(--gray-500)] font-normal">actual</span>}
                   </p>
                   <p className="text-xs text-[var(--gray-500)]">{view.desc}</p>
@@ -114,7 +114,7 @@ export function RoleSwitcher({ users, demoModalities, enDemo }: { users: User[];
                         <span className="text-xs font-bold text-emerald-700">{(u.full_name ?? u.email ?? '?').slice(0,2).toUpperCase()}</span>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-[var(--navy)] truncate">{u.full_name ?? '—'}</p>
+                        <p className="text-sm font-medium text-[var(--ink)] truncate">{u.full_name ?? '—'}</p>
                         <p className="text-xs text-[var(--gray-500)] truncate">{u.email}</p>
                       </div>
                     </button>
@@ -131,7 +131,7 @@ export function RoleSwitcher({ users, demoModalities, enDemo }: { users: User[];
                         <span className="text-xs font-bold text-amber-700">{(u.full_name ?? u.email ?? '?').slice(0,2).toUpperCase()}</span>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-[var(--navy)] truncate">{u.full_name ?? '—'}</p>
+                        <p className="text-sm font-medium text-[var(--ink)] truncate">{u.full_name ?? '—'}</p>
                         <p className="text-xs text-[var(--gray-500)] truncate">{u.email}</p>
                       </div>
                     </button>

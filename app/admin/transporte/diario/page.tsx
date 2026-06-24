@@ -7,7 +7,7 @@ import Link from 'next/link'
 
 interface Props { searchParams: Promise<{ error?: string }> }
 
-const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
+const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 const LABEL = 'block text-sm font-medium text-[var(--gray-900)] mb-1.5'
 
 export default async function TrasladoDiarioPage({ searchParams }: Props) {
@@ -21,9 +21,9 @@ export default async function TrasladoDiarioPage({ searchParams }: Props) {
   return (
     <div className="p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/admin/transporte" className="text-[var(--gray-600)] hover:text-[var(--navy)]"><ArrowLeft size={18} strokeWidth={2} /></Link>
+        <Link href="/admin/transporte" className="text-[var(--gray-600)] hover:text-[var(--ink)]"><ArrowLeft size={18} strokeWidth={2} /></Link>
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Traslado diario hotel ↔ faena</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">Traslado diario hotel ↔ faena</h1>
           <p className="text-sm text-[var(--gray-600)]">Crea de una vez la ida (hotel → faena) y la vuelta (faena → hotel) del día</p>
         </div>
       </div>
@@ -31,7 +31,7 @@ export default async function TrasladoDiarioPage({ searchParams }: Props) {
       {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
 
       <form action={createTrasladoDiario} className="space-y-6">
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="hotel" className={LABEL}>Hotel / alojamiento</label>
             <input id="hotel" name="hotel" className={INPUT} placeholder="Hotel Sol Eterno" />
@@ -67,14 +67,14 @@ export default async function TrasladoDiarioPage({ searchParams }: Props) {
             <input id="hora_ida" name="hora_ida" type="time" defaultValue="07:00" className={INPUT} />
           </div>
           <div>
-            <label htmlFor="hora_vuelta" className={`${LABEL} inline-flex items-center gap-1.5`}><Moon size={14} className="text-[var(--navy)]" /> Hora vuelta (faena → hotel)</label>
+            <label htmlFor="hora_vuelta" className={`${LABEL} inline-flex items-center gap-1.5`}><Moon size={14} className="text-[var(--ink)]" /> Hora vuelta (faena → hotel)</label>
             <input id="hora_vuelta" name="hora_vuelta" type="time" defaultValue="19:00" className={INPUT} />
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <button type="submit" className="px-6 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">Crear ida y vuelta</button>
-          <Link href="/admin/transporte" className="px-6 py-2.5 bg-white hover:bg-[var(--gray-100)] text-[var(--navy)] text-sm font-medium rounded-lg border border-[var(--gray-200)]">Cancelar</Link>
+          <Link href="/admin/transporte" className="px-6 py-2.5 bg-[var(--surface)] hover:bg-[var(--gray-100)] text-[var(--ink)] text-sm font-medium rounded-lg border border-[var(--gray-200)]">Cancelar</Link>
         </div>
       </form>
     </div>

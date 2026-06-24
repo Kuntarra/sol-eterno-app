@@ -28,7 +28,7 @@ export function ResumenLavanderia({ grupos }: { grupos: GrupoResumen[] }) {
 
   if (!g.total) {
     return (
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">
         <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-3"><Users size={24} strokeWidth={1.5} stroke="var(--gray-600)" /></div>
         <p className="text-sm text-[var(--gray-600)]">No hay personas activas en el proyecto todavía.</p>
       </div>
@@ -45,25 +45,25 @@ export function ResumenLavanderia({ grupos }: { grupos: GrupoResumen[] }) {
   return (
     <section>
       <div className="flex items-center gap-2 mb-4">
-        <Users size={18} strokeWidth={2} className="text-[var(--navy)]" />
-        <h2 className="text-base font-semibold text-[var(--navy)]">Resumen de lavandería</h2>
+        <Users size={18} strokeWidth={2} className="text-[var(--ink)]" />
+        <h2 className="text-base font-semibold text-[var(--ink)]">Resumen de lavandería</h2>
       </div>
 
       {/* KPIs del proyecto */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {kpis.map((k) => (
-          <div key={k.key} className="bg-white rounded-xl border border-[var(--gray-200)] p-4" style={{ borderTop: `3px solid ${k.color}` }}>
+          <div key={k.key} className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-4" style={{ borderTop: `3px solid ${k.color}` }}>
             <div className="font-display text-3xl font-semibold" style={{ color: k.color }}>{k.value}</div>
-            <div className="text-sm font-medium text-[var(--navy)] mt-0.5">{k.label}</div>
+            <div className="text-sm font-medium text-[var(--ink)] mt-0.5">{k.label}</div>
             <div className="text-[11px] text-[var(--gray-500)] mt-0.5">{k.sub}</div>
           </div>
         ))}
       </div>
 
       {/* Barra de cobertura global */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-4 mb-6">
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-4 mb-6">
         <div className="flex items-center justify-between text-xs text-[var(--gray-600)] mb-2">
-          <span className="font-medium text-[var(--navy)]">Cobertura del proyecto</span>
+          <span className="font-medium text-[var(--ink)]">Cobertura del proyecto</span>
           <span>{conBolsa}/{g.total} con bolsa · <strong style={{ color: cobertura >= 80 ? META.entregada.color : 'var(--amber-dark)' }}>{cobertura}%</strong></span>
         </div>
         <div className="h-2.5 rounded-full bg-[var(--gray-100)] overflow-hidden flex">
@@ -78,19 +78,19 @@ export function ResumenLavanderia({ grupos }: { grupos: GrupoResumen[] }) {
       </div>
 
       {/* Desglose por propiedad */}
-      <h3 className="text-sm font-semibold text-[var(--navy)] mb-3">Por propiedad</h3>
+      <h3 className="text-sm font-semibold text-[var(--ink)] mb-3">Por propiedad</h3>
       <div className="space-y-3">
         {grupos.map((grupo) => {
           const c = cuenta(grupo.personas)
           const cob = pct(c.entregada + c.en_proceso, c.total)
           const faltantes = grupo.personas.filter((p) => p.estado === 'sin_bolsa')
           return (
-            <div key={grupo.propiedad} className="bg-white rounded-xl border border-[var(--gray-200)] overflow-hidden">
+            <div key={grupo.propiedad} className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] overflow-hidden">
               <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5 min-w-[12rem]">
-                  <div className="w-9 h-9 rounded-lg bg-[var(--navy)]/5 grid place-items-center"><Building2 size={17} strokeWidth={2} className="text-[var(--navy)]" /></div>
+                  <div className="w-9 h-9 rounded-lg bg-[var(--navy)]/5 grid place-items-center"><Building2 size={17} strokeWidth={2} className="text-[var(--ink)]" /></div>
                   <div>
-                    <div className="text-sm font-semibold text-[var(--navy)]">{grupo.propiedad}</div>
+                    <div className="text-sm font-semibold text-[var(--ink)]">{grupo.propiedad}</div>
                     <div className="text-[11px] text-[var(--gray-500)]">{c.total} {c.total === 1 ? 'persona' : 'personas'}</div>
                   </div>
                 </div>
@@ -133,11 +133,11 @@ export function ResumenLavanderia({ grupos }: { grupos: GrupoResumen[] }) {
                     const m = META[p.estado]
                     return (
                       <div key={p.dotacionId} className="px-5 py-2.5 flex items-center justify-between gap-3">
-                        <span className="text-sm text-[var(--navy)] font-medium">{p.nombre}</span>
+                        <span className="text-sm text-[var(--ink)] font-medium">{p.nombre}</span>
                         <div className="flex items-center gap-3">
                           <span className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: m.color }}><m.Icon size={14} /> {m.single}</span>
                           {p.bolsaId && (
-                            <a href={`/print/lavanderia/${p.bolsaId}`} target="_blank" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[var(--gray-200)] text-[var(--navy)] text-xs font-semibold hover:bg-[var(--gray-100)]"><Printer size={12} /> Boleta</a>
+                            <a href={`/print/lavanderia/${p.bolsaId}`} target="_blank" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[var(--gray-200)] text-[var(--ink)] text-xs font-semibold hover:bg-[var(--gray-100)]"><Printer size={12} /> Boleta</a>
                           )}
                         </div>
                       </div>

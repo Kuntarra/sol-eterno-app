@@ -59,7 +59,7 @@ export default async function RecepcionLayout({ children }: { children: React.Re
     <div className="flex min-h-screen">
       {/* Banner de impersonación */}
       {impersonateId && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-400 text-[var(--navy)] px-4 py-1.5 flex items-center justify-between text-xs font-semibold">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-400 text-[var(--ink)] px-4 py-1.5 flex items-center justify-between text-xs font-semibold">
           <span>
             👁 Viendo como: <strong>{targetProfile?.full_name ?? 'Recepcionista'}</strong>
           </span>

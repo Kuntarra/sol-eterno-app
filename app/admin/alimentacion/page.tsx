@@ -26,7 +26,7 @@ export default async function AlimentacionPage({ searchParams }: Props) {
     <div>
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-6">
         <span className="section-label">Módulo</span>
-        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Alimentación</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Alimentación</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">Desayuno, almuerzo y cena por persona y día</p>
       </div>
 
@@ -39,19 +39,19 @@ export default async function AlimentacionPage({ searchParams }: Props) {
         </div>}
 
         {puedeEscribir && (
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Planificar comidas de un día</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Planificar comidas de un día</h2>
           <AlimentacionForm dotaciones={dotaciones} cuadrillas={cuadrillas} />
         </div>
         )}
 
         {!planes?.length ? (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">
             <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-3"><UtensilsCrossed size={24} strokeWidth={1.5} stroke="var(--gray-600)" /></div>
             <p className="text-sm text-[var(--gray-600)]">Sin planes de alimentación</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--gray-200)] text-left text-[var(--gray-600)]">
@@ -68,7 +68,7 @@ export default async function AlimentacionPage({ searchParams }: Props) {
                   return (
                     <tr key={pl.id} className="border-b border-[var(--gray-100)] last:border-0">
                       <td className="px-5 py-3.5 tabular-nums text-[var(--gray-600)]">{pl.fecha}</td>
-                      <td className="px-5 py-3.5 font-medium text-[var(--navy)]">{p ? `${p.nombres} ${p.apellido_paterno}` : '—'}</td>
+                      <td className="px-5 py-3.5 font-medium text-[var(--ink)]">{p ? `${p.nombres} ${p.apellido_paterno}` : '—'}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{POS_LABEL[pl.desayuno]}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{POS_LABEL[pl.almuerzo]}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{POS_LABEL[pl.cena]}</td>

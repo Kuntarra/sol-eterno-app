@@ -95,7 +95,7 @@ export default async function LoginPage({ searchParams }: Props) {
       </div>
 
       {/* ── Panel derecho — formulario ── */}
-      <div className="flex-1 flex items-center justify-center bg-white px-8 py-12">
+      <div className="flex-1 flex items-center justify-center bg-[var(--surface)] px-8 py-12">
         <div className="w-full max-w-[392px]">
 
           {/* Logo mobile */}
@@ -105,7 +105,7 @@ export default async function LoginPage({ searchParams }: Props) {
 
           {/* Encabezado */}
           <div className="mb-6">
-            <h2 className="font-display text-[var(--navy)] font-semibold tracking-[-0.015em] leading-tight"
+            <h2 className="font-display text-[var(--ink)] font-semibold tracking-[-0.015em] leading-tight"
               style={{ fontSize: '2.1rem' }}>
               Bienvenido de nuevo
             </h2>
@@ -120,8 +120,8 @@ export default async function LoginPage({ searchParams }: Props) {
           {/* Footer */}
           <div className="mt-6 text-center">
             <div className="flex items-center justify-center gap-5 text-xs">
-              <a href="/terminos" className="text-[var(--gray-500)] hover:text-[var(--navy)] transition-colors">Términos</a>
-              <a href="/privacidad" className="text-[var(--gray-500)] hover:text-[var(--navy)] transition-colors">Privacidad</a>
+              <a href="/terminos" className="text-[var(--gray-500)] hover:text-[var(--ink)] transition-colors">Términos</a>
+              <a href="/privacidad" className="text-[var(--gray-500)] hover:text-[var(--ink)] transition-colors">Privacidad</a>
             </div>
             <p className="text-xs text-[var(--gray-500)] mt-3">
               © {new Date().getFullYear()} Sol Eterno · Gestión de Alojamientos

@@ -43,13 +43,13 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Link href="/admin/propiedades" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
+          <Link href="/admin/propiedades" className="text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors">
             <ArrowLeft size={18} strokeWidth={2} />
           </Link>
           <PropertyIcon type={property.type as PropertyType} size="sm" />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{property.name}</h1>
+              <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">{property.name}</h1>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PROPERTY_TYPE_COLORS[property.type as keyof typeof PROPERTY_TYPE_COLORS]}`}>
                 {PROPERTY_TYPE_LABELS[property.type as keyof typeof PROPERTY_TYPE_LABELS]}
               </span>
@@ -98,7 +98,7 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
       {/* Habitaciones */}
       <div id="habitaciones">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-[var(--navy)]">
+          <h2 className="text-lg font-bold text-[var(--ink)]">
             Habitaciones
             <span className="ml-2 text-sm font-normal text-[var(--gray-600)]">
               ({rooms.length} registradas · {rooms.reduce((s, r) => s + r.capacity, 0)} cupos)
@@ -107,7 +107,7 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
         </div>
 
         {rooms.length > 0 ? (
-          <div className="bg-white rounded-xl border border-[var(--gray-200)] overflow-hidden mb-4">
+          <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] overflow-hidden mb-4">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--gray-200)] bg-[var(--gray-50)]">
@@ -123,7 +123,7 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
                   const deleteRoomAction = deleteRoom.bind(null, room.id, id)
                   return (
                     <tr key={room.id} className="hover:bg-[var(--gray-50)]">
-                      <td className="px-4 py-3 font-medium text-[var(--navy)]">{room.number}</td>
+                      <td className="px-4 py-3 font-medium text-[var(--ink)]">{room.number}</td>
                       <td className="px-4 py-3 text-[var(--gray-600)]">
                         {room.type ? ROOM_TYPE_LABELS[room.type as keyof typeof ROOM_TYPE_LABELS] : '—'}
                       </td>
@@ -143,13 +143,13 @@ export default async function PropiedadDetailPage({ params, searchParams }: Prop
             </table>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-[var(--gray-200)] p-8 text-center mb-4">
+          <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-8 text-center mb-4">
             <p className="text-sm text-[var(--gray-600)]">No hay habitaciones registradas.</p>
           </div>
         )}
 
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
-          <h3 className="text-sm font-semibold text-[var(--navy)] mb-4">Agregar habitación</h3>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5">
+          <h3 className="text-sm font-semibold text-[var(--ink)] mb-4">Agregar habitación</h3>
           <form action={createRoomWithId}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
               <div>

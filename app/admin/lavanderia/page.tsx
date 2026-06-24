@@ -9,7 +9,7 @@ const MAX_ITEMS = 24
 
 interface Props { searchParams: Promise<{ error?: string; success?: string; asignada?: string; asignadas?: string; creada?: string; aviso?: string }> }
 
-const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
+const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 const SIN_PROP = 'Sin alojamiento asignado'
 
 function addDays(fecha: string, dias: number) {
@@ -96,7 +96,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
     <div>
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-6">
         <span className="section-label">Módulo</span>
-        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Lavandería</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Lavandería</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">Planillas de ropa reutilizables, asignación por persona e impresión</p>
       </div>
 
@@ -117,11 +117,11 @@ export default async function LavanderiaPage({ searchParams }: Props) {
         {puedeEscribir && (
         <section className="mb-8">
           <div className="flex items-center gap-2 mb-3">
-            <ClipboardList size={18} strokeWidth={2} className="text-[var(--navy)]" />
-            <h2 className="text-base font-semibold text-[var(--navy)]">Planillas de ropa</h2>
+            <ClipboardList size={18} strokeWidth={2} className="text-[var(--ink)]" />
+            <h2 className="text-base font-semibold text-[var(--ink)]">Planillas de ropa</h2>
           </div>
 
-          <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-5">
+          <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Crear manual */}
               <form action={createPlanilla}>
@@ -138,8 +138,8 @@ export default async function LavanderiaPage({ searchParams }: Props) {
                 <label className="block text-xs font-medium text-[var(--gray-600)] mb-1.5">Generar desde Excel</label>
                 <div className="flex flex-wrap gap-2">
                   <input name="nombre" placeholder="Nombre de la planilla" className={`${INPUT} flex-1 min-w-[8rem]`} required />
-                  <input name="file" type="file" accept=".xlsx,.xls" required className="text-xs text-[var(--gray-600)] file:mr-2 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[var(--gray-100)] file:text-[var(--navy)] file:text-sm file:font-semibold file:cursor-pointer" />
-                  <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[var(--navy)]/30 text-[var(--navy)] text-sm font-semibold rounded-lg hover:bg-[var(--navy)]/5 whitespace-nowrap"><FileSpreadsheet size={15} strokeWidth={2} /> Subir</button>
+                  <input name="file" type="file" accept=".xlsx,.xls" required className="text-xs text-[var(--gray-600)] file:mr-2 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[var(--gray-100)] file:text-[var(--ink)] file:text-sm file:font-semibold file:cursor-pointer" />
+                  <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[var(--surface)] border border-[var(--navy)]/30 text-[var(--ink)] text-sm font-semibold rounded-lg hover:bg-[var(--navy)]/5 whitespace-nowrap"><FileSpreadsheet size={15} strokeWidth={2} /> Subir</button>
                 </div>
                 <p className="text-[11px] text-[var(--gray-500)] mt-1.5">Una columna con un ítem por fila (con o sin encabezado).</p>
               </form>
@@ -152,7 +152,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
           </div>
 
           {!planillas?.length ? (
-            <div className="bg-white rounded-2xl border border-dashed border-[var(--gray-300)] p-10 text-center">
+            <div className="bg-[var(--surface)] rounded-2xl border border-dashed border-[var(--gray-300)] p-10 text-center">
               <p className="text-sm text-[var(--gray-600)]">Aún no hay planillas. Crea una estándar de ropa y agrégale los ítems uno a uno.</p>
             </div>
           ) : (
@@ -161,10 +161,10 @@ export default async function LavanderiaPage({ searchParams }: Props) {
                 const items = ((pl.lavanderia_planilla_items as { id: string; nombre: string; orden: number }[]) ?? []).sort((a, b) => a.orden - b.orden)
                 const eliminarPlanilla = deletePlanilla.bind(null, pl.id)
                 return (
-                  <div key={pl.id} className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
+                  <div key={pl.id} className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className="text-sm font-semibold text-[var(--navy)]">{pl.nombre}</h3>
+                        <h3 className="text-sm font-semibold text-[var(--ink)]">{pl.nombre}</h3>
                         <p className="text-[11px] text-[var(--gray-500)] flex items-center gap-1.5">
                           {items.length} {items.length === 1 ? 'ítem' : 'ítems'}
                           {items.length > MAX_ITEMS && <span className="inline-flex items-center gap-1 text-amber-700"><AlertTriangle size={11} /> supera {MAX_ITEMS}</span>}
@@ -191,7 +191,7 @@ export default async function LavanderiaPage({ searchParams }: Props) {
                     <form action={addPlanillaItem} className="flex gap-2">
                       <input type="hidden" name="planilla_id" value={pl.id} />
                       <input name="nombre" placeholder="Sábana, toalla, polera…" className={`${INPUT} flex-1`} required />
-                      <button type="submit" className="px-3 py-2 bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold rounded-lg hover:bg-[var(--gray-100)]"><Plus size={15} strokeWidth={2.5} /></button>
+                      <button type="submit" className="px-3 py-2 bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-sm font-semibold rounded-lg hover:bg-[var(--gray-100)]"><Plus size={15} strokeWidth={2.5} /></button>
                     </form>
 
                     {/* Asignar a una persona */}

@@ -45,17 +45,17 @@ export default async function EditarEstadiePage({
 
   const action = updateStay.bind(null, id)
 
-  const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
+  const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent transition-shadow'
   const LABEL = 'block text-sm font-medium text-[var(--gray-900)] mb-1.5'
 
   return (
     <div className="p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/admin/estadias" className="text-[var(--gray-500)] hover:text-[var(--navy)] transition-colors">
+        <Link href="/admin/estadias" className="text-[var(--gray-500)] hover:text-[var(--ink)] transition-colors">
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-[var(--navy)]">Editar estadía</h1>
+          <h1 className="text-xl font-bold text-[var(--ink)]">Editar estadía</h1>
           <p className="text-sm text-[var(--gray-600)]">
             {guest?.first_name} {guest?.last_name_paterno} · Hab. {room?.number} · {company?.name}
           </p>
@@ -69,8 +69,8 @@ export default async function EditarEstadiePage({
       )}
 
       <form action={action} className="space-y-6">
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-[var(--navy)]">Fechas</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-[var(--ink)]">Fechas</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -114,8 +114,8 @@ export default async function EditarEstadiePage({
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-[var(--navy)]">Otros datos</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-[var(--ink)]">Otros datos</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -151,7 +151,7 @@ export default async function EditarEstadiePage({
           </button>
           <Link
             href="/admin/estadias"
-            className="px-6 py-2.5 bg-white border border-[var(--gray-200)] text-[var(--gray-700)] text-sm font-medium rounded-xl hover:border-[var(--navy)] transition-colors"
+            className="px-6 py-2.5 bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--gray-700)] text-sm font-medium rounded-xl hover:border-[var(--navy)] transition-colors"
           >
             Cancelar
           </Link>

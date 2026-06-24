@@ -110,10 +110,10 @@ export default async function CheckoutPage({
       {/* ── Header premium ── */}
       <div className="mb-6">
         <span className="section-label">Recepción</span>
-        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Check-out</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Check-out</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">
           {stays.length} huésped{stays.length !== 1 ? 'es' : ''} pendiente{stays.length !== 1 ? 's' : ''}
-          {q && <span className="ml-1 text-[var(--navy)] font-medium">· "{q}"</span>}
+          {q && <span className="ml-1 text-[var(--ink)] font-medium">· "{q}"</span>}
         </p>
       </div>
 
@@ -122,12 +122,12 @@ export default async function CheckoutPage({
         <RecepcionSearchBar defaultValue={q || undefined} />
 
         {showFilter && !q && (
-          <div className="flex gap-1.5 bg-white border border-[var(--gray-200)] rounded-xl p-1">
+          <div className="flex gap-1.5 bg-[var(--surface)] border border-[var(--gray-200)] rounded-xl p-1">
             <Link href="/recepcion/checkout"
               className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 !selectedPropertyId
                   ? 'bg-[var(--navy)] text-white shadow-[var(--shadow-xs)]'
-                  : 'text-[var(--gray-600)] hover:text-[var(--navy)] hover:bg-[var(--gray-50)]'
+                  : 'text-[var(--gray-600)] hover:text-[var(--ink)] hover:bg-[var(--gray-50)]'
               }`}>
               Todos
             </Link>
@@ -136,7 +136,7 @@ export default async function CheckoutPage({
                 className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   selectedPropertyId === p.id
                     ? 'bg-[var(--navy)] text-white shadow-[var(--shadow-xs)]'
-                    : 'text-[var(--gray-600)] hover:text-[var(--navy)] hover:bg-[var(--gray-50)]'
+                    : 'text-[var(--gray-600)] hover:text-[var(--ink)] hover:bg-[var(--gray-50)]'
                 }`}>
                 {p.name}
               </Link>
@@ -146,7 +146,7 @@ export default async function CheckoutPage({
       </div>
 
       {!stays.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">
           <p className="text-sm text-[var(--gray-600)]">
             {q
               ? `No se encontró ningún huésped con "${q}".`
@@ -169,7 +169,7 @@ export default async function CheckoutPage({
 
             return (
               <div key={stay.id}
-                className={`bg-white rounded-2xl border overflow-hidden shadow-[var(--shadow-xs)]
+                className={`bg-[var(--surface)] rounded-2xl border overflow-hidden shadow-[var(--shadow-xs)]
                             hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200
                             ${isOverdue ? 'border-red-200' : 'border-[var(--gray-200)]'}`}>
                 {/* Top accent */}
@@ -182,7 +182,7 @@ export default async function CheckoutPage({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-bold text-[var(--navy)] text-sm leading-tight">
+                      <p className="font-bold text-[var(--ink)] text-sm leading-tight">
                         {q ? <Highlight text={n} q={q} /> : n}
                       </p>
                       {isOverdue && <span className="badge badge-red">Vencido</span>}
@@ -240,7 +240,7 @@ function Highlight({ text, q }: { text: string; q: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-[var(--amber)]/40 text-[var(--navy)] rounded px-0.5">{text.slice(idx, idx + q.length)}</mark>
+      <mark className="bg-[var(--amber)]/40 text-[var(--ink)] rounded px-0.5">{text.slice(idx, idx + q.length)}</mark>
       {text.slice(idx + q.length)}
     </>
   )

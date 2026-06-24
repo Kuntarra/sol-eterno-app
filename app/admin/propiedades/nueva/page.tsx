@@ -17,11 +17,11 @@ export default async function NuevaPropiedadPage({ searchParams }: Props) {
   return (
     <div className="p-8 max-w-3xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/admin/propiedades" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
+        <Link href="/admin/propiedades" className="text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors">
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Nueva propiedad</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">Nueva propiedad</h1>
           <p className="text-sm text-[var(--gray-600)]">Configura los datos de la propiedad</p>
         </div>
       </div>

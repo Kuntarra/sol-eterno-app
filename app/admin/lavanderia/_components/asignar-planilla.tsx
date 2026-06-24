@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { asignarPlanilla, asignarPlanillaMasivo } from '@/app/actions/modulos'
 import { User, Users, UsersRound, UserPlus, X, Minus, Plus } from 'lucide-react'
 
-const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
+const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 const LABEL = 'block text-xs font-medium text-[var(--gray-600)] mb-1'
 
 type Opt = { id: string; nombre: string }
@@ -46,7 +46,7 @@ export function AsignarPlanilla({ planillaId, items, dotaciones, cuadrillas, ent
   if (!abierto) {
     return (
       <button type="button" onClick={() => setAbierto(true)}
-        className="mt-3 inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[var(--navy)]/30 text-[var(--navy)] text-sm font-semibold hover:bg-[var(--navy)]/5">
+        className="mt-3 inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[var(--navy)]/30 text-[var(--ink)] text-sm font-semibold hover:bg-[var(--navy)]/5">
         <UserPlus size={15} strokeWidth={2} /> Asignar
       </button>
     )
@@ -59,7 +59,7 @@ export function AsignarPlanilla({ planillaId, items, dotaciones, cuadrillas, ent
       <input type="hidden" name="planilla_id" value={planillaId} />
       <input type="hidden" name="scope" value={scope} />
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-[var(--navy)]">Asignar planilla</span>
+        <span className="text-sm font-semibold text-[var(--ink)]">Asignar planilla</span>
         <button type="button" onClick={() => setAbierto(false)} className="text-[var(--gray-500)] hover:text-[var(--gray-700)]"><X size={16} /></button>
       </div>
 
@@ -69,7 +69,7 @@ export function AsignarPlanilla({ planillaId, items, dotaciones, cuadrillas, ent
         <div className="flex flex-wrap gap-2">
           {SCOPES.map(({ v, label, Icon }) => (
             <button type="button" key={v} onClick={() => { setScope(v); setRef('') }}
-              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors ${scope === v ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-white text-[var(--gray-700)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors ${scope === v ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-[var(--surface)] text-[var(--gray-700)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
               <Icon size={15} strokeWidth={2} /> {label}
             </button>
           ))}
@@ -114,7 +114,7 @@ export function AsignarPlanilla({ planillaId, items, dotaciones, cuadrillas, ent
           ) : (
             <div>
               <label className={LABEL}>Alcance</label>
-              <div className="px-3 py-2 rounded-lg bg-[var(--navy)]/5 text-sm text-[var(--navy)] font-medium">Todas las personas en faena en la fecha</div>
+              <div className="px-3 py-2 rounded-lg bg-[var(--navy)]/5 text-sm text-[var(--ink)] font-medium">Todas las personas en faena en la fecha</div>
             </div>
           )}
           <div>

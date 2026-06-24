@@ -276,16 +276,16 @@ export default async function ReportesPage({
         {/* ── Resumen por módulo (multi-módulo) ── */}
         {moduloResumen.length > 0 && (
           <div>
-            <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--navy)] mb-4">
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--ink)] mb-4">
               <span className="w-1 h-4 rounded-full bg-[var(--amber)]" />Resumen por módulo
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {moduloResumen.map((m) => (
                 <Link key={m.label} href={m.href}
-                  className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200 block">
-                  <div className="w-9 h-9 rounded-xl bg-[var(--navy-5)] text-[var(--navy)] flex items-center justify-center mb-3">{m.icon}</div>
-                  <p className="font-display text-[1.8rem] font-semibold leading-none text-[var(--navy)] data-number">{m.value.toLocaleString('es-CL')}</p>
-                  <p className="text-sm font-semibold text-[var(--navy)] mt-2">{m.label}</p>
+                  className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200 block">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--navy-5)] text-[var(--ink)] flex items-center justify-center mb-3">{m.icon}</div>
+                  <p className="font-display text-[1.8rem] font-semibold leading-none text-[var(--ink)] data-number">{m.value.toLocaleString('es-CL')}</p>
+                  <p className="text-sm font-semibold text-[var(--ink)] mt-2">{m.label}</p>
                   <p className="text-xs text-[var(--gray-500)]">{m.unit} en el período</p>
                 </Link>
               ))}
@@ -294,7 +294,7 @@ export default async function ReportesPage({
         )}
 
         {!hotelActivo && (
-          <p className="text-sm text-[var(--gray-500)] bg-white rounded-2xl border border-[var(--gray-200)] px-6 py-4">
+          <p className="text-sm text-[var(--gray-500)] bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] px-6 py-4">
             El detalle de ocupación corresponde al módulo Alojamiento (no activo en esta empresa). Arriba ves el resumen de los módulos contratados.
           </p>
         )}
@@ -303,7 +303,7 @@ export default async function ReportesPage({
         {hotelActivo && (<>
 
         {/* ── Héroe unificado: ocupación + KPIs operativos ── */}
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12">
 
             {/* Gauge + desglose */}
@@ -318,7 +318,7 @@ export default async function ReportesPage({
                     strokeWidth="10" strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="font-display text-[3rem] font-semibold leading-none text-[var(--navy)] data-number">{ocupacionPct}%</span>
+                  <span className="font-display text-[3rem] font-semibold leading-none text-[var(--ink)] data-number">{ocupacionPct}%</span>
                   <span className="text-xs text-[var(--gray-500)] mt-1.5">ocupado</span>
                 </div>
               </div>
@@ -328,7 +328,7 @@ export default async function ReportesPage({
                 <BarRow label={`Camas-${unidad} sin usar`}  value={camasNocheLibres} total={camasNocheTotal} color="gray" />
                 <div className="flex justify-between pt-3 border-t border-[var(--gray-100)]">
                   <span className="text-[var(--gray-600)]">Camas ocupadas/día (prom.)</span>
-                  <span className="font-semibold tabular-nums text-[var(--navy)]">{camasOcupadas}</span>
+                  <span className="font-semibold tabular-nums text-[var(--ink)]">{camasOcupadas}</span>
                 </div>
               </div>
             </div>
@@ -351,18 +351,18 @@ export default async function ReportesPage({
 
         {/* ── Ocupación por propiedad ── */}
         {porPropiedad.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6">
-            <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--navy)] mb-5">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6">
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--ink)] mb-5">
               <span className="w-1 h-4 rounded-full bg-[var(--amber)]" />Ocupación por propiedad
             </h2>
             <div className="space-y-5">
               {porPropiedad.map(p => (
                 <div key={p.nombre}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium text-[var(--navy)]">{p.nombre}</span>
+                    <span className="text-sm font-medium text-[var(--ink)]">{p.nombre}</span>
                     <div className="flex items-center gap-4 text-xs text-[var(--gray-600)]">
                       <span>{p.estadias} estadías · {p.nochesUsadas} camas usadas / {p.camasNoche} disponibles</span>
-                      <span className={`font-bold text-base ${p.pct >= 70 ? 'text-[var(--navy)]' : 'text-[var(--amber-dark)]'}`}>
+                      <span className={`font-bold text-base ${p.pct >= 70 ? 'text-[var(--ink)]' : 'text-[var(--amber-dark)]'}`}>
                         {p.pct}%
                       </span>
                     </div>
@@ -379,9 +379,9 @@ export default async function ReportesPage({
 
         {/* ── Por empresa ── */}
         {porEmpresa.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
             <div className="px-6 py-4 border-b border-[var(--gray-100)]">
-              <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--navy)]">
+              <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--ink)]">
                 <span className="w-1 h-4 rounded-full bg-[var(--amber)]" />Resumen por empresa
               </h2>
             </div>
@@ -399,9 +399,9 @@ export default async function ReportesPage({
                   const pct = nochesHuesped > 0 ? Math.round((e.noches / nochesHuesped) * 100) : 0
                   return (
                     <tr key={e.nombre} className="hover:bg-[var(--gray-50)]">
-                      <td className="px-6 py-3.5 font-medium text-[var(--navy)]">{e.nombre}</td>
+                      <td className="px-6 py-3.5 font-medium text-[var(--ink)]">{e.nombre}</td>
                       <td className="px-6 py-3.5 text-right text-[var(--gray-700)]">{e.estadias}</td>
-                      <td className="px-6 py-3.5 text-right font-semibold text-[var(--navy)]">{e.noches}</td>
+                      <td className="px-6 py-3.5 text-right font-semibold text-[var(--ink)]">{e.noches}</td>
                       <td className="px-6 py-3.5 w-48">
                         <div className="flex items-center gap-2">
                           <div className="flex-1 h-1.5 bg-[var(--gray-100)] rounded-full">
@@ -417,8 +417,8 @@ export default async function ReportesPage({
               <tfoot>
                 <tr className="border-t-2 border-[var(--gray-200)] bg-[var(--gray-50)]">
                   <td className="px-6 py-3 text-xs font-semibold text-[var(--gray-600)]">Total</td>
-                  <td className="px-6 py-3 text-right font-bold text-[var(--navy)]">{stays.length}</td>
-                  <td className="px-6 py-3 text-right font-bold text-[var(--navy)]">{nochesHuesped}</td>
+                  <td className="px-6 py-3 text-right font-bold text-[var(--ink)]">{stays.length}</td>
+                  <td className="px-6 py-3 text-right font-bold text-[var(--ink)]">{nochesHuesped}</td>
                   <td />
                 </tr>
               </tfoot>
@@ -427,9 +427,9 @@ export default async function ReportesPage({
         )}
 
         {/* ── Listado completo ── */}
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] overflow-hidden">
           <div className="px-6 py-4 border-b border-[var(--gray-100)] flex items-center justify-between">
-            <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--navy)]">
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-[var(--ink)]">
               <span className="w-1 h-4 rounded-full bg-[var(--amber)]" />Listado completo de huéspedes
             </h2>
             <span className="text-xs text-[var(--gray-500)] bg-[var(--gray-100)] px-2.5 py-1 rounded-full font-medium">
@@ -463,7 +463,7 @@ export default async function ReportesPage({
                     const n = noches(stay)
                     return (
                       <tr key={stay.id} className="hover:bg-[var(--gray-50)] transition-colors align-top">
-                        <td className="px-3 py-3 font-medium text-[var(--navy)] leading-snug">{g?.first_name} {g?.last_name_paterno}</td>
+                        <td className="px-3 py-3 font-medium text-[var(--ink)] leading-snug">{g?.first_name} {g?.last_name_paterno}</td>
                         <td className="px-3 py-3 text-xs text-[var(--gray-500)] font-mono whitespace-nowrap">{g?.rut ?? '—'}</td>
                         <td className="px-3 py-3 text-[var(--gray-700)] leading-snug">{c?.name}</td>
                         <td className="px-3 py-3 text-[var(--gray-700)] leading-snug">{r?.properties?.name}</td>
@@ -475,7 +475,7 @@ export default async function ReportesPage({
                         <td className="px-3 py-3 whitespace-nowrap text-[var(--gray-700)] tabular-nums">
                           {stay.checked_out_at ? fmt(stay.checked_out_at) : <span className="text-[var(--amber-dark)] font-medium">En hotel</span>}
                         </td>
-                        <td className="px-3 py-3 text-right font-bold text-[var(--navy)] tabular-nums">{n}</td>
+                        <td className="px-3 py-3 text-right font-bold text-[var(--ink)] tabular-nums">{n}</td>
                         <td className="px-3 py-3 text-center">
                           {stay.checked_out_at
                             ? <span className="badge badge-gray">Salió</span>
@@ -488,7 +488,7 @@ export default async function ReportesPage({
                 <tfoot>
                   <tr className="border-t-2 border-[var(--gray-200)] bg-[var(--gray-50)]">
                     <td colSpan={8} className="px-3 py-3 text-xs font-semibold text-[var(--gray-600)]">Total</td>
-                    <td className="px-3 py-3 text-right font-bold text-[var(--navy)] tabular-nums">{nochesHuesped}</td>
+                    <td className="px-3 py-3 text-right font-bold text-[var(--ink)] tabular-nums">{nochesHuesped}</td>
                     <td />
                   </tr>
                 </tfoot>
@@ -549,21 +549,21 @@ function Kpi({ icon, label, value, unit = '', sub, accent = 'navy', delta = null
   icon: ReactNode; label: string; value: number; unit?: string; sub: string
   accent?: 'navy' | 'amber'; delta?: number | null; deltaKind?: 'pts' | 'pct' | 'count'; bare?: boolean
 }) {
-  const iconBg = accent === 'amber' ? 'bg-[var(--amber)]/12 text-[var(--amber-dark)]' : 'bg-[var(--navy-5)] text-[var(--navy)]'
+  const iconBg = accent === 'amber' ? 'bg-[var(--amber)]/12 text-[var(--amber-dark)]' : 'bg-[var(--navy-5)] text-[var(--ink)]'
   const display = Number.isInteger(value) ? value.toLocaleString('es-CL') : value.toFixed(1)
   const wrap = bare
     ? 'p-6 hover:bg-[var(--gray-50)]/60 transition-colors'
-    : 'bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200'
+    : 'bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200'
   return (
     <div className={wrap}>
       <div className="flex items-start justify-between mb-3.5">
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg}`}>{icon}</div>
         {delta != null && <Delta value={delta} kind={deltaKind} />}
       </div>
-      <p className="font-display text-[2.15rem] font-semibold leading-none text-[var(--navy)] data-number">
+      <p className="font-display text-[2.15rem] font-semibold leading-none text-[var(--ink)] data-number">
         {display}{unit && <span className="text-base font-medium text-[var(--gray-500)]">{unit}</span>}
       </p>
-      <p className="text-sm font-semibold text-[var(--navy)] mt-2.5">{label}</p>
+      <p className="text-sm font-semibold text-[var(--ink)] mt-2.5">{label}</p>
       <p className="text-xs text-[var(--gray-500)] mt-1 leading-snug">{sub}</p>
     </div>
   )

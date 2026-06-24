@@ -26,18 +26,18 @@ export default async function TransportePage({ searchParams }: { searchParams: P
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-6 flex items-end justify-between gap-6">
         <div>
           <span className="section-label">Módulo</span>
-          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Transporte</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Transporte</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">{total} traslados</p>
         </div>
         {puedeEscribir && (
           <div className="flex items-center gap-2 shrink-0">
-            <Link href="/admin/transporte/flota" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+            <Link href="/admin/transporte/flota" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
               <Bus size={16} strokeWidth={2.25} /> Flota
             </Link>
-            <Link href="/admin/transporte/nuevo" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+            <Link href="/admin/transporte/nuevo" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
               <Plus size={16} strokeWidth={2.25} /> Traslado simple
             </Link>
-            <Link href="/admin/transporte/diario" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+            <Link href="/admin/transporte/diario" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
               <Repeat size={16} strokeWidth={2.25} /> Traslado diario
             </Link>
             <Link href="/admin/transporte/movilizacion" className="btn-primary">
@@ -50,15 +50,15 @@ export default async function TransportePage({ searchParams }: { searchParams: P
       <div className="px-8 pb-8">
         {diario && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Traslado diario creado: <strong>ida</strong> (hotel → faena) y <strong>vuelta</strong> (faena → hotel) del día.</div>}
         {!traslados.length ? (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-16 text-center">
             <div className="w-16 h-16 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Truck size={28} strokeWidth={1.5} stroke="var(--gray-600)" />
             </div>
             <p className="text-sm font-medium text-[var(--gray-600)] mb-1">Aún no hay traslados</p>
-            <Link href="/admin/transporte/nuevo" className="text-[var(--navy)] text-sm font-semibold hover:underline">Crear primer traslado →</Link>
+            <Link href="/admin/transporte/nuevo" className="text-[var(--ink)] text-sm font-semibold hover:underline">Crear primer traslado →</Link>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--gray-200)] text-left text-[var(--gray-600)]">
@@ -78,7 +78,7 @@ export default async function TransportePage({ searchParams }: { searchParams: P
                   return (
                     <tr key={t.id} className="border-b border-[var(--gray-100)] last:border-0 hover:bg-[var(--gray-100)]/50">
                       <td className="px-5 py-3.5 tabular-nums">
-                        <Link href={`/admin/transporte/${t.id}`} className="font-medium text-[var(--navy)] hover:underline">
+                        <Link href={`/admin/transporte/${t.id}`} className="font-medium text-[var(--ink)] hover:underline">
                           {t.fecha ?? '—'}{t.hora ? ` ${(t.hora as string).slice(0,5)}` : ''}
                         </Link>
                       </td>

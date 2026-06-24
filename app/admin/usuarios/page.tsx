@@ -51,12 +51,12 @@ export default async function UsuariosPage() {
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-8 flex items-end justify-between gap-6">
         <div>
           <span className="section-label">Gestión</span>
-          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Usuarios</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Usuarios</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">{profiles?.length ?? 0} usuarios registrados</p>
         </div>
         <div className="flex gap-2 shrink-0">
           <Link href="/admin/usuarios/nuevo-recepcionista"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-[var(--gray-300)] hover:border-[var(--navy)] text-[var(--navy)] text-sm font-semibold rounded-xl transition-all hover:-translate-y-px shadow-[var(--shadow-xs)]">
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--surface)] border border-[var(--gray-300)] hover:border-[var(--navy)] text-[var(--ink)] text-sm font-semibold rounded-xl transition-all hover:-translate-y-px shadow-[var(--shadow-xs)]">
             <Plus size={15} strokeWidth={2.25} />
             Recepcionista
           </Link>
@@ -80,7 +80,7 @@ export default async function UsuariosPage() {
                 <span className="text-xs text-[var(--gray-500)] font-medium">{users.length}</span>
               </div>
 
-              <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
+              <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
                 {users.map((user, i) => {
                   const props = propsByUser[user.id] ?? []
                   const company = user.companies as { name: string } | null
@@ -99,7 +99,7 @@ export default async function UsuariosPage() {
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[var(--navy)] truncate">{user.full_name ?? '—'}</p>
+                        <p className="text-sm font-semibold text-[var(--ink)] truncate">{user.full_name ?? '—'}</p>
                         <p className="text-xs text-[var(--gray-600)] truncate">{user.email ?? '—'}</p>
                         {props.length > 0 && (
                           <p className="text-xs text-[var(--gray-600)] mt-0.5 truncate">

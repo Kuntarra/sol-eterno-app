@@ -54,7 +54,7 @@ export default async function ColacionesPage({ searchParams }: Props) {
     <div>
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-6">
         <span className="section-label">Módulo</span>
-        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Colaciones frías</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Colaciones frías</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">Entregas en cualquier punto del ciclo</p>
       </div>
 
@@ -67,7 +67,7 @@ export default async function ColacionesPage({ searchParams }: Props) {
         <div className="bg-gradient-to-br from-[var(--navy)]/[0.04] to-white rounded-xl border border-[var(--navy)]/15 p-5 mb-6">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles size={16} strokeWidth={2} className="text-[var(--amber-dark)]" />
-            <h2 className="text-sm font-semibold text-[var(--navy)]">Automático por turno</h2>
+            <h2 className="text-sm font-semibold text-[var(--ink)]">Automático por turno</h2>
           </div>
           <p className="text-xs text-[var(--gray-600)] mb-4">El sistema lee los turnos (rotaciones) y calcula las colaciones del día. Elige qué generar y para quién; lo apruebas con un clic.</p>
 
@@ -82,18 +82,18 @@ export default async function ColacionesPage({ searchParams }: Props) {
                 <div className="flex flex-wrap gap-x-6 gap-y-2">
                   <span className="inline-flex items-center gap-2 text-sm text-[var(--gray-700)]">
                     <LogIn size={16} strokeWidth={2} className="text-emerald-600" />
-                    <strong className="font-display text-xl text-[var(--navy)]">{entran}</strong> {entran === 1 ? 'entra' : 'entran'} <span className="text-[var(--gray-500)]">(entrada)</span>
+                    <strong className="font-display text-xl text-[var(--ink)]">{entran}</strong> {entran === 1 ? 'entra' : 'entran'} <span className="text-[var(--gray-500)]">(entrada)</span>
                   </span>
                   <span className="inline-flex items-center gap-2 text-sm text-[var(--gray-700)]">
                     <LogOut size={16} strokeWidth={2} className="text-amber-600" />
-                    <strong className="font-display text-xl text-[var(--navy)]">{sevan}</strong> se {sevan === 1 ? 'va' : 'van'} <span className="text-[var(--gray-500)]">(salida)</span>
+                    <strong className="font-display text-xl text-[var(--ink)]">{sevan}</strong> se {sevan === 1 ? 'va' : 'van'} <span className="text-[var(--gray-500)]">(salida)</span>
                   </span>
                   <span className="text-xs text-[var(--gray-500)] basis-full capitalize">{sugLabel}</span>
                 </div>
               ) : (
                 <p className="text-sm text-[var(--gray-700)] leading-snug">
-                  <CalendarDays size={16} strokeWidth={2} className="inline text-[var(--navy)] mr-1.5 align-text-bottom" />
-                  <strong className="font-display text-xl text-[var(--navy)] align-middle">{cubreDia}</strong>{' '}
+                  <CalendarDays size={16} strokeWidth={2} className="inline text-[var(--ink)] mr-1.5 align-text-bottom" />
+                  <strong className="font-display text-xl text-[var(--ink)] align-middle">{cubreDia}</strong>{' '}
                   <span className="capitalize">{cubreDia === 1 ? 'persona en faena' : 'personas en faena'} el {sugLabel}.</span>
                 </p>
               )}
@@ -114,19 +114,19 @@ export default async function ColacionesPage({ searchParams }: Props) {
         )}
 
         {puedeEscribir && (
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Generar colaciones manualmente</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Generar colaciones manualmente</h2>
           <ColacionesForm dotaciones={dotaciones} cuadrillas={cuadrillas} />
         </div>
         )}
 
         {!colaciones?.length ? (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">
             <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-3"><Package size={24} strokeWidth={1.5} stroke="var(--gray-600)" /></div>
             <p className="text-sm text-[var(--gray-600)]">Sin colaciones registradas</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--gray-200)] text-left text-[var(--gray-600)]">
@@ -144,10 +144,10 @@ export default async function ColacionesPage({ searchParams }: Props) {
                   return (
                     <tr key={c.id} className="border-b border-[var(--gray-100)] last:border-0">
                       <td className="px-5 py-3.5 tabular-nums text-[var(--gray-600)]">{c.fecha ?? '—'}</td>
-                      <td className="px-5 py-3.5 font-medium text-[var(--navy)]">{(() => { const p = (c.dotaciones as { personas: { nombres: string; apellido_paterno: string } | null } | null)?.personas; return p ? `${p.nombres} ${p.apellido_paterno}` : '—' })()}</td>
+                      <td className="px-5 py-3.5 font-medium text-[var(--ink)]">{(() => { const p = (c.dotaciones as { personas: { nombres: string; apellido_paterno: string } | null } | null)?.personas; return p ? `${p.nombres} ${p.apellido_paterno}` : '—' })()}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{PUNTO_LABEL[c.punto_entrega] ?? c.punto_entrega}</td>
                       <td className="px-5 py-3.5 text-[var(--gray-600)]">{c.sentido}</td>
-                      <td className="px-5 py-3.5 tabular-nums font-medium text-[var(--navy)]">{c.cantidad}</td>
+                      <td className="px-5 py-3.5 tabular-nums font-medium text-[var(--ink)]">{c.cantidad}</td>
                       <td className="px-5 py-3.5">
                         {puedeEscribir ? (
                           <form action={toggle}>

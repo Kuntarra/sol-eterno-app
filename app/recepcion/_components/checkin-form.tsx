@@ -21,7 +21,7 @@ interface Props {
 }
 
 const INPUT = 'input-premium disabled:opacity-40'
-const LABEL = 'block text-sm font-semibold text-[var(--navy)] mb-1.5'
+const LABEL = 'block text-sm font-semibold text-[var(--ink)] mb-1.5'
 
 export function CheckinForm({ properties, error }: Props) {
   const [propertyId, setPropertyId] = useState(properties.length === 1 ? properties[0].id : '')
@@ -63,7 +63,7 @@ export function CheckinForm({ properties, error }: Props) {
       )}
 
       {/* Propiedad / Empresa / Habitación */}
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--gray-500)] mb-4">Asignación</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
@@ -110,7 +110,7 @@ export function CheckinForm({ properties, error }: Props) {
       </div>
 
       {/* Datos del huésped */}
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--gray-500)] mb-4">Datos del huésped</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -132,8 +132,8 @@ export function CheckinForm({ properties, error }: Props) {
                 <button key={val} type="button" onClick={() => setDocType(val)}
                   className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
                     docType === val
-                      ? 'bg-white text-[var(--navy)] shadow-[var(--shadow-xs)]'
-                      : 'text-[var(--gray-600)] hover:text-[var(--navy)]'
+                      ? 'bg-[var(--surface)] text-[var(--ink)] shadow-[var(--shadow-xs)]'
+                      : 'text-[var(--gray-600)] hover:text-[var(--ink)]'
                   }`}>
                   {lbl}
                 </button>
@@ -168,7 +168,7 @@ export function CheckinForm({ properties, error }: Props) {
       </div>
 
       {/* Estadía */}
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--gray-500)] mb-4">Estadía</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>

@@ -34,7 +34,7 @@ export default async function DotiaOverviewPage() {
     <div>
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-6">
         <span className="section-label">Trazabilidad de personal</span>
-        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Dotia · Resumen</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Dotia · Resumen</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">Centro de control de la operación en faena</p>
       </div>
 
@@ -43,10 +43,10 @@ export default async function DotiaOverviewPage() {
           {cards.map((c) => (
             <Link key={c.label} href={c.href} className="premium-card group block p-5">
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-[var(--navy)]/5 flex items-center justify-center text-[var(--navy)]">{c.icon}</div>
+                <div className="w-10 h-10 rounded-xl bg-[var(--navy)]/5 flex items-center justify-center text-[var(--ink)]">{c.icon}</div>
               </div>
-              <p className="text-3xl font-bold text-[var(--navy)] tabular-nums leading-none mb-1">{c.value}</p>
-              <p className="text-sm text-[var(--gray-600)] group-hover:text-[var(--navy)]">{c.label}</p>
+              <p className="text-3xl font-bold text-[var(--ink)] tabular-nums leading-none mb-1">{c.value}</p>
+              <p className="text-sm text-[var(--gray-600)] group-hover:text-[var(--ink)]">{c.label}</p>
             </Link>
           ))}
         </div>
@@ -58,7 +58,7 @@ export default async function DotiaOverviewPage() {
             { label: 'Colaciones', href: '/admin/colaciones', icon: <Package size={16} strokeWidth={2} /> },
             { label: 'Lavandería', href: '/admin/lavanderia', icon: <Shirt size={16} strokeWidth={2} /> },
           ].map((m) => (
-            <Link key={m.label} href={m.href} className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white border border-[var(--gray-200)] text-sm font-semibold text-[var(--navy)] hover:bg-[var(--gray-100)] transition-colors">
+            <Link key={m.label} href={m.href} className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--gray-200)] text-sm font-semibold text-[var(--ink)] hover:bg-[var(--gray-100)] transition-colors">
               {m.icon} {m.label}
             </Link>
           ))}

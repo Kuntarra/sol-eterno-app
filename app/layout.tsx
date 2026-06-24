@@ -28,7 +28,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${inter.variable} ${spectral.variable}`}>
+    <html lang="es" className={`${inter.variable} ${spectral.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Anti-parpadeo: aplica el tema guardado antes de pintar. Por defecto claro. */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.dataset.theme='dark';}}catch(e){}` }} />
+      </head>
       <body className="min-h-screen bg-[var(--gray-50)]">
         {children}
         <AdminOverlay />

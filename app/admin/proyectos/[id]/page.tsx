@@ -13,7 +13,7 @@ interface Props {
   searchParams: Promise<{ error?: string; success?: string; invitado?: string }>
 }
 
-const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent'
+const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent'
 const LABEL = 'block text-xs font-medium text-[var(--gray-600)] mb-1'
 
 export default async function ProyectoDetallePage({ params, searchParams }: Props) {
@@ -55,11 +55,11 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
   return (
     <div className="p-8 max-w-5xl">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/admin/proyectos" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
+        <Link href="/admin/proyectos" className="text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors">
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div className="flex-1">
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{proyecto.nombre}</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">{proyecto.nombre}</h1>
           <p className="text-sm text-[var(--gray-600)]">
             {[proyecto.faena, ciudad].filter(Boolean).join(' · ') || 'Sin faena definida'}
             {proyecto.fecha_inicio && ` · ${proyecto.fecha_inicio} → ${proyecto.fecha_fin_estimada ?? '—'}`}
@@ -70,14 +70,14 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
           <select
             name="estado"
             defaultValue={proyecto.estado}
-            className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]"
+            className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]"
           >
             <option value="planificado">Planificado</option>
             <option value="activo">Activo</option>
             <option value="suspendido">Suspendido</option>
             <option value="cerrado">Cerrado</option>
           </select>
-          <button type="submit" className="px-3 py-2 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-medium hover:bg-[var(--gray-100)] transition-colors">
+          <button type="submit" className="px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--gray-100)] transition-colors">
             Cambiar
           </button>
         </form>
@@ -102,8 +102,8 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
       )}
 
       {/* Planificar persona */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6 mb-8">
-        <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Asignar persona al proyecto</h2>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6 mb-8">
+        <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Asignar persona al proyecto</h2>
         <form action={createDotacionForProject} className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
           <div className="md:col-span-2">
             <label htmlFor="persona_id" className={LABEL}>Persona *</label>
@@ -145,22 +145,22 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
         {!directorio?.length && (
           <p className="text-xs text-[var(--gray-600)] mt-3">
             No tienes personas en tu directorio.{' '}
-            <Link href="/admin/personal/nuevo" className="text-[var(--navy)] font-semibold hover:underline">Agrega personal primero →</Link>
+            <Link href="/admin/personal/nuevo" className="text-[var(--ink)] font-semibold hover:underline">Agrega personal primero →</Link>
           </p>
         )}
       </div>
 
       {/* Personal asignado */}
-      <h2 className="text-sm font-semibold text-[var(--navy)] mb-3">Personal asignado ({dotaciones?.length ?? 0})</h2>
+      <h2 className="text-sm font-semibold text-[var(--ink)] mb-3">Personal asignado ({dotaciones?.length ?? 0})</h2>
       {!dotaciones?.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">
           <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-3">
             <Users size={24} strokeWidth={1.5} stroke="var(--gray-600)" />
           </div>
           <p className="text-sm text-[var(--gray-600)]">Nadie asignado todavía</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[var(--gray-200)] text-left text-[var(--gray-600)]">
@@ -179,7 +179,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
                 return (
                   <tr key={d.id} className="border-b border-[var(--gray-100)] last:border-0 hover:bg-[var(--gray-100)]/50 transition-colors">
                     <td className="px-5 py-3.5">
-                      <Link href={`/admin/proyectos/${id}/dotacion/${d.id}`} className="font-medium text-[var(--navy)] hover:underline">
+                      <Link href={`/admin/proyectos/${id}/dotacion/${d.id}`} className="font-medium text-[var(--ink)] hover:underline">
                         {p ? `${p.nombres} ${p.apellido_paterno}` : '—'}
                       </Link>
                       <div className="text-xs text-[var(--gray-600)] tabular-nums">
@@ -205,30 +205,30 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
       )}
 
       {/* Proveedores vinculados (match por RUT o por código) */}
-      <h2 className="text-sm font-semibold text-[var(--navy)] mt-10 mb-3">Proveedores vinculados ({proveedores?.length ?? 0})</h2>
+      <h2 className="text-sm font-semibold text-[var(--ink)] mt-10 mb-3">Proveedores vinculados ({proveedores?.length ?? 0})</h2>
 
       {/* Código del proyecto para enviar al proveedor */}
       <div className="bg-gradient-to-br from-[var(--navy)]/[0.04] to-white rounded-xl border border-[var(--navy)]/15 p-5 mb-4 flex flex-wrap items-center justify-between gap-4">
         <div>
           <span className="block text-xs font-medium text-[var(--gray-600)] mb-1">Código de este proyecto</span>
-          <span className="font-display text-2xl font-semibold tracking-[0.2em] text-[var(--navy)]">{proyecto.codigo}</span>
+          <span className="font-display text-2xl font-semibold tracking-[0.2em] text-[var(--ink)]">{proyecto.codigo}</span>
         </div>
         <p className="text-xs text-[var(--gray-600)] max-w-xs">Envíaselo a tu proveedor: si ya usa el sistema, lo ingresa en su panel y se conecta como <strong>★ Socio Dotia</strong>. O vincúlalo por RUT abajo.</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-4">
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-4">
         <form action={vincularProveedor} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
           <div>
             <label htmlFor="proveedor_rut" className="block text-xs font-medium text-[var(--gray-600)] mb-1">RUT del proveedor *</label>
-            <input id="proveedor_rut" name="proveedor_rut" required placeholder="76.543.210-K" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+            <input id="proveedor_rut" name="proveedor_rut" required placeholder="76.543.210-K" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
           </div>
           <div>
             <label htmlFor="proveedor_nombre" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Nombre (si es nuevo)</label>
-            <input id="proveedor_nombre" name="proveedor_nombre" placeholder="Pullman San Luis" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+            <input id="proveedor_nombre" name="proveedor_nombre" placeholder="Pullman San Luis" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
           </div>
           <div>
             <label htmlFor="modulo" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Módulo</label>
-            <select id="modulo" name="modulo" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" defaultValue="transporte">
+            <select id="modulo" name="modulo" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" defaultValue="transporte">
               <option value="transporte">Transporte</option>
               <option value="hotel">Hotel</option>
               <option value="alimentacion">Alimentación</option>
@@ -244,10 +244,10 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
       </div>
 
       {/* Invitar proveedor NO registrado por correo (queda como ○ Invitado) */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-4">
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <Mail size={16} strokeWidth={2} className="text-[var(--navy)]" />
-          <h3 className="text-sm font-semibold text-[var(--navy)]">Invitar proveedor por correo</h3>
+          <Mail size={16} strokeWidth={2} className="text-[var(--ink)]" />
+          <h3 className="text-sm font-semibold text-[var(--ink)]">Invitar proveedor por correo</h3>
         </div>
         <p className="text-xs text-[var(--gray-600)] mb-4">Para un proveedor que aún no usa el sistema. Se le crea una cuenta de <strong>○ Invitado</strong> y se le envía el acceso + el código del proyecto a su correo.</p>
         <form action={invitar} className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
@@ -274,7 +274,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
             </select>
           </div>
           <div className="md:col-span-5">
-            <button type="submit" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-[var(--navy)]/30 text-[var(--navy)] text-sm font-semibold rounded-lg hover:bg-[var(--navy)]/5"><Mail size={15} strokeWidth={2} /> Enviar invitación</button>
+            <button type="submit" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--surface)] border border-[var(--navy)]/30 text-[var(--ink)] text-sm font-semibold rounded-lg hover:bg-[var(--navy)]/5"><Mail size={15} strokeWidth={2} /> Enviar invitación</button>
           </div>
         </form>
       </div>
@@ -284,10 +284,10 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
             const recursos = (pv.proyecto_proveedor_recursos as { id: string; tipo: string; cantidad: number; notas: string | null }[]) ?? []
             const addRecurso = addRecursoVinculo.bind(null, id, pv.id)
             return (
-              <div key={pv.id} className="bg-white rounded-2xl border border-[var(--gray-200)] p-5">
+              <div key={pv.id} className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-[var(--navy)]">{pv.proveedor_nombre ?? pv.proveedor_rut}</p>
+                    <p className="text-sm font-medium text-[var(--ink)]">{pv.proveedor_nombre ?? pv.proveedor_rut}</p>
                     <p className="text-xs text-[var(--gray-600)]">{pv.proveedor_rut} · {pv.modulo}</p>
                   </div>
                   <span className={`badge ${pv.estado === 'activo' ? 'badge-green' : pv.estado === 'stub' ? 'badge-amber' : 'badge-gray'}`}>
@@ -307,7 +307,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
                       {recursos.map((r) => {
                         const del = deleteRecursoVinculo.bind(null, id, r.id)
                         return (
-                          <span key={r.id} className="inline-flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg bg-[var(--gray-100)] text-sm text-[var(--navy)]">
+                          <span key={r.id} className="inline-flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg bg-[var(--gray-100)] text-sm text-[var(--ink)]">
                             <span className="font-semibold tabular-nums">{r.cantidad}</span> {r.tipo}
                             {r.notas && <span className="text-xs text-[var(--gray-600)]">· {r.notas}</span>}
                             <form action={del}>
@@ -326,17 +326,17 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
                   <form action={addRecurso} className="flex flex-wrap items-end gap-2">
                     <div>
                       <label className="block text-[11px] font-medium text-[var(--gray-600)] mb-1">Cantidad</label>
-                      <input name="cantidad" type="number" min={0} defaultValue={1} className="w-20 px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+                      <input name="cantidad" type="number" min={0} defaultValue={1} className="w-20 px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
                     </div>
                     <div>
                       <label className="block text-[11px] font-medium text-[var(--gray-600)] mb-1">Tipo de recurso</label>
-                      <input name="tipo" required placeholder="Bus, Sprinter, Habitación…" className="w-48 px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+                      <input name="tipo" required placeholder="Bus, Sprinter, Habitación…" className="w-48 px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
                     </div>
                     <div className="flex-1 min-w-[8rem]">
                       <label className="block text-[11px] font-medium text-[var(--gray-600)] mb-1">Nota (opcional)</label>
-                      <input name="notas" placeholder="Ej. 45 asientos" className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+                      <input name="notas" placeholder="Ej. 45 asientos" className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
                     </div>
-                    <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
+                    <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-sm font-semibold hover:bg-[var(--gray-100)] transition-colors">
                       <Plus size={14} strokeWidth={2.5} /> Agregar
                     </button>
                   </form>

@@ -77,13 +77,13 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
   return (
     <div className="p-8 max-w-4xl">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/admin/personal" className="text-[var(--gray-600)] hover:text-[var(--navy)]"><ArrowLeft size={18} strokeWidth={2} /></Link>
+        <Link href="/admin/personal" className="text-[var(--gray-600)] hover:text-[var(--ink)]"><ArrowLeft size={18} strokeWidth={2} /></Link>
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-[var(--amber)] flex items-center justify-center shrink-0">
-            <span className="text-[var(--navy)] text-sm font-black uppercase">{persona.nombres.slice(0, 1)}{persona.apellido_paterno.slice(0, 1)}</span>
+            <span className="text-[var(--ink)] text-sm font-black uppercase">{persona.nombres.slice(0, 1)}{persona.apellido_paterno.slice(0, 1)}</span>
           </div>
           <div>
-            <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em] leading-tight">{nombre}</h1>
+            <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em] leading-tight">{nombre}</h1>
             <p className="text-sm text-[var(--gray-600)]">
               {doc}{oficio ? ` · ${oficio}` : ''}
               {dir && <span className={`ml-2 badge ${dir.activa ? 'badge-green' : 'badge-gray'}`}>{dir.activa ? 'Activa' : 'Inactiva'}</span>}
@@ -93,15 +93,15 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
       </div>
 
       {/* Datos */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6 mb-6">
-        <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Datos de la persona</h2>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6 mb-6">
+        <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Datos de la persona</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
           {datos.map((d) => (
             <div key={d.label} className="flex items-center gap-3">
               <span className="text-[var(--gray-600)]">{d.icon}</span>
               <div>
                 <p className="text-[11px] uppercase tracking-wide text-[var(--gray-600)] font-semibold">{d.label}</p>
-                <p className="text-sm text-[var(--navy)]">{d.value}</p>
+                <p className="text-sm text-[var(--ink)]">{d.value}</p>
               </div>
             </div>
           ))}
@@ -110,10 +110,10 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
 
       {/* Estado en el directorio (solo administración) */}
       {esAdmin && (
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-[var(--navy)]">Estado en el directorio</h2>
+              <h2 className="text-sm font-semibold text-[var(--ink)]">Estado en el directorio</h2>
               <span className={`badge ${dir?.activa ? 'badge-green' : 'badge-gray'}`}>{dir?.activa ? 'Activa' : 'Inactiva'}</span>
               {success === 'estado' && <span className="text-xs text-green-600 inline-flex items-center gap-1"><CheckCircle2 size={13} strokeWidth={2} /> Estado actualizado</span>}
             </div>
@@ -125,7 +125,7 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
           </div>
           <form action={toggleActiva}>
             <SubmitButton pendingText="Guardando…"
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${dir?.activa ? 'bg-white border border-[var(--gray-200)] text-[var(--gray-700)] hover:bg-[var(--gray-100)]' : 'bg-[var(--navy)] text-white hover:bg-[var(--navy-dark)]'}`}>
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${dir?.activa ? 'bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--gray-700)] hover:bg-[var(--gray-100)]' : 'bg-[var(--navy)] text-white hover:bg-[var(--navy-dark)]'}`}>
               <Power size={15} strokeWidth={2.25} /> {dir?.activa ? 'Marcar inactiva' : 'Reactivar'}
             </SubmitButton>
           </form>
@@ -136,17 +136,17 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
       <BitacoraTimeline eventos={eventosVivos} />
 
       {/* Proyectos donde está asignada */}
-      <h2 className="text-sm font-semibold text-[var(--navy)] mb-3">Proyectos asignados ({dotaciones?.length ?? 0})</h2>
+      <h2 className="text-sm font-semibold text-[var(--ink)] mb-3">Proyectos asignados ({dotaciones?.length ?? 0})</h2>
       {!dotaciones?.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-8 text-center text-sm text-[var(--gray-600)] mb-6">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-8 text-center text-sm text-[var(--gray-600)] mb-6">
           <FolderKanban size={22} strokeWidth={1.5} className="mx-auto mb-2 text-[var(--gray-600)]" />
           Aún no está asignada a ningún proyecto
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] divide-y divide-[var(--gray-100)] mb-6">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] divide-y divide-[var(--gray-100)] mb-6">
           {dotaciones.map((d) => (
             <Link key={d.id} href={`/admin/proyectos/${d.proyecto_id}/dotacion/${d.id}`} className="flex items-center justify-between px-5 py-3.5 hover:bg-[var(--gray-100)]/50">
-              <span className="text-sm font-medium text-[var(--navy)]">{(d.proyectos as unknown as { nombre: string } | null)?.nombre ?? 'Sin proyecto'}</span>
+              <span className="text-sm font-medium text-[var(--ink)]">{(d.proyectos as unknown as { nombre: string } | null)?.nombre ?? 'Sin proyecto'}</span>
               <span className="text-xs text-[var(--gray-600)]">
                 {d.turno_dias_trabajo ? `${d.turno_dias_trabajo}x${d.turno_dias_descanso ?? 0}` : '—'} · {d.estado}
               </span>
@@ -156,10 +156,10 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
       )}
 
       {/* Acceso y permisos */}
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Lock size={15} strokeWidth={2} className="text-[var(--navy)]" />
-          <h2 className="text-sm font-semibold text-[var(--navy)]">Acceso y permisos</h2>
+          <Lock size={15} strokeWidth={2} className="text-[var(--ink)]" />
+          <h2 className="text-sm font-semibold text-[var(--ink)]">Acceso y permisos</h2>
         </div>
 
         {success === 'acceso' && <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Acceso creado. Ahora marca sus permisos por módulo.</div>}
@@ -171,11 +171,11 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
           <form action={crearAcceso} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
             <div>
               <label htmlFor="email" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Correo de acceso</label>
-              <input id="email" name="email" type="email" required placeholder="persona@empresa.cl" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+              <input id="email" name="email" type="email" required placeholder="persona@empresa.cl" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
             </div>
             <div>
               <label htmlFor="password" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Clave (mín. 6)</label>
-              <input id="password" name="password" type="text" required minLength={6} placeholder="clave inicial" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+              <input id="password" name="password" type="text" required minLength={6} placeholder="clave inicial" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
             </div>
             <SubmitButton pendingText="Creando acceso…" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">
               <KeyRound size={15} strokeWidth={2.25} /> Crear acceso
@@ -186,7 +186,7 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
           /* Paso B: marcar permisos por módulo */
           <>
             <p className="text-xs text-[var(--gray-600)] mb-4 flex items-center gap-1.5">
-              <CheckCircle2 size={13} strokeWidth={2} className="text-green-600" /> Acceso activo: <strong className="text-[var(--navy)]">{login.email}</strong>
+              <CheckCircle2 size={13} strokeWidth={2} className="text-green-600" /> Acceso activo: <strong className="text-[var(--ink)]">{login.email}</strong>
             </p>
             <form action={guardarPerms} className="space-y-2">
               {MODULOS.map((m) => {
@@ -195,9 +195,9 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
                   <div key={m.k} className="flex items-center gap-3 py-1.5">
                     <label className="flex items-center gap-2 w-40 shrink-0 cursor-pointer">
                       <input type="checkbox" name={`mod_${m.k}`} defaultChecked={activo} className="w-4 h-4 accent-[var(--navy)]" />
-                      <span className="text-sm text-[var(--navy)] font-medium">{m.label}</span>
+                      <span className="text-sm text-[var(--ink)] font-medium">{m.label}</span>
                     </label>
-                    <select name={`nivel_${m.k}`} defaultValue={permisos[m.k] ?? 'visor'} className="px-3 py-1.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
+                    <select name={`nivel_${m.k}`} defaultValue={permisos[m.k] ?? 'visor'} className="px-3 py-1.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
                       <option value="admin_modulo">Supervisor de módulo</option>
                       <option value="actuador">Revisor</option>
                       <option value="visor">Visualizador</option>

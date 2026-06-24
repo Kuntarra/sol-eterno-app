@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { User, Users, UsersRound, ChevronUp, ChevronDown, CalendarRange, CalendarDays } from 'lucide-react'
 
-const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
+const INPUT = 'px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 const LABEL = 'block text-xs font-medium text-[var(--gray-600)] mb-1'
 
 type Opt = { id: string; nombre: string }
@@ -58,7 +58,7 @@ export function AutoColaciones({ fecha, modo, scope, refId, dotaciones, cuadrill
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {MODOS.map(({ v, label, desc, Icon }) => (
             <button type="button" key={v} onClick={() => push({ modo: v })}
-              className={`text-left px-4 py-3 rounded-xl border transition-colors ${modo === v ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-white text-[var(--gray-700)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
+              className={`text-left px-4 py-3 rounded-xl border transition-colors ${modo === v ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-[var(--surface)] text-[var(--gray-700)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
               <span className="inline-flex items-center gap-2 text-sm font-semibold"><Icon size={15} strokeWidth={2} /> {label}</span>
               <span className={`block text-[11px] leading-snug mt-1 ${modo === v ? 'text-white/80' : 'text-[var(--gray-500)]'}`}>{desc}</span>
             </button>
@@ -73,7 +73,7 @@ export function AutoColaciones({ fecha, modo, scope, refId, dotaciones, cuadrill
           <div className="flex flex-wrap gap-2">
             {SCOPES.map(({ v, label, Icon }) => (
               <button type="button" key={v} onClick={() => push({ scope: v, ref: '' })}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors ${scope === v ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-white text-[var(--gray-700)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors ${scope === v ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-[var(--surface)] text-[var(--gray-700)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
                 <Icon size={15} strokeWidth={2} /> {label}
               </button>
             ))}
@@ -99,8 +99,8 @@ export function AutoColaciones({ fecha, modo, scope, refId, dotaciones, cuadrill
           <div className="flex items-center gap-1.5">
             <input type="date" value={fecha} onChange={(e) => push({ fecha: e.target.value || fecha })} className={`${INPUT} flex-1`} />
             <div className="flex flex-col">
-              <button type="button" onClick={() => moverDia(1)} title="Día siguiente" className="px-2 py-0.5 rounded-t-md border border-[var(--gray-200)] bg-white hover:bg-[var(--gray-100)] text-[var(--gray-600)]"><ChevronUp size={14} strokeWidth={2.5} /></button>
-              <button type="button" onClick={() => moverDia(-1)} title="Día anterior" className="px-2 py-0.5 rounded-b-md border border-t-0 border-[var(--gray-200)] bg-white hover:bg-[var(--gray-100)] text-[var(--gray-600)]"><ChevronDown size={14} strokeWidth={2.5} /></button>
+              <button type="button" onClick={() => moverDia(1)} title="Día siguiente" className="px-2 py-0.5 rounded-t-md border border-[var(--gray-200)] bg-[var(--surface)] hover:bg-[var(--gray-100)] text-[var(--gray-600)]"><ChevronUp size={14} strokeWidth={2.5} /></button>
+              <button type="button" onClick={() => moverDia(-1)} title="Día anterior" className="px-2 py-0.5 rounded-b-md border border-t-0 border-[var(--gray-200)] bg-[var(--surface)] hover:bg-[var(--gray-100)] text-[var(--gray-600)]"><ChevronDown size={14} strokeWidth={2.5} /></button>
             </div>
           </div>
           <p className="text-[11px] text-[var(--gray-500)] mt-1 capitalize">{fechaLabel}{fecha === hoy ? ' · hoy' : ''}</p>

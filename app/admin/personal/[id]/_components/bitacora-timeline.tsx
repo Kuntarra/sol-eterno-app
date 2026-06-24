@@ -48,7 +48,7 @@ export function BitacoraTimeline({ eventos }: { eventos: EventoVivo[] }) {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
         </span>
-        <h2 className="text-sm font-semibold text-[var(--navy)]">Bitácora viva</h2>
+        <h2 className="text-sm font-semibold text-[var(--ink)]">Bitácora viva</h2>
         <span className="text-xs text-[var(--gray-600)]">· seguimiento de la persona en terreno</span>
         {eventos.length > 0 && (
           <span className="ml-auto text-xs font-semibold text-[var(--gray-600)] tabular-nums">{eventos.length} evento{eventos.length !== 1 ? 's' : ''}</span>
@@ -56,7 +56,7 @@ export function BitacoraTimeline({ eventos }: { eventos: EventoVivo[] }) {
       </div>
 
       {!eventos.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-10 text-center">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-10 text-center">
           <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-[var(--gray-100)] flex items-center justify-center">
             <Clock size={24} strokeWidth={1.5} className="text-[var(--gray-600)]" />
           </div>
@@ -64,7 +64,7 @@ export function BitacoraTimeline({ eventos }: { eventos: EventoVivo[] }) {
           <p className="text-xs text-[var(--gray-500)] mt-1 max-w-sm mx-auto">Cuando el personal en terreno marque eventos (subió al bus, check-in, comida entregada…) aparecerán aquí, en orden, en tiempo real.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-5 sm:p-6">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-5 sm:p-6">
           <ol className="relative">
             {eventos.map((e, i) => {
               const meta = MODULO_META[e.modulo] ?? DEFAULT_META
@@ -78,7 +78,7 @@ export function BitacoraTimeline({ eventos }: { eventos: EventoVivo[] }) {
                   </span>
                   <div className="flex-1 min-w-0 pt-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-[var(--navy)] leading-tight">{EVENTO_LABEL[e.tipo] ?? e.tipo}</p>
+                      <p className="text-sm font-semibold text-[var(--ink)] leading-tight">{EVENTO_LABEL[e.tipo] ?? e.tipo}</p>
                       <span className={`text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${meta.bg} ${meta.color}`}>{meta.label}</span>
                     </div>
                     {e.detalle && <p className="text-sm text-[var(--gray-700)] mt-0.5">{e.detalle}</p>}

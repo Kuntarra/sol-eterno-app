@@ -74,18 +74,18 @@ export default async function PlanificacionPage({ searchParams }: { searchParams
           <CalendarRange size={19} strokeWidth={2} className="text-white" />
         </div>
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em] leading-tight">Planificación</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em] leading-tight">Planificación</h1>
           <p className="text-sm text-[var(--gray-600)]">Hoja de planificación por persona y módulo · nivel proyecto</p>
         </div>
       </div>
 
       {!proyectos?.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">
           <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-3">
             <FolderKanban size={24} strokeWidth={1.5} className="text-[var(--gray-600)]" />
           </div>
           <p className="text-sm text-[var(--gray-600)]">Aún no hay proyectos.</p>
-          <Link href="/admin/proyectos/nuevo" className="text-[var(--navy)] text-sm font-semibold hover:underline mt-1 inline-block">Crear el primer proyecto →</Link>
+          <Link href="/admin/proyectos/nuevo" className="text-[var(--ink)] text-sm font-semibold hover:underline mt-1 inline-block">Crear el primer proyecto →</Link>
         </div>
       ) : (
         <>
@@ -95,7 +95,7 @@ export default async function PlanificacionPage({ searchParams }: { searchParams
               const activo = p.id === proyectoSel?.id
               return (
                 <Link key={p.id} href={`/admin/planificacion?proyecto=${p.id}`}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${activo ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-white text-[var(--navy)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${activo ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-[var(--surface)] text-[var(--ink)] border-[var(--gray-200)] hover:bg-[var(--gray-100)]'}`}>
                   {p.nombre}
                 </Link>
               )
@@ -104,12 +104,12 @@ export default async function PlanificacionPage({ searchParams }: { searchParams
 
           {/* Matriz Persona × Módulo */}
           {!dotaciones.length ? (
-            <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">
               <p className="text-sm text-[var(--gray-600)] mb-1">Nadie asignado a <strong>{proyectoSel?.nombre}</strong> todavía.</p>
-              <Link href={`/admin/proyectos/${proyectoSel?.id}`} className="text-[var(--navy)] text-sm font-semibold hover:underline">Asignar personal al proyecto →</Link>
+              <Link href={`/admin/proyectos/${proyectoSel?.id}`} className="text-[var(--ink)] text-sm font-semibold hover:underline">Asignar personal al proyecto →</Link>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-x-auto">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[var(--gray-200)] text-left text-[var(--gray-600)]">
@@ -131,7 +131,7 @@ export default async function PlanificacionPage({ searchParams }: { searchParams
                     return (
                       <tr key={d.id} className="border-b border-[var(--gray-100)] last:border-0 hover:bg-[var(--gray-100)]/40 transition-colors">
                         <td className="px-5 py-3.5">
-                          <p className="font-medium text-[var(--navy)]">{p ? `${p.nombres} ${p.apellido_paterno}` : '—'}</p>
+                          <p className="font-medium text-[var(--ink)]">{p ? `${p.nombres} ${p.apellido_paterno}` : '—'}</p>
                           <p className="text-xs text-[var(--gray-600)] tabular-nums">{doc}</p>
                         </td>
                         <td className="px-4 py-3.5 text-[var(--gray-600)]">{turno}</td>
@@ -156,7 +156,7 @@ export default async function PlanificacionPage({ searchParams }: { searchParams
           )}
 
           <p className="text-xs text-[var(--gray-500)] mt-3">
-            Cada celda muestra lo planificado de esa persona en ese módulo (verde = tiene registros). Toca <strong>+</strong> para planificar en el módulo. Para el detalle de una persona, ábrela en <Link href="/admin/personal" className="text-[var(--navy)] font-semibold hover:underline">Personal</Link>.
+            Cada celda muestra lo planificado de esa persona en ese módulo (verde = tiene registros). Toca <strong>+</strong> para planificar en el módulo. Para el detalle de una persona, ábrela en <Link href="/admin/personal" className="text-[var(--ink)] font-semibold hover:underline">Personal</Link>.
           </p>
         </>
       )}

@@ -99,12 +99,12 @@ export default async function RecepcionPage({
       <div className="flex items-end justify-between gap-6 mb-6">
         <div>
           <span className="section-label">En curso</span>
-          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">
             Huéspedes activos
           </h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">
             {filtered.length} estadía{filtered.length !== 1 ? 's' : ''} en curso
-            {q && <span className="ml-1 text-[var(--navy)] font-medium">· "{q}"</span>}
+            {q && <span className="ml-1 text-[var(--ink)] font-medium">· "{q}"</span>}
           </p>
         </div>
         <Link href="/recepcion/checkin" className="btn-primary shrink-0">
@@ -126,12 +126,12 @@ export default async function RecepcionPage({
         <RecepcionSearchBar defaultValue={q || undefined} />
 
         {showFilter && !q && (
-          <div className="flex gap-1.5 bg-white border border-[var(--gray-200)] rounded-xl p-1">
+          <div className="flex gap-1.5 bg-[var(--surface)] border border-[var(--gray-200)] rounded-xl p-1">
             <Link href="/recepcion"
               className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 !selectedPropertyId
                   ? 'bg-[var(--navy)] text-white shadow-[var(--shadow-xs)]'
-                  : 'text-[var(--gray-600)] hover:text-[var(--navy)] hover:bg-[var(--gray-50)]'
+                  : 'text-[var(--gray-600)] hover:text-[var(--ink)] hover:bg-[var(--gray-50)]'
               }`}>
               Todos
             </Link>
@@ -140,7 +140,7 @@ export default async function RecepcionPage({
                 className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   selectedPropertyId === p.id
                     ? 'bg-[var(--navy)] text-white shadow-[var(--shadow-xs)]'
-                    : 'text-[var(--gray-600)] hover:text-[var(--navy)] hover:bg-[var(--gray-50)]'
+                    : 'text-[var(--gray-600)] hover:text-[var(--ink)] hover:bg-[var(--gray-50)]'
                 }`}>
                 {p.name}
               </Link>
@@ -151,18 +151,18 @@ export default async function RecepcionPage({
 
       {/* ── Estado vacío ── */}
       {!filtered.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-16 text-center">
           <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Users size={24} strokeWidth={1.5} stroke="var(--gray-500)" />
           </div>
-          <p className="text-sm font-semibold text-[var(--navy)] mb-1">
+          <p className="text-sm font-semibold text-[var(--ink)] mb-1">
             {q ? `Sin resultados para "${q}"` : selectedPropertyId ? 'Sin huéspedes en esta propiedad' : 'Sin huéspedes activos'}
           </p>
           <p className="text-xs text-[var(--gray-600)] mb-4">
             {q ? 'Prueba con otro nombre, RUT o número de habitación.' : 'No hay estadías en curso en este momento.'}
           </p>
           {!q && !selectedPropertyId && (
-            <Link href="/recepcion/checkin" className="text-sm text-[var(--navy)] font-semibold hover:underline">
+            <Link href="/recepcion/checkin" className="text-sm text-[var(--ink)] font-semibold hover:underline">
               Registrar primer check-in →
             </Link>
           )}
@@ -179,7 +179,7 @@ export default async function RecepcionPage({
 
             return (
               <div key={stay.id}
-                className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden
+                className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden
                            shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-md)]
                            hover:-translate-y-0.5 transition-all duration-200">
                 {/* Top accent */}
@@ -193,7 +193,7 @@ export default async function RecepcionPage({
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[var(--navy)] text-sm leading-tight">
+                    <p className="font-bold text-[var(--ink)] text-sm leading-tight">
                       {q ? <Highlight text={n} q={q} /> : n}
                     </p>
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5">
@@ -256,7 +256,7 @@ function Highlight({ text, q }: { text: string; q: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-[var(--amber)]/40 text-[var(--navy)] rounded px-0.5 not-italic">{text.slice(idx, idx + q.length)}</mark>
+      <mark className="bg-[var(--amber)]/40 text-[var(--ink)] rounded px-0.5 not-italic">{text.slice(idx, idx + q.length)}</mark>
       {text.slice(idx + q.length)}
     </>
   )

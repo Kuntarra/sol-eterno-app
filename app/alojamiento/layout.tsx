@@ -41,7 +41,7 @@ export default async function AlojamientoLayout({ children }: { children: React.
   return (
     <div className="flex min-h-screen">
       {impersonateId && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-400 text-[var(--navy)] px-4 py-1.5 flex items-center justify-between text-xs font-semibold">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-400 text-[var(--ink)] px-4 py-1.5 flex items-center justify-between text-xs font-semibold">
           <span>👁 Viendo como: <strong>{targetProfile?.full_name ?? 'Cliente'}</strong> — {company?.name}</span>
           <form action={stopImpersonate}>
             <button type="submit" className="underline hover:no-underline">Volver a admin →</button>

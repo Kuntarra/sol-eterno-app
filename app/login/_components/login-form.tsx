@@ -19,7 +19,7 @@ export function LoginForm({ error }: { error?: string }) {
 
       {/* Email */}
       <div>
-        <label htmlFor="email" className="block text-sm font-semibold text-[var(--navy)] mb-1.5">
+        <label htmlFor="email" className="block text-sm font-semibold text-[var(--ink)] mb-1.5">
           Correo electrónico
         </label>
         <div className="relative">
@@ -39,7 +39,7 @@ export function LoginForm({ error }: { error?: string }) {
       {/* Contraseña */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label htmlFor="password" className="text-sm font-semibold text-[var(--navy)]">
+          <label htmlFor="password" className="text-sm font-semibold text-[var(--ink)]">
             Contraseña
           </label>
           <Link href="/forgot-password"
@@ -62,7 +62,7 @@ export function LoginForm({ error }: { error?: string }) {
           <button
             type="button"
             onClick={() => setShowPwd(v => !v)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--gray-500)] hover:text-[var(--navy)] transition-colors">
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--gray-500)] hover:text-[var(--ink)] transition-colors">
             {showPwd
               ? <EyeOff size={16} strokeWidth={1.75} />
               : <Eye size={16} strokeWidth={1.75} />}

@@ -12,7 +12,7 @@ interface Props {
   searchParams: Promise<{ error?: string; agregados?: string; fuera?: string }>
 }
 
-const INPUT = 'px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
+const INPUT = 'px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 const PAX_BADGE: Record<string, string> = {
   asignado: 'badge-gray', subio: 'badge-amber', dejado: 'badge-green', no_show: 'badge-gray',
 }
@@ -58,9 +58,9 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
   return (
     <div className="p-8 max-w-4xl">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/admin/transporte" className="text-[var(--gray-600)] hover:text-[var(--navy)]"><ArrowLeft size={18} strokeWidth={2} /></Link>
+        <Link href="/admin/transporte" className="text-[var(--gray-600)] hover:text-[var(--ink)]"><ArrowLeft size={18} strokeWidth={2} /></Link>
         <div className="flex-1">
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">
             {[t.origen, t.destino].filter(Boolean).join(' → ') || 'Traslado'}
           </h1>
           <p className="text-sm text-[var(--gray-600)]">
@@ -77,7 +77,7 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
               <option value="completado">Completado</option>
               <option value="cancelado">Cancelado</option>
             </select>
-            <button type="submit" className="px-3 py-2 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-sm font-medium hover:bg-[var(--gray-100)]">Cambiar</button>
+            <button type="submit" className="px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-sm font-medium hover:bg-[var(--gray-100)]">Cambiar</button>
           </form>
         )}
       </div>
@@ -88,8 +88,8 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
 
       {/* Tramos del viaje (movilización multimodal) */}
       {tramos.length > 0 && (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-5 mb-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Tramos del viaje</h2>
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-5 mb-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Tramos del viaje</h2>
           <ol className="relative">
             {tramos.map((tr, i) => {
               const meta = MODO_META[tr.modo] ?? MODO_META.otro
@@ -98,11 +98,11 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
               return (
                 <li key={tr.id} className="relative flex gap-4 pb-5 last:pb-0">
                   {!last && <span className="absolute left-[19px] top-11 bottom-0 w-px bg-[var(--gray-200)]" aria-hidden />}
-                  <span className="relative z-10 w-10 h-10 rounded-xl bg-[var(--navy)]/5 text-[var(--navy)] ring-4 ring-white flex items-center justify-center shrink-0">
+                  <span className="relative z-10 w-10 h-10 rounded-xl bg-[var(--navy)]/5 text-[var(--ink)] ring-4 ring-white flex items-center justify-center shrink-0">
                     <Icon size={17} strokeWidth={2} />
                   </span>
                   <div className="flex-1 min-w-0 pt-1">
-                    <p className="text-sm font-semibold text-[var(--navy)]">
+                    <p className="text-sm font-semibold text-[var(--ink)]">
                       {meta.label}: {[tr.origen, tr.destino].filter(Boolean).join(' → ') || '—'}
                     </p>
                     <p className="text-xs text-[var(--gray-500)] mt-0.5 tabular-nums">
@@ -119,7 +119,7 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
 
       {/* Agregar pasajero */}
       {puedeEscribir && (
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6">
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-6">
         <form action={addPax} className="flex items-end gap-3">
           <div className="flex-1">
             <label htmlFor="dotacion_id" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Agregar pasajero</label>
@@ -146,11 +146,11 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
       )}
 
       {/* Manifiesto */}
-      <h2 className="text-sm font-semibold text-[var(--navy)] mb-3">Pasajeros ({pasajeros?.length ?? 0})</h2>
+      <h2 className="text-sm font-semibold text-[var(--ink)] mb-3">Pasajeros ({pasajeros?.length ?? 0})</h2>
       {!pasajeros?.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-10 text-center text-sm text-[var(--gray-600)]">Sin pasajeros aún</div>
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-10 text-center text-sm text-[var(--gray-600)]">Sin pasajeros aún</div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] divide-y divide-[var(--gray-100)]">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] divide-y divide-[var(--gray-100)]">
           {pasajeros.map((px) => {
             const p = px.personas as unknown as { nombres: string; apellido_paterno: string } | null
             const subio = marcarPasajero.bind(null, id, px.id, 'subio')
@@ -159,14 +159,14 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
             return (
               <div key={px.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-[var(--navy)] truncate">{p ? `${p.nombres} ${p.apellido_paterno}` : '—'}</p>
+                  <p className="text-sm font-medium text-[var(--ink)] truncate">{p ? `${p.nombres} ${p.apellido_paterno}` : '—'}</p>
                   <span className={`badge ${PAX_BADGE[px.estado] ?? 'badge-gray'}`}>{PAX_LABEL[px.estado] ?? px.estado}</span>
                   {tramos.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {tramos.map((tr) => {
                         const on = asignados.get(px.id)?.has(tr.id) ?? false
                         const meta = MODO_META[tr.modo] ?? MODO_META.otro
-                        const chip = `inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${on ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-white text-[var(--gray-500)] border-[var(--gray-200)]'}`
+                        const chip = `inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${on ? 'bg-[var(--navy)] text-white border-[var(--navy)]' : 'bg-[var(--surface)] text-[var(--gray-500)] border-[var(--gray-200)]'}`
                         if (!puedeEscribir) {
                           return on ? <span key={tr.id} className={chip}><meta.Icon size={11} strokeWidth={2} /> {meta.label}</span> : null
                         }

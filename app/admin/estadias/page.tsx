@@ -115,17 +115,17 @@ export default async function EstadiasPage({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
             <span className="section-label">Alojamiento</span>
-            <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Estadías</h1>
+            <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Estadías</h1>
             <p className="text-sm text-[var(--gray-600)] mt-1">Gestión y corrección de registros</p>
-            <Link href="/admin/propiedades" className="inline-flex items-center gap-1.5 mt-2 text-sm font-semibold text-[var(--navy)] hover:underline">
+            <Link href="/admin/propiedades" className="inline-flex items-center gap-1.5 mt-2 text-sm font-semibold text-[var(--ink)] hover:underline">
               <Building2 size={15} strokeWidth={2} /> Gestionar propiedades →
             </Link>
           </div>
           <div className="flex gap-4 shrink-0">
             {/* Check-ins hoy */}
-            <div className="bg-white rounded-xl border border-[var(--gray-200)] px-5 py-3.5 shadow-[var(--shadow-xs)] min-w-[130px]">
+            <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] px-5 py-3.5 shadow-[var(--shadow-xs)] min-w-[130px]">
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gray-500)] mb-1">Check-ins hoy</p>
-              <p className="font-display text-[1.9rem] font-semibold text-[var(--navy)] leading-none data-number">{checkinsHoy ?? 0}</p>
+              <p className="font-display text-[1.9rem] font-semibold text-[var(--ink)] leading-none data-number">{checkinsHoy ?? 0}</p>
               {diffCheckins !== 0 && (
                 <p className={`text-[11px] mt-1 font-medium ${diffCheckins > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                   {diffCheckins > 0 ? `+${diffCheckins}` : diffCheckins} vs ayer
@@ -133,9 +133,9 @@ export default async function EstadiasPage({
               )}
             </div>
             {/* Ocupación */}
-            <div className="bg-white rounded-xl border border-[var(--gray-200)] px-5 py-3.5 shadow-[var(--shadow-xs)] min-w-[150px]">
+            <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] px-5 py-3.5 shadow-[var(--shadow-xs)] min-w-[150px]">
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gray-500)] mb-1">Ocupación</p>
-              <p className={`font-display text-[1.9rem] font-semibold leading-none data-number ${ocupacionPct >= 70 ? 'text-[var(--navy)]' : 'text-[var(--amber-dark)]'}`}>
+              <p className={`font-display text-[1.9rem] font-semibold leading-none data-number ${ocupacionPct >= 70 ? 'text-[var(--ink)]' : 'text-[var(--amber-dark)]'}`}>
                 {ocupacionPct}%
               </p>
               <div className="mt-2 h-1.5 bg-[var(--gray-200)] rounded-full overflow-hidden">
@@ -164,13 +164,13 @@ export default async function EstadiasPage({
         <SearchBar defaultValue={q || undefined} />
 
         {!q && (
-          <div className="flex gap-1.5 bg-white border border-[var(--gray-200)] rounded-xl p-1">
+          <div className="flex gap-1.5 bg-[var(--surface)] border border-[var(--gray-200)] rounded-xl p-1">
             {(['activas', 'completadas', 'todas'] as const).map(f => (
               <Link key={f} href={`/admin/estadias?filter=${f}`}
                 className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   filter === f
                     ? 'bg-[var(--navy)] text-white shadow-[var(--shadow-xs)]'
-                    : 'text-[var(--gray-600)] hover:text-[var(--navy)] hover:bg-[var(--gray-50)]'
+                    : 'text-[var(--gray-600)] hover:text-[var(--ink)] hover:bg-[var(--gray-50)]'
                 }`}>
                 {FILTER_LABELS[f]}
               </Link>
@@ -181,8 +181,8 @@ export default async function EstadiasPage({
         <div className="ml-auto flex items-center gap-2">
           <a href={`/api/estadias/export?filter=${filter}${q ? `&q=${encodeURIComponent(q)}` : ''}`}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--gray-200)]
-                       bg-white text-[var(--gray-600)] text-xs font-semibold hover:border-[var(--navy)]/30
-                       hover:text-[var(--navy)] transition-all">
+                       bg-[var(--surface)] text-[var(--gray-600)] text-xs font-semibold hover:border-[var(--navy)]/30
+                       hover:text-[var(--ink)] transition-all">
             <Download size={13} strokeWidth={2} />
             Exportar CSV
           </a>
@@ -191,26 +191,26 @@ export default async function EstadiasPage({
         {q && (
           <p className="text-sm text-[var(--gray-600)]">
             {stays?.length ?? 0} resultado{stays?.length !== 1 ? 's' : ''} para
-            <span className="font-semibold text-[var(--navy)] ml-1">"{q}"</span>
+            <span className="font-semibold text-[var(--ink)] ml-1">"{q}"</span>
           </p>
         )}
       </div>
 
       {!stays?.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">
           <p className="text-sm text-[var(--gray-600)]">
             {q
               ? `No se encontró ningún huésped con "${q}".`
               : 'No hay estadías en esta categoría.'}
           </p>
           {q && (
-            <Link href="/admin/estadias" className="mt-3 inline-block text-sm text-[var(--navy)] font-medium hover:underline">
+            <Link href="/admin/estadias" className="mt-3 inline-block text-sm text-[var(--ink)] font-medium hover:underline">
               Ver todas las estadías
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
           <div className="px-5 py-3.5 border-b border-[var(--gray-100)] flex items-center justify-between">
             <span className="text-xs font-semibold text-[var(--gray-600)]">
               {stays.length} registro{stays.length !== 1 ? 's' : ''}
@@ -243,7 +243,7 @@ export default async function EstadiasPage({
                           {initials || '?'}
                         </div>
                       </td>
-                      <td className="font-semibold text-[var(--navy)] whitespace-nowrap">
+                      <td className="font-semibold text-[var(--ink)] whitespace-nowrap">
                         <span className="inline-flex items-center gap-2">
                           {guest?.id
                             ? <Link href={`/admin/huespedes/${guest.id}`} className="hover:text-[var(--amber-dark)] hover:underline underline-offset-2 transition-colors">
@@ -264,7 +264,7 @@ export default async function EstadiasPage({
                         {guest?.phone ?? '—'}
                       </td>
                       <td>
-                        <span className="font-medium text-[var(--navy)]">Hab. {room?.number}</span>
+                        <span className="font-medium text-[var(--ink)]">Hab. {room?.number}</span>
                         <span className="text-[11px] text-[var(--gray-500)] ml-1.5">{room?.properties?.name}</span>
                       </td>
                       <td>{company?.name}</td>
@@ -279,7 +279,7 @@ export default async function EstadiasPage({
                       </td>
                       <td className="text-right">
                         <Link href={`/admin/estadias/${stay.id}/editar`}
-                          className="text-[var(--navy)] text-xs font-semibold hover:text-[var(--navy-light)] hover:underline">
+                          className="text-[var(--ink)] text-xs font-semibold hover:text-[var(--navy-light)] hover:underline">
                           Editar
                         </Link>
                       </td>
@@ -316,7 +316,7 @@ function Highlight({ text, q }: { text: string; q: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-[var(--amber)]/40 text-[var(--navy)] rounded px-0.5">{text.slice(idx, idx + q.length)}</mark>
+      <mark className="bg-[var(--amber)]/40 text-[var(--ink)] rounded px-0.5">{text.slice(idx, idx + q.length)}</mark>
       {text.slice(idx + q.length)}
     </>
   )

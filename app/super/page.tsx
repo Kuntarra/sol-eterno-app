@@ -53,13 +53,13 @@ export default async function SuperPage({
       {/* Encabezado + KPIs */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
         <div>
-          <h2 className="font-display text-[1.9rem] font-semibold text-[var(--navy)] tracking-tight leading-tight">Clientes</h2>
+          <h2 className="font-display text-[1.9rem] font-semibold text-[var(--ink)] tracking-tight leading-tight">Clientes</h2>
           <p className="text-sm text-[var(--gray-600)] mt-1">{tenants.length} cliente{tenants.length !== 1 ? 's' : ''} · {activos} activo{activos !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="bg-white rounded-xl border border-[var(--gray-200)] px-5 py-3 shadow-[var(--shadow-xs)]">
+          <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] px-5 py-3 shadow-[var(--shadow-xs)]">
             <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gray-500)]">Ingreso mensual estimado</p>
-            <p className="font-display text-[1.6rem] font-semibold text-[var(--navy)] leading-none mt-1">{CLP(ingresoMensual)}</p>
+            <p className="font-display text-[1.6rem] font-semibold text-[var(--ink)] leading-none mt-1">{CLP(ingresoMensual)}</p>
           </div>
           <Link href="/super/nuevo" className="btn-primary shrink-0">
             <Plus size={16} strokeWidth={2.25} />
@@ -70,13 +70,13 @@ export default async function SuperPage({
 
       {/* Tabla de clientes */}
       {!tenants.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
-          <p className="text-sm font-semibold text-[var(--navy)] mb-1">Aún no hay clientes</p>
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-16 text-center">
+          <p className="text-sm font-semibold text-[var(--ink)] mb-1">Aún no hay clientes</p>
           <p className="text-xs text-[var(--gray-600)] mb-4">Crea el primero para empezar a gestionar.</p>
-          <Link href="/super/nuevo" className="text-sm text-[var(--navy)] font-semibold hover:underline">Crear cliente →</Link>
+          <Link href="/super/nuevo" className="text-sm text-[var(--ink)] font-semibold hover:underline">Crear cliente →</Link>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
           <div className="overflow-x-auto">
             <table className="admin-table">
               <thead>
@@ -93,7 +93,7 @@ export default async function SuperPage({
                 {tenants.map(t => (
                   <tr key={t.id} className={!t.active ? 'opacity-50' : ''}>
                     <td>
-                      <Link href={`/super/${t.id}`} className="font-semibold text-[var(--navy)] hover:text-[var(--amber-dark)] hover:underline">
+                      <Link href={`/super/${t.id}`} className="font-semibold text-[var(--ink)] hover:text-[var(--amber-dark)] hover:underline">
                         {t.name}
                       </Link>
                       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
@@ -111,13 +111,13 @@ export default async function SuperPage({
                         <span className="text-emerald-600 font-medium">{t.active_stays} activos</span>
                       </div>
                     </td>
-                    <td className="font-semibold text-[var(--navy)]">{CLP(t.monthly_amount)}</td>
+                    <td className="font-semibold text-[var(--ink)]">{CLP(t.monthly_amount)}</td>
                     <td className="text-[var(--gray-600)]">{t.billing_day ? `día ${t.billing_day}` : '—'}</td>
                     <td>
                       <span className={`badge ${PAY_BADGE[t.payment_status]}`}>{PAY_LABEL[t.payment_status]}</span>
                     </td>
                     <td className="text-right">
-                      <Link href={`/super/${t.id}`} className="text-[var(--navy)] text-xs font-semibold hover:underline">Gestionar</Link>
+                      <Link href={`/super/${t.id}`} className="text-[var(--ink)] text-xs font-semibold hover:underline">Gestionar</Link>
                     </td>
                   </tr>
                 ))}

@@ -183,17 +183,17 @@ export default async function ClienteReportePage({
 
       {/* ── Header ── */}
       <div className="mb-8">
-        <h1 className="font-display text-[1.9rem] font-semibold text-[var(--navy)] tracking-[-0.01em]">Reporte de ocupación</h1>
+        <h1 className="font-display text-[1.9rem] font-semibold text-[var(--ink)] tracking-[-0.01em]">Reporte de ocupación</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">
           {company?.name}
-          {proyectoId && <span className="ml-2 text-xs bg-[var(--amber)]/20 text-[var(--navy)] font-medium px-2 py-0.5 rounded-full">{proyectoNombre}</span>}
-          {propiedadId && <span className="ml-2 text-xs bg-[var(--gray-200)] text-[var(--navy)] font-medium px-2 py-0.5 rounded-full">{propiedadNombre}</span>}
+          {proyectoId && <span className="ml-2 text-xs bg-[var(--amber)]/20 text-[var(--ink)] font-medium px-2 py-0.5 rounded-full">{proyectoNombre}</span>}
+          {propiedadId && <span className="ml-2 text-xs bg-[var(--gray-200)] text-[var(--ink)] font-medium px-2 py-0.5 rounded-full">{propiedadNombre}</span>}
           <span className="ml-2">· {tituloPeriodo}</span>
         </p>
       </div>
 
       {/* ── Filtros ── */}
-      <form method="GET" className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-8">
+      <form method="GET" className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-8">
         <p className="text-xs font-semibold text-[var(--gray-600)] uppercase tracking-widest mb-4">Filtros</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
 
@@ -201,7 +201,7 @@ export default async function ClienteReportePage({
           <div className="flex flex-col gap-1">
             <label className="text-xs text-[var(--gray-500)]">Período</label>
             <select name="periodo" defaultValue={periodo}
-              className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
+              className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
               <option value="mensual">Mensual</option>
               <option value="anual">Anual</option>
             </select>
@@ -211,7 +211,7 @@ export default async function ClienteReportePage({
           <div className="flex flex-col gap-1">
             <label className="text-xs text-[var(--gray-500)]">Año</label>
             <select name="anio" defaultValue={anio}
-              className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
+              className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
@@ -221,7 +221,7 @@ export default async function ClienteReportePage({
             <div className="flex flex-col gap-1">
               <label className="text-xs text-[var(--gray-500)]">Mes</label>
               <select name="mes" defaultValue={mes}
-                className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
+                className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
                 {MONTHS.map((m,i) => <option key={i+1} value={i+1}>{m}</option>)}
               </select>
             </div>
@@ -231,7 +231,7 @@ export default async function ClienteReportePage({
           <div className="flex flex-col gap-1">
             <label className="text-xs text-[var(--gray-500)]">Proyecto</label>
             <select name="proyecto" defaultValue={proyectoId ?? 'todos'}
-              className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
+              className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
               <option value="todos">Todos los proyectos</option>
               {proyectos.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
@@ -241,7 +241,7 @@ export default async function ClienteReportePage({
           <div className="flex flex-col gap-1">
             <label className="text-xs text-[var(--gray-500)]">Hostal</label>
             <select name="propiedad" defaultValue={propiedadId ?? 'todas'}
-              className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
+              className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
               <option value="todas">Todos los hostales</option>
               {propiedadesDisp.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
@@ -265,7 +265,7 @@ export default async function ClienteReportePage({
 
       {/* ── Gauge + KPIs ── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-[var(--gray-200)] p-6 flex flex-col items-center">
+        <div className="lg:col-span-2 bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6 flex flex-col items-center">
           <p className="text-xs font-semibold text-[var(--gray-600)] uppercase tracking-widest mb-4">
             Ocupación {periodo === 'anual' ? 'anual' : 'del mes'}
           </p>
@@ -278,14 +278,14 @@ export default async function ClienteReportePage({
                 strokeDasharray={`${dash} ${circ}`}/>
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-3xl font-semibold text-[var(--navy)]">{ocupPct}%</span>
+              <span className="font-display text-3xl font-semibold text-[var(--ink)]">{ocupPct}%</span>
               <span className="text-xs text-[var(--gray-500)]">ocupado</span>
             </div>
           </div>
           <div className="mt-4 w-full space-y-1.5 text-xs text-[var(--gray-600)]">
             <div className="flex justify-between">
               <span>Camas disponibles</span>
-              <span className="font-semibold text-[var(--navy)]">{camasTotal.toLocaleString('es-CL')}</span>
+              <span className="font-semibold text-[var(--ink)]">{camasTotal.toLocaleString('es-CL')}</span>
             </div>
             <div className="flex justify-between">
               <span>Camas usadas</span>
@@ -305,8 +305,8 @@ export default async function ClienteReportePage({
             { label:'Estadías del período', value: stays.length, sub:`${stays.filter(s=>!s.checked_out_at).length} activas al cierre`, border:'border-t-[var(--navy-light)]' },
             { label:'Días del período',  value: diasPeriodo,   sub:tituloPeriodo, border:'border-t-[var(--gray-300)]' },
           ].map(k => (
-            <div key={k.label} className={`bg-white rounded-xl border border-[var(--gray-200)] border-t-4 ${k.border} p-5`}>
-              <p className="font-display text-[1.875rem] font-semibold leading-none text-[var(--navy)] data-number">{k.value.toLocaleString('es-CL')}</p>
+            <div key={k.label} className={`bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] border-t-4 ${k.border} p-5`}>
+              <p className="font-display text-[1.875rem] font-semibold leading-none text-[var(--ink)] data-number">{k.value.toLocaleString('es-CL')}</p>
               <p className="text-sm font-medium text-[var(--gray-700)] mt-1">{k.label}</p>
               <p className="text-xs text-[var(--gray-500)] mt-1">{k.sub}</p>
             </div>
@@ -316,16 +316,16 @@ export default async function ClienteReportePage({
 
       {/* ── Ocupación por hostal (solo si hay más de uno) ── */}
       {porPropiedad.length > 1 && (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6 mb-8">
-          <h2 className="text-sm font-bold text-[var(--navy)] mb-5">Ocupación por hostal</h2>
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6 mb-8">
+          <h2 className="text-sm font-bold text-[var(--ink)] mb-5">Ocupación por hostal</h2>
           <div className="space-y-5">
             {porPropiedad.map(p => (
               <div key={p.nombre}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-medium text-[var(--navy)]">{p.nombre}</span>
+                  <span className="text-sm font-medium text-[var(--ink)]">{p.nombre}</span>
                   <div className="flex items-center gap-4 text-xs text-[var(--gray-600)]">
                     <span>{p.estadias} estadías · {p.usadas} / {p.camas * diasPeriodo} camas-{periodo === 'anual' ? 'año' : 'mes'}</span>
-                    <span className={`font-bold text-base ${p.pct >= 70 ? 'text-[var(--navy)]' : 'text-[var(--amber-dark)]'}`}>
+                    <span className={`font-bold text-base ${p.pct >= 70 ? 'text-[var(--ink)]' : 'text-[var(--amber-dark)]'}`}>
                       {p.pct}%
                     </span>
                   </div>
@@ -341,9 +341,9 @@ export default async function ClienteReportePage({
       )}
 
       {/* ── Listado ── */}
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden">
         <div className="px-6 py-4 border-b border-[var(--gray-100)] flex items-center justify-between">
-          <h2 className="text-sm font-bold text-[var(--navy)]">Estadías del período</h2>
+          <h2 className="text-sm font-bold text-[var(--ink)]">Estadías del período</h2>
           <span className="text-xs text-[var(--gray-500)] bg-[var(--gray-100)] px-2.5 py-1 rounded-full font-medium">
             {stays.length} registros
           </span>
@@ -374,7 +374,7 @@ export default async function ClienteReportePage({
                   const n = noches(s)
                   return (
                     <tr key={s.id} className="hover:bg-[var(--gray-50)] transition-colors align-top">
-                      <td className="px-3 py-3 font-semibold text-[var(--navy)] leading-snug">{g?.first_name} {g?.last_name_paterno}</td>
+                      <td className="px-3 py-3 font-semibold text-[var(--ink)] leading-snug">{g?.first_name} {g?.last_name_paterno}</td>
                       <td className="px-3 py-3 text-xs text-[var(--gray-500)] font-mono whitespace-nowrap">{g?.rut ?? '—'}</td>
                       <td className="px-3 py-3 font-medium text-[var(--gray-700)] leading-snug">{r?.properties?.name}</td>
                       <td className="px-3 py-3 text-[var(--gray-600)]">{r?.number}</td>
@@ -383,7 +383,7 @@ export default async function ClienteReportePage({
                       <td className="px-3 py-3 whitespace-nowrap text-[var(--gray-700)] tabular-nums">
                         {s.checked_out_at ? fmt(s.checked_out_at) : <span className="text-[var(--amber-dark)] font-medium">Activo</span>}
                       </td>
-                      <td className="px-3 py-3 text-right font-bold text-[var(--navy)] tabular-nums">{n}</td>
+                      <td className="px-3 py-3 text-right font-bold text-[var(--ink)] tabular-nums">{n}</td>
                       <td className="px-3 py-3">
                         {s.checked_out_at
                           ? <span className="text-xs bg-[var(--gray-100)] text-[var(--gray-500)] px-2 py-0.5 rounded-full">Completada</span>
@@ -396,7 +396,7 @@ export default async function ClienteReportePage({
               <tfoot>
                 <tr className="border-t-2 border-[var(--gray-200)] bg-[var(--gray-50)]">
                   <td colSpan={7} className="px-4 py-3 text-xs font-semibold text-[var(--gray-600)]">Total noches-huésped</td>
-                  <td className="px-4 py-3 text-right font-bold text-[var(--navy)]">{camasUsadas}</td>
+                  <td className="px-4 py-3 text-right font-bold text-[var(--ink)]">{camasUsadas}</td>
                   <td />
                 </tr>
               </tfoot>

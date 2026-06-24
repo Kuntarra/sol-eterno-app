@@ -43,7 +43,7 @@ export default async function NotificacionesPage({
   return (
     <div className="px-8 py-8 max-w-3xl">
       <span className="section-label">Configuración</span>
-      <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-[-0.01em]">
+      <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-[-0.01em]">
         Reportes por correo
       </h1>
       <p className="text-sm text-[var(--gray-600)] mt-1">
@@ -63,7 +63,7 @@ export default async function NotificacionesPage({
 
       {dbError ? (
         <div className="mt-6 bg-amber-50/40 rounded-2xl border border-amber-200 p-6">
-          <p className="text-sm font-semibold text-[var(--navy)] mb-1">Falta crear la tabla de suscripciones</p>
+          <p className="text-sm font-semibold text-[var(--ink)] mb-1">Falta crear la tabla de suscripciones</p>
           <p className="text-xs text-[var(--gray-600)]">
             Ejecuta <code className="font-mono bg-[var(--gray-100)] px-1.5 py-0.5 rounded">supabase/add-report-subscriptions.sql</code> en el editor SQL de Supabase y recarga.
           </p>
@@ -71,8 +71,8 @@ export default async function NotificacionesPage({
       ) : (
         <>
           {/* Nueva suscripción */}
-          <div className="mt-6 bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6">
-            <p className="text-sm font-semibold text-[var(--navy)] mb-4">Nueva suscripción</p>
+          <div className="mt-6 bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6">
+            <p className="text-sm font-semibold text-[var(--ink)] mb-4">Nueva suscripción</p>
             <SubscriptionForm
               companies={(companies ?? []).map(c => ({ id: c.id, name: c.name }))}
               properties={(properties ?? []).map(p => ({ id: p.id, name: p.name }))}
@@ -88,11 +88,11 @@ export default async function NotificacionesPage({
             </div>
 
             {!subs?.length ? (
-              <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-10 text-center text-sm text-[var(--gray-500)]">
+              <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-10 text-center text-sm text-[var(--gray-500)]">
                 Aún no hay suscripciones. Crea la primera arriba.
               </div>
             ) : (
-              <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-sm)] divide-y divide-[var(--gray-100)]">
+              <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-sm)] divide-y divide-[var(--gray-100)]">
                 {subs.map((s: any) => (
                   <div key={s.id} className="flex items-center gap-3 px-5 py-4">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -100,7 +100,7 @@ export default async function NotificacionesPage({
                       <Mail size={15} strokeWidth={1.75} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-[var(--navy)] truncate">
+                      <p className="text-sm font-semibold text-[var(--ink)] truncate">
                         {s.email}{s.name ? <span className="text-[var(--gray-500)] font-normal"> · {s.name}</span> : null}
                       </p>
                       <p className="text-xs text-[var(--gray-500)] truncate">
@@ -113,7 +113,7 @@ export default async function NotificacionesPage({
 
                     <form action={sendTestSubscription.bind(null, s.id)}>
                       <button type="submit" title="Enviar prueba ahora"
-                        className="text-[var(--gray-500)] hover:text-[var(--navy)] transition-colors p-1.5 rounded-lg hover:bg-[var(--gray-50)]">
+                        className="text-[var(--gray-500)] hover:text-[var(--ink)] transition-colors p-1.5 rounded-lg hover:bg-[var(--gray-50)]">
                         <Send size={15} strokeWidth={1.75} />
                       </button>
                     </form>

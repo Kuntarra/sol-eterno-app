@@ -19,9 +19,9 @@ export default async function NuevaMovilizacionPage({ searchParams }: Props) {
   return (
     <div className="p-8 max-w-3xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/admin/transporte" className="text-[var(--gray-600)] hover:text-[var(--navy)]"><ArrowLeft size={18} strokeWidth={2} /></Link>
+        <Link href="/admin/transporte" className="text-[var(--gray-600)] hover:text-[var(--ink)]"><ArrowLeft size={18} strokeWidth={2} /></Link>
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Nueva movilización</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">Nueva movilización</h1>
           <p className="text-sm text-[var(--gray-600)]">Traslado multimodal de la dotación: origen → proyecto, por tramos encadenados.</p>
         </div>
       </div>

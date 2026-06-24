@@ -63,7 +63,7 @@ export default async function AlojamientoPage() {
       {/* ── Header ── */}
       <div className="mb-8">
         <span className="section-label">Portal de alojamiento</span>
-        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">{company?.name}</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">{company?.name}</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">Sol Eterno · Vista de empresa</p>
       </div>
 
@@ -71,23 +71,23 @@ export default async function AlojamientoPage() {
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Huéspedes activos',   value: activos.length,    dot: 'bg-emerald-500', num: 'text-emerald-600' },
-          { label: 'Habitaciones asig.',  value: habitaciones,       dot: 'bg-[var(--navy)]', num: 'text-[var(--navy)]' },
+          { label: 'Habitaciones asig.',  value: habitaciones,       dot: 'bg-[var(--navy)]', num: 'text-[var(--ink)]' },
           { label: 'Camas asignadas',     value: totalCamas,         dot: 'bg-[var(--amber)]', num: 'text-[var(--amber-dark)]' },
           { label: 'Estadías históricas', value: stays?.length ?? 0, dot: 'bg-[var(--gray-300)]', num: 'text-[var(--gray-700)]' },
         ].map(k => (
-          <div key={k.label} className="bg-white rounded-2xl border border-[var(--gray-200)] p-5 shadow-[var(--shadow-sm)]
+          <div key={k.label} className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-5 shadow-[var(--shadow-sm)]
                                         hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all duration-200">
             <div className="w-2 h-2 rounded-full mb-3 bg-[var(--amber)]" />
-            <p className="font-display text-[2.25rem] font-semibold leading-none tracking-[-0.01em] text-[var(--navy)] data-number">{k.value}</p>
-            <p className="text-sm font-medium text-[var(--navy)] mt-2">{k.label}</p>
+            <p className="font-display text-[2.25rem] font-semibold leading-none tracking-[-0.01em] text-[var(--ink)] data-number">{k.value}</p>
+            <p className="text-sm font-medium text-[var(--ink)] mt-2">{k.label}</p>
           </div>
         ))}
       </div>
 
       {/* Huéspedes activos */}
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden mb-6">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden mb-6">
         <div className="px-6 py-4 border-b border-[var(--gray-100)] flex items-center justify-between">
-          <h2 className="text-sm font-bold text-[var(--navy)]">Huéspedes activos ahora</h2>
+          <h2 className="text-sm font-bold text-[var(--ink)]">Huéspedes activos ahora</h2>
           <span className="text-xs bg-emerald-100 text-emerald-700 font-semibold px-2.5 py-1 rounded-full">{activos.length} en alojamiento</span>
         </div>
         {!activos.length ? (
@@ -107,11 +107,11 @@ export default async function AlojamientoPage() {
                 const r = s.rooms  as any
                 return (
                   <tr key={s.id}>
-                    <td className="font-semibold text-[var(--navy)]">{g?.first_name} {g?.last_name_paterno}</td>
+                    <td className="font-semibold text-[var(--ink)]">{g?.first_name} {g?.last_name_paterno}</td>
                     <td className="text-xs text-[var(--gray-500)] font-mono">{g?.rut ?? '—'}</td>
                     <td className="text-xs text-[var(--gray-600)] whitespace-nowrap">{g?.phone ?? '—'}</td>
                     <td>
-                      <span className="font-medium text-[var(--navy)]">{r?.properties?.name}</span>
+                      <span className="font-medium text-[var(--ink)]">{r?.properties?.name}</span>
                       <span className="text-[var(--gray-400)] ml-1 text-xs">Hab.{r?.number}</span>
                     </td>
                     <td>{s.shift_type ?? '—'}</td>
@@ -127,10 +127,10 @@ export default async function AlojamientoPage() {
 
       {/* Últimas salidas */}
       {recientes.length > 0 && (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden">
           <div className="px-6 py-4 border-b border-[var(--gray-100)] flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[var(--navy)]">Últimas salidas</h2>
-            <Link href="/alojamiento/historial" className="text-xs text-[var(--navy)] font-semibold hover:underline">Ver todo →</Link>
+            <h2 className="text-sm font-bold text-[var(--ink)]">Últimas salidas</h2>
+            <Link href="/alojamiento/historial" className="text-xs text-[var(--ink)] font-semibold hover:underline">Ver todo →</Link>
           </div>
           <table className="admin-table">
             <thead>
@@ -146,9 +146,9 @@ export default async function AlojamientoPage() {
                 const r = s.rooms  as any
                 return (
                   <tr key={s.id}>
-                    <td className="font-medium text-[var(--navy)]">{g?.first_name} {g?.last_name_paterno}</td>
+                    <td className="font-medium text-[var(--ink)]">{g?.first_name} {g?.last_name_paterno}</td>
                     <td>
-                      <span className="font-medium text-[var(--navy)]">{r?.properties?.name}</span>
+                      <span className="font-medium text-[var(--ink)]">{r?.properties?.name}</span>
                       <span className="text-[var(--gray-400)] ml-1 text-xs">Hab.{r?.number}</span>
                     </td>
                     <td>{s.shift_type ?? '—'}</td>

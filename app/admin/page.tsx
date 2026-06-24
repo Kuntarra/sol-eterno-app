@@ -135,7 +135,7 @@ export default async function AdminDashboard() {
       {/* ── Saludo ── */}
       <div>
         <span className="section-label">Panel de administración</span>
-        <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-[-0.01em]">{saludo}</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-[-0.01em]">{saludo}</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1 capitalize">
           Resumen operativo de hoy, {fecha}.
         </p>
@@ -185,7 +185,7 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
 
         {/* Acciones rápidas */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
+        <div className="xl:col-span-2 bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6 shadow-[var(--shadow-sm)]">
           <div className="flex items-center gap-2 mb-5">
             <span className="section-label !mb-0">Acciones rápidas</span>
             <Zap size={14} strokeWidth={2} stroke="var(--amber)" fill="var(--amber)" />
@@ -214,13 +214,13 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Actividad reciente */}
-        <div className="xl:col-span-3 bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-sm)]">
+        <div className="xl:col-span-3 bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-sm)]">
           <div className="px-6 py-4 border-b border-[var(--gray-100)] flex items-center justify-between">
             <div>
               <span className="section-label !mb-0">Actividad reciente</span>
               <p className="text-[11px] text-[var(--gray-500)] mt-0.5">Últimos movimientos registrados</p>
             </div>
-            <Link href="/admin/estadias" className="text-xs text-[var(--navy)] font-semibold hover:underline">
+            <Link href="/admin/estadias" className="text-xs text-[var(--ink)] font-semibold hover:underline">
               Ver todo →
             </Link>
           </div>
@@ -252,7 +252,7 @@ export default async function AdminDashboard() {
                               : <LogOut size={13} strokeWidth={2} />}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-xs font-semibold text-[var(--navy)] truncate">
+                            <p className="text-xs font-semibold text-[var(--ink)] truncate">
                               {act.type === 'checkin' ? 'Nueva estadía' : 'Checkout'}
                             </p>
                             <p className="text-[10px] text-[var(--gray-500)] truncate">
@@ -262,7 +262,7 @@ export default async function AdminDashboard() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-xs font-medium text-[var(--navy)] truncate max-w-[120px]">{act.guest}</p>
+                        <p className="text-xs font-medium text-[var(--ink)] truncate max-w-[120px]">{act.guest}</p>
                         {act.company && <p className="text-[10px] text-[var(--gray-500)] truncate max-w-[120px]">{act.company}</p>}
                       </td>
                       <td className="px-4 py-3 text-[11px] text-[var(--gray-500)] whitespace-nowrap">
@@ -295,7 +295,7 @@ function KpiCard({ label, value, href, trendLabel, trendUp, icon }: {
 
   return (
     <Link href={href}
-      className="bg-white rounded-2xl border border-[var(--gray-200)] p-5
+      className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-5
                  shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]
                  hover:-translate-y-0.5 transition-all duration-200 group block">
       <div className="flex items-start justify-between mb-3.5">
@@ -307,10 +307,10 @@ function KpiCard({ label, value, href, trendLabel, trendUp, icon }: {
           {!isStable && (trendUp ? '↑ ' : '↓ ')}{trendLabel}
         </span>
       </div>
-      <p className="font-display text-[2.6rem] font-semibold leading-none data-number text-[var(--navy)]">
+      <p className="font-display text-[2.6rem] font-semibold leading-none data-number text-[var(--ink)]">
         {value.toLocaleString('es-CL')}
       </p>
-      <p className="text-sm font-medium text-[var(--navy)] mt-2.5 group-hover:text-[var(--navy-light)] transition-colors leading-snug">
+      <p className="text-sm font-medium text-[var(--ink)] mt-2.5 group-hover:text-[var(--navy-light)] transition-colors leading-snug">
         {label}
       </p>
     </Link>
@@ -329,7 +329,7 @@ function QuickLink({ href, label, icon }: { href: string; label: string; icon: R
                       flex items-center justify-center transition-all duration-150">
         {icon}
       </div>
-      <p className="text-xs font-semibold text-[var(--navy)] leading-tight">{label}</p>
+      <p className="text-xs font-semibold text-[var(--ink)] leading-tight">{label}</p>
     </Link>
   )
 }

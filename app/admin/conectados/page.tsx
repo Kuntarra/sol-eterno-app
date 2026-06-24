@@ -115,7 +115,7 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
           <Link2 size={18} strokeWidth={2} className="text-white" />
         </div>
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Proyectos conectados</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">Proyectos conectados</h1>
           <p className="text-sm text-[var(--gray-600)]">Personal de los proyectos donde te contrataron · registra tu servicio sobre cada persona</p>
         </div>
       </div>
@@ -126,7 +126,7 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-[var(--amber)]/20 grid place-items-center shrink-0"><Star size={18} className="text-[var(--amber-dark)]" /></div>
             <div>
-              <p className="text-sm font-semibold text-[var(--navy)]">Estás como <span className="text-[var(--amber-dark)]">○ Invitado</span></p>
+              <p className="text-sm font-semibold text-[var(--ink)]">Estás como <span className="text-[var(--amber-dark)]">○ Invitado</span></p>
               <p className="text-xs text-[var(--gray-600)] max-w-md mt-0.5">Como Invitado operas solo este proyecto. Hazte <strong>★ Socio Dotia</strong> para tener tu propio panel completo, historial y gestionar todos tus servicios.</p>
             </div>
           </div>
@@ -134,7 +134,7 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
             <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-[var(--gray-100)] text-[var(--gray-600)] text-sm font-semibold"><CheckCircle2 size={15} /> Solicitud enviada</span>
           ) : (
             <form action={solicitarSocio}>
-              <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--amber)] hover:brightness-95 text-[var(--navy)] text-sm font-bold"><Star size={15} /> Quiero ser Socio</button>
+              <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--amber)] hover:brightness-95 text-[var(--ink)] text-sm font-bold"><Star size={15} /> Quiero ser Socio</button>
             </form>
           )}
         </div>
@@ -145,20 +145,20 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
 
       {/* Conectarse a un proyecto con el código que envió el Mandante */}
       {puedeConectar && (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-5 mt-6">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-5 mt-6">
           <div className="flex items-center gap-2 mb-1">
-            <KeyRound size={16} strokeWidth={2} className="text-[var(--navy)]" />
-            <h2 className="text-sm font-semibold text-[var(--navy)]">Conectarme a un proyecto</h2>
+            <KeyRound size={16} strokeWidth={2} className="text-[var(--ink)]" />
+            <h2 className="text-sm font-semibold text-[var(--ink)]">Conectarme a un proyecto</h2>
           </div>
           <p className="text-xs text-[var(--gray-600)] mb-4">Ingresa el código que te envió el Mandante para vincularte a su proyecto. Quedarás como <strong>Socio Dotia</strong>.</p>
           <form action={conectarPorCodigo} className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
             <div>
               <label htmlFor="codigo" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Código del proyecto</label>
-              <input id="codigo" name="codigo" required placeholder="Ej: A1B2C3D4" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+              <input id="codigo" name="codigo" required placeholder="Ej: A1B2C3D4" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
             </div>
             <div>
               <label htmlFor="modulo" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Atiendo con el módulo</label>
-              <select id="modulo" name="modulo" required defaultValue={misModulos[0] ?? ''} className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
+              <select id="modulo" name="modulo" required defaultValue={misModulos[0] ?? ''} className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
                 {(misModulos.length ? misModulos : ['transporte']).map((m) => <option key={m} value={m}>{MODULO_LABEL[m] ?? m}</option>)}
               </select>
             </div>
@@ -168,7 +168,7 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
       )}
 
       {!proyectos?.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center mt-6">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center mt-6">
           <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-3">
             <Link2 size={24} strokeWidth={1.5} stroke="var(--gray-600)" />
           </div>
@@ -185,10 +185,10 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
             const acciones = EVENTOS_MODULO[modulo] ?? EVENTOS_MODULO.default
             const headers = escribir ? [...cols, 'Registrar'] : cols
             return (
-              <div key={p.id} className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden">
+              <div key={p.id} className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden">
                 <div className="px-5 py-4 border-b border-[var(--gray-100)] flex items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-sm font-semibold text-[var(--navy)]">{p.nombre}</h2>
+                    <h2 className="text-sm font-semibold text-[var(--ink)]">{p.nombre}</h2>
                     <p className="text-xs text-[var(--gray-600)]">
                       {[p.faena, p.fecha_inicio && `${p.fecha_inicio} → ${p.fecha_fin_estimada ?? '—'}`].filter(Boolean).join(' · ') || 'Sin faena'}
                     </p>
@@ -220,7 +220,7 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
 
                         const personaCell = (
                           <td className="px-5 py-3">
-                            <p className="font-medium text-[var(--navy)]">{nombre}</p>
+                            <p className="font-medium text-[var(--ink)]">{nombre}</p>
                             <p className="text-xs text-[var(--gray-600)] tabular-nums">{doc}</p>
                             {ev && <p className="text-[11px] text-emerald-700 mt-0.5">✓ {EVENTO_LABEL[ev.tipo] ?? ev.tipo}{ev.detalle ? ` · ${ev.detalle}` : ''}</p>}
                           </td>
@@ -259,7 +259,7 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
                                       <input type="hidden" name="modulo" value={modulo} />
                                       <input type="hidden" name="tipo" value={a.tipo} />
                                       <input type="hidden" name="back" value="/admin/conectados" />
-                                      <button className="px-2.5 py-1 rounded-lg bg-[var(--gray-100)] text-[var(--navy)] text-xs font-semibold hover:bg-[var(--gray-200)]">{a.label}</button>
+                                      <button className="px-2.5 py-1 rounded-lg bg-[var(--gray-100)] text-[var(--ink)] text-xs font-semibold hover:bg-[var(--gray-200)]">{a.label}</button>
                                     </form>
                                   ))}
                                 </div>

@@ -14,11 +14,11 @@ export default async function NuevoClientePage({ searchParams }: Props) {
   return (
     <div className="p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/admin/clientes" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
+        <Link href="/admin/clientes" className="text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors">
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Nueva empresa cliente</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">Nueva empresa cliente</h1>
           <p className="text-sm text-[var(--gray-600)]">Registra los datos de la empresa minera</p>
         </div>
       </div>
@@ -30,8 +30,8 @@ export default async function NuevoClientePage({ searchParams }: Props) {
       )}
 
       <form action={createCompany} className="space-y-6">
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Datos de la empresa</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-5">Datos de la empresa</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label htmlFor="name" className={LABEL}>Nombre de la empresa *</label>
@@ -44,8 +44,8 @@ export default async function NuevoClientePage({ searchParams }: Props) {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Contacto</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-5">Contacto</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label htmlFor="contact_name" className={LABEL}>Nombre del contacto</label>
@@ -66,7 +66,7 @@ export default async function NuevoClientePage({ searchParams }: Props) {
           <button type="submit" className="px-6 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg transition-colors">
             Crear empresa
           </button>
-          <Link href="/admin/clientes" className="px-6 py-2.5 bg-white hover:bg-[var(--gray-100)] text-[var(--navy)] text-sm font-medium rounded-lg border border-[var(--gray-200)] transition-colors">
+          <Link href="/admin/clientes" className="px-6 py-2.5 bg-[var(--surface)] hover:bg-[var(--gray-100)] text-[var(--ink)] text-sm font-medium rounded-lg border border-[var(--gray-200)] transition-colors">
             Cancelar
           </Link>
         </div>

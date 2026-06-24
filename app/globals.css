@@ -41,6 +41,50 @@
 
   /* ── Ease ─────────────────────────────────────────────── */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Tokens semánticos de tema (claro = idéntico a hoy) ── */
+  --surface:   #ffffff;        /* fondo de tarjetas (antes bg-white) */
+  --surface-2: var(--gray-50); /* superficies secundarias / hover */
+  --ink:       var(--navy);    /* color de TEXTO de títulos (decoplado del fondo navy) */
+  color-scheme: light;
+}
+
+/* ── TEMA OSCURO (opt-in vía data-theme="dark") ──────────────
+   Variantes tonales desaturadas, no inversión. Contraste AA. ── */
+[data-theme="dark"] {
+  --navy:        #1b4d7d;   /* brand/fondo de botones y sidebar (texto blanco encima) */
+  --navy-dark:   #15406a;
+  --navy-light:  #2f6699;
+  --amber:       #E8B65A;
+  --amber-dark:  #F2C879;
+  --amber-light: #C2872A;
+
+  --cream:    #0f141a;
+  --gray-50:  #1e2730;      /* inputs / superficies-2 */
+  --gray-100: #0f141a;      /* fondo de página */
+  --gray-200: #2a333d;      /* bordes / hairlines */
+  --gray-300: #3a444f;
+  --gray-500: #7c8794;
+  --gray-600: #9aa6b2;      /* texto secundario (AA sobre surface) */
+  --gray-700: #c2cbd5;      /* texto cuerpo */
+  --gray-900: #eef2f7;      /* texto fuerte */
+
+  --surface:   #171e26;     /* tarjetas */
+  --surface-2: #1e2730;
+  --ink:       #f1f5f9;     /* títulos casi-blancos */
+
+  --navy-5:  rgb(120 170 220 / 0.08);
+  --navy-8:  rgb(120 170 220 / 0.12);
+  --navy-12: rgb(120 170 220 / 0.18);
+
+  --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.45);
+  --shadow-sm:    0 1px 4px 0 rgb(0 0 0 / 0.50);
+  --shadow-md:    0 4px 16px -2px rgb(0 0 0 / 0.55);
+  --shadow-lg:    0 12px 32px -4px rgb(0 0 0 / 0.60);
+  --shadow-navy:  0 4px 16px -2px rgb(0 0 0 / 0.50);
+  --shadow-amber: 0 4px 16px -2px rgb(0 0 0 / 0.50);
+
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -165,7 +209,7 @@ a, button, [role="button"] {
 
 /* ── Card premium ────────────────────────────────────────── */
 .premium-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
@@ -188,10 +232,10 @@ a, button, [role="button"] {
   transition: border-color 150ms, box-shadow 150ms, background-color 150ms;
   outline: none;
 }
-.input-premium:hover { border-color: var(--gray-300); background: #fff; }
+.input-premium:hover { border-color: var(--gray-300); background: var(--surface); }
 .input-premium:focus {
   border-color: var(--navy);
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 0 0 3px rgb(10 44 74 / 0.08);
 }
 .input-premium::placeholder { color: var(--gray-500); }
@@ -253,6 +297,16 @@ a, button, [role="button"] {
 }
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: rgb(255 255 255 / 0.25);
+}
+
+/* ── Accesibilidad: respetar reduced-motion ──────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── Print ────────────────────────────────────────────────── */

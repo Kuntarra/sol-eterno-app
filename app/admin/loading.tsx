@@ -14,7 +14,7 @@ export default function AdminLoading() {
       <div className="px-8 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-[var(--gray-200)] p-5">
+            <div key={i} className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="h-4 w-32 bg-[var(--gray-200)] rounded" />
                 <div className="h-5 w-14 bg-[var(--gray-100)] rounded-full" />

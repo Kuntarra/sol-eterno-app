@@ -56,15 +56,15 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Link href="/admin/clientes" className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
+          <Link href="/admin/clientes" className="text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors">
             <ArrowLeft size={18} strokeWidth={2} />
           </Link>
           <div className="w-10 h-10 rounded-xl bg-[var(--amber)] flex items-center justify-center shrink-0">
-            <span className="text-[var(--navy)] text-xs font-black uppercase">{company.name.slice(0, 2)}</span>
+            <span className="text-[var(--ink)] text-xs font-black uppercase">{company.name.slice(0, 2)}</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{company.name}</h1>
+              <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">{company.name}</h1>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 company.active ? 'bg-emerald-100 text-emerald-700' : 'bg-[var(--gray-200)] text-[var(--gray-600)]'
               }`}>
@@ -98,8 +98,8 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
 
       {/* Datos empresa */}
       <form action={updateWithId} className="space-y-6 mb-10">
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Datos de la empresa</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-5">Datos de la empresa</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label htmlFor="name" className={LABEL}>Nombre *</label>
@@ -112,8 +112,8 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Contacto</h2>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-5">Contacto</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label htmlFor="contact_name" className={LABEL}>Nombre del contacto</label>
@@ -139,7 +139,7 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
 
       {/* Proyectos */}
       <div id="proyectos" className="mb-10">
-        <h2 className="text-lg font-bold text-[var(--navy)] mb-4">
+        <h2 className="text-lg font-bold text-[var(--ink)] mb-4">
           Proyectos
           <span className="ml-2 text-sm font-normal text-[var(--gray-600)]">({projects?.length ?? 0})</span>
         </h2>
@@ -154,11 +154,11 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
               const deleteProj = deleteProject.bind(null, project.id, id)
 
               return (
-                <div key={project.id} className="bg-white rounded-xl border border-[var(--gray-200)] p-4">
+                <div key={project.id} className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-[var(--navy)]">{project.name}</p>
+                        <p className="text-sm font-semibold text-[var(--ink)]">{project.name}</p>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           project.active ? 'bg-emerald-100 text-emerald-700' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'
                         }`}>
@@ -192,8 +192,8 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
         )}
 
         {/* Agregar proyecto */}
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
-          <h3 className="text-sm font-semibold text-[var(--navy)] mb-4">Agregar proyecto</h3>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5">
+          <h3 className="text-sm font-semibold text-[var(--ink)] mb-4">Agregar proyecto</h3>
           <form action={createProjectWithId}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               <div>
@@ -214,13 +214,13 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
 
       {/* Asignaciones */}
       <div id="asignaciones">
-        <h2 className="text-lg font-bold text-[var(--navy)] mb-4">
+        <h2 className="text-lg font-bold text-[var(--ink)] mb-4">
           Asignaciones de habitaciones
           <span className="ml-2 text-sm font-normal text-[var(--gray-600)]">({allocations?.length ?? 0})</span>
         </h2>
 
         {allocations && allocations.length > 0 ? (
-          <div className="bg-white rounded-xl border border-[var(--gray-200)] overflow-hidden mb-4">
+          <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] overflow-hidden mb-4">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--gray-200)] bg-[var(--gray-50)]">
@@ -242,7 +242,7 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
                     <tr key={alloc.id} className="hover:bg-[var(--gray-50)]">
                       <td className="px-4 py-3">
                         {proj ? (
-                          <span className="text-xs font-medium bg-[var(--amber)]/20 text-[var(--navy)] px-2 py-0.5 rounded-full">
+                          <span className="text-xs font-medium bg-[var(--amber)]/20 text-[var(--ink)] px-2 py-0.5 rounded-full">
                             {proj.name}
                           </span>
                         ) : (
@@ -250,14 +250,14 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-[var(--navy)]">{prop?.name ?? '—'}</p>
+                        <p className="font-medium text-[var(--ink)]">{prop?.name ?? '—'}</p>
                         <p className="text-xs text-[var(--gray-600)]">
                           {(prop?.cities as { name: string } | null)?.name}
                           {prop?.type ? ` · ${PROPERTY_TYPE_LABELS[prop.type as keyof typeof PROPERTY_TYPE_LABELS]}` : ''}
                         </p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-[var(--navy)]">Hab. {room?.number ?? '—'}</p>
+                        <p className="font-medium text-[var(--ink)]">Hab. {room?.number ?? '—'}</p>
                         <p className="text-xs text-[var(--gray-600)]">{room?.capacity} cupo{(room?.capacity ?? 0) !== 1 ? 's' : ''}</p>
                       </td>
                       <td className="px-4 py-3 text-xs text-[var(--gray-600)]">
@@ -275,13 +275,13 @@ export default async function ClienteDetailPage({ params, searchParams }: Props)
             </table>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-[var(--gray-200)] p-8 text-center mb-4">
+          <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-8 text-center mb-4">
             <p className="text-sm text-[var(--gray-600)]">No hay habitaciones asignadas. Primero agrega un proyecto.</p>
           </div>
         )}
 
-        <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5">
-          <h3 className="text-sm font-semibold text-[var(--navy)] mb-4">Asignar habitación</h3>
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5">
+          <h3 className="text-sm font-semibold text-[var(--ink)] mb-4">Asignar habitación</h3>
           {!projects?.length ? (
             <p className="text-sm text-[var(--gray-600)]">Debes crear al menos un proyecto antes de asignar habitaciones.</p>
           ) : (

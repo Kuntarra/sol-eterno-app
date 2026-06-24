@@ -12,7 +12,7 @@ interface StatCardProps {
 
 export function StatCard({ value, label, sub, href, icon }: StatCardProps) {
   const content = (
-    <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6
+    <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6
                     hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5
                     transition-all duration-200 group h-full">
       {icon && (
@@ -21,10 +21,10 @@ export function StatCard({ value, label, sub, href, icon }: StatCardProps) {
           {icon}
         </div>
       )}
-      <p className="font-display text-[2.5rem] font-semibold leading-none text-[var(--navy)] data-number">
+      <p className="font-display text-[2.5rem] font-semibold leading-none text-[var(--ink)] data-number">
         {typeof value === 'number' ? value.toLocaleString('es-CL') : value}
       </p>
-      <p className="text-sm font-semibold text-[var(--navy)] mt-2.5 leading-snug">{label}</p>
+      <p className="text-sm font-semibold text-[var(--ink)] mt-2.5 leading-snug">{label}</p>
       {sub && <p className="text-xs text-[var(--gray-600)] mt-1 leading-snug">{sub}</p>}
     </div>
   )

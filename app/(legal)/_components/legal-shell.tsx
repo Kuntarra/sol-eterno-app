@@ -28,11 +28,11 @@ export function LegalShell({ title, updated, children }: { title: string; update
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-10">
-        <article className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-8 md:p-10
+        <article className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-8 md:p-10
                             space-y-6 text-[15px] leading-relaxed text-[var(--gray-700)]
-                            [&_h2]:font-display [&_h2]:text-[var(--navy)] [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:tracking-[-0.01em] [&_h2]:mt-2
+                            [&_h2]:font-display [&_h2]:text-[var(--ink)] [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:tracking-[-0.01em] [&_h2]:mt-2
                             [&_p]:text-[var(--gray-700)] [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5 [&_li]:text-[var(--gray-700)]
-                            [&_strong]:text-[var(--navy)] [&_strong]:font-semibold">
+                            [&_strong]:text-[var(--ink)] [&_strong]:font-semibold">
           {children}
         </article>
         <p className="text-center text-xs text-[var(--gray-500)] mt-6">

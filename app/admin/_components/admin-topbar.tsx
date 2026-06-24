@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Search, HelpCircle, ChevronDown, LogOut, Bell, AlertTriangle, LogIn } from 'lucide-react'
 import { logout } from '@/app/actions/auth'
+import { ThemeToggle } from '@/app/_components/theme-toggle'
 
 type Notif = { title: string; detail: string; href: string; kind: 'alert' | 'info' }
 
@@ -48,10 +49,10 @@ export function AdminTopBar({ fullName, role = 'Administrador', notifications = 
   }
 
   return (
-    <header className="hidden md:flex h-14 bg-white border-b border-[var(--gray-200)] items-center px-6 gap-4 shrink-0 sticky top-0 z-30">
+    <header className="hidden md:flex h-14 bg-[var(--surface)] border-b border-[var(--gray-200)] items-center px-6 gap-4 shrink-0 sticky top-0 z-30">
 
       {/* Título de página */}
-      <span className="text-sm font-semibold text-[var(--navy)] min-w-0 truncate mr-2">
+      <span className="text-sm font-semibold text-[var(--ink)] min-w-0 truncate mr-2">
         {label}
       </span>
 
@@ -71,6 +72,7 @@ export function AdminTopBar({ fullName, role = 'Administrador', notifications = 
 
       {/* Acciones */}
       <div className="ml-auto flex items-center gap-1.5">
+        <ThemeToggle className="!w-8 !h-8" />
         {/* Notificaciones */}
         <div className="relative">
           <button
@@ -78,11 +80,11 @@ export function AdminTopBar({ fullName, role = 'Administrador', notifications = 
             aria-expanded={notifOpen}
             title="Notificaciones"
             className="relative w-8 h-8 rounded-xl flex items-center justify-center text-[var(--gray-500)]
-                       hover:bg-[var(--gray-100)] hover:text-[var(--navy)] transition-colors">
+                       hover:bg-[var(--gray-100)] hover:text-[var(--ink)] transition-colors">
             <Bell size={16} strokeWidth={1.75} />
             {alertCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--amber)]
-                               text-[var(--navy)] text-[10px] font-bold flex items-center justify-center">
+                               text-[var(--ink)] text-[10px] font-bold flex items-center justify-center">
                 {alertCount > 9 ? '9+' : alertCount}
               </span>
             )}
@@ -91,7 +93,7 @@ export function AdminTopBar({ fullName, role = 'Administrador', notifications = 
           {notifOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
-              <div className="absolute right-0 mt-2 w-80 z-50 bg-white rounded-xl border border-[var(--gray-200)]
+              <div className="absolute right-0 mt-2 w-80 z-50 bg-[var(--surface)] rounded-xl border border-[var(--gray-200)]
                               shadow-[var(--shadow-lg)] overflow-hidden">
                 <div className="px-4 py-3 border-b border-[var(--gray-100)] flex items-center justify-between">
                   <span className="section-label !mb-0">Notificaciones</span>
@@ -109,7 +111,7 @@ export function AdminTopBar({ fullName, role = 'Administrador', notifications = 
                           {n.kind === 'alert' ? <AlertTriangle size={14} strokeWidth={2} /> : <LogIn size={14} strokeWidth={2} />}
                         </span>
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold text-[var(--navy)] leading-snug">{n.title}</p>
+                          <p className="text-xs font-semibold text-[var(--ink)] leading-snug">{n.title}</p>
                           <p className="text-[11px] text-[var(--gray-500)] mt-0.5 leading-snug">{n.detail}</p>
                         </div>
                       </Link>
@@ -126,7 +128,7 @@ export function AdminTopBar({ fullName, role = 'Administrador', notifications = 
           target="_blank"
           rel="noopener noreferrer"
           className="w-8 h-8 rounded-xl flex items-center justify-center text-[var(--gray-500)]
-                     hover:bg-[var(--gray-100)] hover:text-[var(--navy)] transition-colors"
+                     hover:bg-[var(--gray-100)] hover:text-[var(--ink)] transition-colors"
           title="Ayuda y soporte">
           <HelpCircle size={16} strokeWidth={1.75} />
         </a>
@@ -144,7 +146,7 @@ export function AdminTopBar({ fullName, role = 'Administrador', notifications = 
               <span className="text-white text-[10px] font-bold">{initials}</span>
             </div>
             <div className="text-left">
-              <p className="text-xs font-semibold text-[var(--navy)] leading-tight">{fullName}</p>
+              <p className="text-xs font-semibold text-[var(--ink)] leading-tight">{fullName}</p>
               <p className="text-[10px] text-[var(--gray-500)] leading-tight">{role}</p>
             </div>
             <ChevronDown size={13} strokeWidth={2} stroke="var(--gray-400)"
@@ -154,12 +156,12 @@ export function AdminTopBar({ fullName, role = 'Administrador', notifications = 
           {menuOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 mt-2 w-44 z-50 bg-white rounded-xl border border-[var(--gray-200)]
+              <div className="absolute right-0 mt-2 w-44 z-50 bg-[var(--surface)] rounded-xl border border-[var(--gray-200)]
                               shadow-[var(--shadow-lg)] overflow-hidden py-1">
                 <form action={logout}>
                   <button type="submit"
                     className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--gray-700)]
-                               hover:bg-[var(--gray-50)] hover:text-[var(--navy)] transition-colors">
+                               hover:bg-[var(--gray-50)] hover:text-[var(--ink)] transition-colors">
                     <LogOut size={15} strokeWidth={1.75} />
                     Cerrar sesión
                   </button>

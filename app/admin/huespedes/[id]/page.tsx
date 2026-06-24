@@ -50,19 +50,19 @@ export default async function HuespedPage({ params }: { params: Promise<{ id: st
   return (
     <div className="px-8 py-8 max-w-4xl">
       <Link href="/admin/estadias"
-        className="inline-flex items-center gap-1.5 text-sm text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors mb-6">
+        className="inline-flex items-center gap-1.5 text-sm text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors mb-6">
         <ArrowLeft size={15} strokeWidth={1.75} />
         Volver a estadías
       </Link>
 
       {/* Cabecera */}
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6 flex items-start gap-5">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-6 flex items-start gap-5">
         <div className="w-16 h-16 rounded-2xl bg-[var(--navy)] flex items-center justify-center shrink-0">
           <span className="text-white text-lg font-bold">{initials || '?'}</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="font-display text-[1.7rem] font-semibold text-[var(--navy)] tracking-[-0.01em] leading-tight">{nombre || '—'}</h1>
+            <h1 className="font-display text-[1.7rem] font-semibold text-[var(--ink)] tracking-[-0.01em] leading-tight">{nombre || '—'}</h1>
             {activa
               ? <span className="badge badge-green">Alojado actualmente</span>
               : <span className="badge badge-gray">Sin estadía activa</span>}
@@ -90,11 +90,11 @@ export default async function HuespedPage({ params }: { params: Promise<{ id: st
         </div>
 
         {list.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center text-sm text-[var(--gray-500)]">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center text-sm text-[var(--gray-500)]">
             Esta persona aún no tiene estadías registradas.
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-sm)] divide-y divide-[var(--gray-100)]">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-sm)] divide-y divide-[var(--gray-100)]">
             {list.map((s, i) => {
               const r = s.rooms as any
               const n = nights(s.checked_in_at, s.checked_out_at)
@@ -106,7 +106,7 @@ export default async function HuespedPage({ params }: { params: Promise<{ id: st
                     {list.length - i}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[var(--navy)] truncate">
+                    <p className="text-sm font-semibold text-[var(--ink)] truncate">
                       {r?.properties?.name ?? '—'} · Hab. {r?.number ?? '—'}
                       {r?.type && <span className="text-xs font-normal text-[var(--gray-500)]"> · {ROOM_TYPE_LABELS[r.type] ?? r.type}</span>}
                     </p>
@@ -116,7 +116,7 @@ export default async function HuespedPage({ params }: { params: Promise<{ id: st
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-display text-base font-semibold text-[var(--navy)] tabular-nums">{n}</p>
+                    <p className="font-display text-base font-semibold text-[var(--ink)] tabular-nums">{n}</p>
                     <p className="text-[10px] text-[var(--gray-500)] uppercase tracking-wide">noche{n !== 1 ? 's' : ''}</p>
                   </div>
                   {isActive
@@ -134,13 +134,13 @@ export default async function HuespedPage({ params }: { params: Promise<{ id: st
 
 function Stat({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5">
+    <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] shadow-[var(--shadow-sm)] p-5">
       <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
         style={{ background: 'rgb(224 163 58 / 0.12)', color: 'var(--amber-dark)' }}>
         {icon}
       </div>
-      <p className="font-display text-[2rem] font-semibold leading-none text-[var(--navy)] tabular-nums">{value}</p>
-      <p className="text-sm font-medium text-[var(--navy)] mt-2">{label}</p>
+      <p className="font-display text-[2rem] font-semibold leading-none text-[var(--ink)] tabular-nums">{value}</p>
+      <p className="text-sm font-medium text-[var(--ink)] mt-2">{label}</p>
     </div>
   )
 }

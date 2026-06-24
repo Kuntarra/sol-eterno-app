@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
 
-const RIN = 'px-2.5 py-1.5 rounded-md border border-[var(--gray-200)] bg-white text-xs text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
+const RIN = 'px-2.5 py-1.5 rounded-md border border-[var(--gray-200)] bg-[var(--surface)] text-xs text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
 
 interface Props {
   params: Promise<{ id: string; dotId: string }>
@@ -66,11 +66,11 @@ export default async function DotacionDetallePage({ params }: Props) {
   return (
     <div className="p-8 max-w-4xl">
       <div className="flex items-center gap-3 mb-6">
-        <Link href={`/admin/proyectos/${id}`} className="text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
+        <Link href={`/admin/proyectos/${id}`} className="text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors">
           <ArrowLeft size={18} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">{nombre}</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">{nombre}</h1>
           <p className="text-sm text-[var(--gray-600)]">
             {dot.oficios?.nombre ?? 'Sin oficio'} · {dot.proyectos?.nombre}
           </p>
@@ -85,19 +85,19 @@ export default async function DotacionDetallePage({ params }: Props) {
           { k: 'Inicio', v: dot.fecha_inicio_contrato ?? '—' },
           { k: 'Fin', v: dot.fecha_fin_contrato ?? '—' },
         ].map((s) => (
-          <div key={s.k} className="bg-white rounded-xl border border-[var(--gray-200)] p-4">
+          <div key={s.k} className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-4">
             <p className="text-[11px] uppercase tracking-wide text-[var(--gray-600)] font-semibold mb-1">{s.k}</p>
-            <p className="text-sm font-semibold text-[var(--navy)] tabular-nums">{s.v}</p>
+            <p className="text-sm font-semibold text-[var(--ink)] tabular-nums">{s.v}</p>
           </div>
         ))}
       </div>
 
       {/* Rotaciones */}
-      <h2 className="text-sm font-semibold text-[var(--navy)] mb-3">
+      <h2 className="text-sm font-semibold text-[var(--ink)] mb-3">
         Rotaciones ({rotaciones?.length ?? 0})
       </h2>
       {!rotaciones?.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">
           <div className="w-14 h-14 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-3">
             <Plane size={24} strokeWidth={1.5} stroke="var(--gray-600)" />
           </div>
@@ -111,7 +111,7 @@ export default async function DotacionDetallePage({ params }: Props) {
             const guardar = updateRotacion.bind(null, id, dotId, r.id)
             const recalc = recalcularSiguientes.bind(null, id, dotId, r.numero)
             return (
-              <div key={r.id} className="bg-white rounded-xl border border-[var(--gray-200)] p-4">
+              <div key={r.id} className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="w-7 h-7 rounded-lg bg-[var(--navy)] text-white text-xs font-bold flex items-center justify-center">{r.numero}</span>
@@ -119,7 +119,7 @@ export default async function DotacionDetallePage({ params }: Props) {
                     {r.ajustada_manual && <span className="badge badge-amber">ajustada</span>}
                   </div>
                   <form action={recalc}>
-                    <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-[var(--gray-200)] text-[var(--navy)] text-xs font-semibold hover:bg-[var(--gray-100)]" title="Recalcular las rotaciones siguientes desde esta">
+                    <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--ink)] text-xs font-semibold hover:bg-[var(--gray-100)]" title="Recalcular las rotaciones siguientes desde esta">
                       <RefreshCw size={12} strokeWidth={2.5} /> Recalcular siguientes
                     </button>
                   </form>
@@ -162,24 +162,24 @@ export default async function DotacionDetallePage({ params }: Props) {
       )}
 
       {/* Bitácora compartida (lo que registran los proveedores y el equipo) */}
-      <h2 className="text-sm font-semibold text-[var(--navy)] mt-10 mb-3">Bitácora ({eventos?.length ?? 0})</h2>
+      <h2 className="text-sm font-semibold text-[var(--ink)] mt-10 mb-3">Bitácora ({eventos?.length ?? 0})</h2>
       {!eventos?.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-8 text-center text-sm text-[var(--gray-600)]">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-8 text-center text-sm text-[var(--gray-600)]">
           Sin actividad registrada todavía.
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] divide-y divide-[var(--gray-100)]">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] divide-y divide-[var(--gray-100)]">
           {eventos.map((e) => (
             <div key={e.id} className="flex items-center justify-between gap-3 px-5 py-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-[var(--navy)]">
+                <p className="text-sm font-medium text-[var(--ink)]">
                   {EVENTO_LABEL[e.tipo] ?? e.tipo}
                   <span className="ml-2 badge badge-gray capitalize">{e.modulo}</span>
                 </p>
                 {e.detalle && <p className="text-xs text-[var(--gray-600)] truncate">{e.detalle}</p>}
               </div>
               <div className="text-right shrink-0">
-                <p className="text-xs text-[var(--navy)] font-medium">{e.autor_nombre ?? '—'}</p>
+                <p className="text-xs text-[var(--ink)] font-medium">{e.autor_nombre ?? '—'}</p>
                 <p className="text-[11px] text-[var(--gray-500)] tabular-nums">{new Date(e.created_at).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             </div>

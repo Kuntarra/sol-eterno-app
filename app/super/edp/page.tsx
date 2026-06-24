@@ -27,7 +27,7 @@ export default async function EdpPage({ searchParams }: { searchParams: Promise<
   return (
     <div>
       <div className="mb-8">
-        <h2 className="font-display text-[1.9rem] font-semibold text-[var(--navy)] tracking-tight leading-tight">Estados de Pago (EDP)</h2>
+        <h2 className="font-display text-[1.9rem] font-semibold text-[var(--ink)] tracking-tight leading-tight">Estados de Pago (EDP)</h2>
         <p className="text-sm text-[var(--gray-600)] mt-1">Emite el aviso de cobro del período; la factura va con desfase (~30 días).</p>
       </div>
 
@@ -35,23 +35,23 @@ export default async function EdpPage({ searchParams }: { searchParams: Promise<
       {error && <div className="mb-5 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
 
       {/* Emitir EDP */}
-      <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-6 mb-8 shadow-[var(--shadow-xs)]">
-        <h3 className="text-sm font-semibold text-[var(--navy)] mb-4">Emitir EDP del período</h3>
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-6 mb-8 shadow-[var(--shadow-xs)]">
+        <h3 className="text-sm font-semibold text-[var(--ink)] mb-4">Emitir EDP del período</h3>
         <form action={emitirEDP} className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
           <div className="md:col-span-2">
             <label className="block text-xs font-medium text-[var(--gray-600)] mb-1">Cliente</label>
-            <select name="tenant_id" required className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" defaultValue="">
+            <select name="tenant_id" required className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" defaultValue="">
               <option value="" disabled>Selecciona…</option>
               {(tenants ?? []).map((t) => <option key={t.id} value={t.id}>{t.name} · {CLP(t.monthly_amount)}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-[var(--gray-600)] mb-1">Período</label>
-            <input name="periodo" defaultValue={periodoActual()} placeholder="2026-06" className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+            <input name="periodo" defaultValue={periodoActual()} placeholder="2026-06" className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[var(--gray-600)] mb-1">Monto (opcional)</label>
-            <input name="monto" type="number" placeholder="usa el mensual" className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+            <input name="monto" type="number" placeholder="usa el mensual" className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
           </div>
           <button type="submit" className="inline-flex items-center justify-center gap-2 px-5 py-2 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">
             <FileText size={15} strokeWidth={2.25} /> Emitir EDP
@@ -61,11 +61,11 @@ export default async function EdpPage({ searchParams }: { searchParams: Promise<
       </div>
 
       {/* Historial de EDP */}
-      <h3 className="text-sm font-semibold text-[var(--navy)] mb-3">Historial ({edps?.length ?? 0})</h3>
+      <h3 className="text-sm font-semibold text-[var(--ink)] mb-3">Historial ({edps?.length ?? 0})</h3>
       {!edps?.length ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center text-sm text-[var(--gray-600)]">Aún no se ha emitido ningún EDP</div>
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center text-sm text-[var(--gray-600)]">Aún no se ha emitido ningún EDP</div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] overflow-hidden shadow-[var(--shadow-xs)]">
           <table className="admin-table">
             <thead>
               <tr>
@@ -78,9 +78,9 @@ export default async function EdpPage({ searchParams }: { searchParams: Promise<
                 const pagar = setEdpEstado.bind(null, e.id, 'pagado')
                 return (
                   <tr key={e.id}>
-                    <td className="font-semibold text-[var(--navy)]">{(e.tenants as unknown as { name: string } | null)?.name ?? '—'}</td>
+                    <td className="font-semibold text-[var(--ink)]">{(e.tenants as unknown as { name: string } | null)?.name ?? '—'}</td>
                     <td className="text-[var(--gray-600)] tabular-nums">{e.periodo}</td>
-                    <td className="font-semibold text-[var(--navy)]">{CLP(e.monto)}</td>
+                    <td className="font-semibold text-[var(--ink)]">{CLP(e.monto)}</td>
                     <td className="text-[var(--gray-600)] tabular-nums">{e.factura_fecha ?? '—'}</td>
                     <td><span className={`badge ${ESTADO_BADGE[e.estado]}`}>{ESTADO_LABEL[e.estado]}</span></td>
                     <td className="text-right">

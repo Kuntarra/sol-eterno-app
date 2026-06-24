@@ -9,7 +9,7 @@ const ICONS: Record<PropertyType, { icon: React.ReactNode; bg: string; fg: strin
   },
   hostal: {
     bg: 'bg-[var(--amber)]',
-    fg: 'text-[var(--navy)]',
+    fg: 'text-[var(--ink)]',
     icon: <House className="w-full h-full" strokeWidth={1.6} />,
   },
   departamento: {

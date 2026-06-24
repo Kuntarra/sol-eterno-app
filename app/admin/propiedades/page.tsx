@@ -42,7 +42,7 @@ export default async function PropiedadesPage() {
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-8 flex items-end justify-between gap-6">
         <div>
           <span className="section-label">Inventario</span>
-          <h1 className="font-display text-[2rem] font-semibold text-[var(--navy)] leading-tight tracking-tight">Propiedades</h1>
+          <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Propiedades</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">
             {totalProps} propiedades · {totalCapacity} cupos totales
           </p>
@@ -55,13 +55,13 @@ export default async function PropiedadesPage() {
 
       <div className="px-8 pb-8">
       {Object.keys(grouped).length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-16 text-center">
           <div className="w-16 h-16 bg-[var(--gray-100)] rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Building2 size={28} strokeWidth={1.5} stroke="var(--gray-600)" />
           </div>
           <p className="text-[var(--gray-600)] text-sm font-medium mb-1">No hay propiedades registradas</p>
           <p className="text-[var(--gray-600)] text-xs mb-4">Comienza agregando tu primera propiedad</p>
-          <Link href="/admin/propiedades/nueva" className="text-[var(--navy)] text-sm font-semibold hover:underline">
+          <Link href="/admin/propiedades/nueva" className="text-[var(--ink)] text-sm font-semibold hover:underline">
             Crear primera propiedad →
           </Link>
         </div>
@@ -88,7 +88,7 @@ export default async function PropiedadesPage() {
                     <Building2 size={18} strokeWidth={1.75} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[var(--navy)] group-hover:text-[var(--navy-light)] transition-colors">
+                    <p className="text-sm font-semibold text-[var(--ink)] group-hover:text-[var(--navy-light)] transition-colors">
                       Expandir Portafolio
                     </p>
                     <p className="text-xs text-[var(--gray-500)] mt-0.5 leading-snug">
@@ -121,7 +121,7 @@ function PropertyCard({ property: p }: { property: Property & { rooms?: { capaci
           <p className="text-[10px] font-bold text-[var(--gray-500)] uppercase tracking-[0.12em] mb-0.5">
             {PROPERTY_TYPE_LABELS[p.type]}
           </p>
-          <h3 className="text-[15px] font-bold text-[var(--navy)] group-hover:text-[var(--navy-light)] leading-tight truncate transition-colors">
+          <h3 className="text-[15px] font-bold text-[var(--ink)] group-hover:text-[var(--navy-light)] leading-tight truncate transition-colors">
             {p.name}
           </h3>
           {p.address && (
@@ -136,7 +136,7 @@ function PropertyCard({ property: p }: { property: Property & { rooms?: { capaci
         <Stat label="Hab." value={rooms.length} />
         <Stat label="Cupos" value={capacity} />
         {p.floors ? <Stat label="Pisos" value={p.floors} /> : null}
-        <div className="ml-auto text-[var(--gray-400)] group-hover:text-[var(--navy)] transition-colors">
+        <div className="ml-auto text-[var(--gray-400)] group-hover:text-[var(--ink)] transition-colors">
           <ArrowRight size={14} strokeWidth={2} />
         </div>
       </div>
@@ -147,7 +147,7 @@ function PropertyCard({ property: p }: { property: Property & { rooms?: { capaci
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="text-center">
-      <p className="text-base font-bold text-[var(--navy)]">{value}</p>
+      <p className="text-base font-bold text-[var(--ink)]">{value}</p>
       <p className="text-xs text-[var(--gray-600)]">{label}</p>
     </div>
   )

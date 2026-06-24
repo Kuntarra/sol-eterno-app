@@ -27,8 +27,8 @@ export function PropertyForm({ action, cities, property, cancelHref, submitLabel
     <form action={action} className="space-y-6">
 
       {/* Tipo + preview del ícono */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-        <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Tipo de propiedad</h2>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+        <h2 className="text-sm font-semibold text-[var(--ink)] mb-5">Tipo de propiedad</h2>
 
         <div className="grid grid-cols-3 gap-4">
           {(Object.keys(PROPERTY_TYPE_LABELS) as PropertyType[]).map((t) => (
@@ -50,7 +50,7 @@ export function PropertyForm({ action, cities, property, cancelHref, submitLabel
                 required
               />
               <PropertyIcon type={t} size="sm" />
-              <span className={`text-xs font-semibold ${type === t ? 'text-[var(--navy)]' : 'text-[var(--gray-600)]'}`}>
+              <span className={`text-xs font-semibold ${type === t ? 'text-[var(--ink)]' : 'text-[var(--gray-600)]'}`}>
                 {PROPERTY_TYPE_LABELS[t]}
               </span>
               {type === t && (
@@ -62,8 +62,8 @@ export function PropertyForm({ action, cities, property, cancelHref, submitLabel
       </div>
 
       {/* Información general */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-        <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Información general</h2>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+        <h2 className="text-sm font-semibold text-[var(--ink)] mb-5">Información general</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
@@ -109,8 +109,8 @@ export function PropertyForm({ action, cities, property, cancelHref, submitLabel
       </div>
 
       {/* Servicios contextuales */}
-      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-        <h2 className="text-sm font-semibold text-[var(--navy)] mb-5">Servicios</h2>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6">
+        <h2 className="text-sm font-semibold text-[var(--ink)] mb-5">Servicios</h2>
 
         {/* Aseo siempre incluido en hotel/hostal — sin mostrar */}
         {(type === 'hotel' || type === 'hostal') && (
@@ -161,7 +161,7 @@ export function PropertyForm({ action, cities, property, cancelHref, submitLabel
                       max="500"
                       defaultValue={currentServices.parking_spots ?? 1}
                       placeholder="20"
-                      className="w-32 px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent"
+                      className="w-32 px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent"
                     />
                   </div>
                 )}
@@ -181,7 +181,7 @@ export function PropertyForm({ action, cities, property, cancelHref, submitLabel
         </button>
         <Link
           href={cancelHref}
-          className="px-6 py-2.5 bg-white hover:bg-[var(--gray-100)] text-[var(--navy)] text-sm font-medium rounded-lg border border-[var(--gray-200)] transition-colors"
+          className="px-6 py-2.5 bg-[var(--surface)] hover:bg-[var(--gray-100)] text-[var(--ink)] text-sm font-medium rounded-lg border border-[var(--gray-200)] transition-colors"
         >
           Cancelar
         </Link>

@@ -8,11 +8,11 @@ export default async function NuevoOperadorPage() {
 
   return (
     <div className="max-w-2xl">
-      <Link href="/super" className="inline-flex items-center gap-1.5 text-sm text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors mb-6">
+      <Link href="/super" className="inline-flex items-center gap-1.5 text-sm text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors mb-6">
         <ArrowLeft size={15} strokeWidth={1.75} /> Volver al panel
       </Link>
 
-      <h2 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-tight mb-1">Nuevo cliente</h2>
+      <h2 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-tight mb-1">Nuevo cliente</h2>
       <p className="text-sm text-[var(--gray-600)] mb-6">Crea un cliente del SaaS (Mandante o Proveedor) y su primer administrador.</p>
 
       <OperadorForm />

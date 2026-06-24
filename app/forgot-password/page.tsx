@@ -37,21 +37,21 @@ export default function ForgotPasswordPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--navy)] mb-4 shadow-lg">
             <Lock size={26} strokeWidth={1.75} stroke="var(--amber)" />
           </div>
-          <h1 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-[-0.01em]">Recuperar contraseña</h1>
+          <h1 className="font-display text-2xl font-semibold text-[var(--ink)] tracking-[-0.01em]">Recuperar contraseña</h1>
           <p className="text-sm text-[var(--gray-600)] mt-1">Sol Eterno</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-[var(--gray-200)] p-8">
+        <div className="bg-[var(--surface)] rounded-2xl shadow-sm border border-[var(--gray-200)] p-8">
           {sent ? (
             <div className="text-center">
               <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Check size={24} strokeWidth={2} stroke="#059669" />
               </div>
-              <p className="text-sm font-semibold text-[var(--navy)] mb-2">Correo enviado</p>
+              <p className="text-sm font-semibold text-[var(--ink)] mb-2">Correo enviado</p>
               <p className="text-sm text-[var(--gray-600)] mb-6">
                 Revisa tu bandeja de entrada en <strong>{email}</strong> y sigue el enlace para crear una nueva contraseña.
               </p>
-              <Link href="/login" className="text-sm text-[var(--navy)] font-semibold hover:underline">
+              <Link href="/login" className="text-sm text-[var(--ink)] font-semibold hover:underline">
                 Volver al inicio de sesión
               </Link>
             </div>
@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
               </form>
 
               <div className="text-center mt-4">
-                <Link href="/login" className="text-sm text-[var(--gray-600)] hover:text-[var(--navy)] transition-colors">
+                <Link href="/login" className="text-sm text-[var(--gray-600)] hover:text-[var(--ink)] transition-colors">
                   ← Volver al inicio de sesión
                 </Link>
               </div>
