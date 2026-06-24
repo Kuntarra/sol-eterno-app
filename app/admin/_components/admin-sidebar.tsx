@@ -23,7 +23,7 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
   {
     label: 'Dotación',
     items: [
-      { href: '/admin/dotia',      label: 'Resumen',    exact: true,  icon: <DashIcon />,     adminOnly: true },
+      { href: '/admin/dotia',      label: 'Operación',  exact: true,  icon: <DashIcon />,     adminOnly: true },
       { href: '/admin/personal',   label: 'Personal',   exact: false, icon: <PersonalIcon />, modulo: 'personal' },
       { href: '/admin/proyectos',  label: 'Proyectos',  exact: false, icon: <ProyectoIcon />, adminOnly: true },
       { href: '/admin/planificacion', label: 'Planificación', exact: false, icon: <PlanIcon />, adminOnly: true },
