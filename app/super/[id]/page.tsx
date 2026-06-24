@@ -2,8 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireSuperAdmin } from '@/lib/super'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { updateTenant, toggleTenantActive, markTenantPaid, updateTenantModulos } from '@/app/actions/tenants'
-import { ArrowLeft, Building2, BedDouble, Users, CheckCircle2, Boxes } from 'lucide-react'
+import { updateTenant, toggleTenantActive, markTenantPaid, updateTenantModulos, convertirEnSocio } from '@/app/actions/tenants'
+import { ArrowLeft, Building2, BedDouble, Users, CheckCircle2, Boxes, Star } from 'lucide-react'
 
 import { MODULOS as MODULOS_DEF } from '@/lib/modulos'
 
@@ -40,6 +40,7 @@ export default async function OperadorDetailPage({
   const toggleWithId = toggleTenantActive.bind(null, id, !t.active)
   const markPaidWithId = markTenantPaid.bind(null, id)
   const updateModulosWithId = updateTenantModulos.bind(null, id)
+  const convertirWithId = convertirEnSocio.bind(null, id)
 
   return (
     <div className="max-w-3xl">
@@ -61,7 +62,34 @@ export default async function OperadorDetailPage({
 
       {success && (
         <div className="mb-5 px-4 py-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-700 flex items-center gap-2">
-          <CheckCircle2 size={15} strokeWidth={2.25} /> Cambios guardados.
+          <CheckCircle2 size={15} strokeWidth={2.25} /> {success === 'socio' ? '¡Convertido en ★ Socio Dotia! Sus vínculos pasaron a activos.' : 'Cambios guardados.'}
+        </div>
+      )}
+
+      {/* Embudo: convertir Invitado en Socio Dotia */}
+      {t.es_invitado && (
+        <div className="bg-gradient-to-br from-[var(--amber)]/10 to-white rounded-xl border border-[var(--amber)]/40 p-6 mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Star size={16} className="text-[var(--amber-dark)]" />
+            <h3 className="text-sm font-bold text-[var(--navy)]">Convertir Invitado en ★ Socio Dotia</h3>
+          </div>
+          <p className="text-xs text-[var(--gray-600)] mb-1">Hoy es <strong>○ Invitado</strong> (acceso limitado, sin plan). Al convertir, deja de ser invitado, sus vínculos pasan a <strong>★ Socio Dotia</strong> y entra al cobro mensual.</p>
+          {t.solicito_socio_at && <p className="text-xs text-[var(--amber-dark)] font-medium mb-3">★ Este proveedor solicitó ser Socio el {new Date(t.solicito_socio_at).toLocaleDateString('es-CL')}.</p>}
+          <form action={convertirWithId} className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end mt-3">
+            <div>
+              <label className={LABEL}>Cupo de personas *</label>
+              <input name="limite_personas" type="number" min="1" max="10000" required defaultValue={100} className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Monto mensual (CLP)</label>
+              <input name="monthly_amount" type="number" min="0" step="1000" className={INPUT} placeholder="200000" />
+            </div>
+            <div>
+              <label className={LABEL}>Día de cobro (1–28)</label>
+              <input name="billing_day" type="number" min="1" max="28" className={INPUT} placeholder="1" />
+            </div>
+            <button type="submit" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--amber)] hover:brightness-95 text-[var(--navy)] text-sm font-bold"><Star size={15} /> Convertir en Socio</button>
+          </form>
         </div>
       )}
 

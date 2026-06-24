@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatRut } from '@/lib/rut'
 import { puedeGestionar } from '@/lib/rbac'
-import { modulosActivosTenant } from '@/lib/tenant'
+import { modulosActivosTenant, getMyTenantId } from '@/lib/tenant'
 import { registrarEvento } from '@/app/actions/bitacora'
 import { conectarPorCodigo } from '@/app/actions/modulos'
-import { Link2, Users, Plane, KeyRound, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { solicitarSocio } from '@/app/actions/invitaciones'
+import { Link2, Users, Plane, KeyRound, CheckCircle2, AlertTriangle, Star } from 'lucide-react'
 
 const MODULO_LABEL: Record<string, string> = {
   transporte: 'Transporte', hotel: 'Alojamiento', alimentacion: 'Alimentación', colaciones: 'Colaciones', lavanderia: 'Lavandería',
@@ -59,11 +60,12 @@ function vuelo(r: Rotacion | undefined, dir: 'ida' | 'vuelta') {
   return `${num ?? 'Vuelo'} · ${fecha ?? '—'}${hora ? ` ${hora}` : ''}`
 }
 
-export default async function ConectadosPage({ searchParams }: { searchParams: Promise<{ error?: string; conectado?: string; ya?: string }> }) {
-  const { error, conectado, ya } = await searchParams
+export default async function ConectadosPage({ searchParams }: { searchParams: Promise<{ error?: string; conectado?: string; ya?: string; socio?: string }> }) {
+  const { error, conectado, ya, socio } = await searchParams
   const supabase = await createClient()
   const misModulos = await modulosActivosTenant()
   const puedeConectar = await puedeGestionar(misModulos[0] ?? 'transporte')
+  const { data: miTenant } = await supabase.from('tenants').select('es_invitado, solicito_socio_at').eq('id', await getMyTenantId()).maybeSingle()
 
   const { data: proyectos } = await supabase
     .from('proyectos')
@@ -117,6 +119,26 @@ export default async function ConectadosPage({ searchParams }: { searchParams: P
           <p className="text-sm text-[var(--gray-600)]">Personal de los proyectos donde te contrataron · registra tu servicio sobre cada persona</p>
         </div>
       </div>
+
+      {/* Embudo: el Invitado puede pedir convertirse en Socio Dotia */}
+      {miTenant?.es_invitado && (
+        <div className="mt-5 rounded-2xl border border-[var(--amber)]/40 bg-gradient-to-br from-[var(--amber)]/10 to-white p-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[var(--amber)]/20 grid place-items-center shrink-0"><Star size={18} className="text-[var(--amber-dark)]" /></div>
+            <div>
+              <p className="text-sm font-semibold text-[var(--navy)]">Estás como <span className="text-[var(--amber-dark)]">○ Invitado</span></p>
+              <p className="text-xs text-[var(--gray-600)] max-w-md mt-0.5">Como Invitado operas solo este proyecto. Hazte <strong>★ Socio Dotia</strong> para tener tu propio panel completo, historial y gestionar todos tus servicios.</p>
+            </div>
+          </div>
+          {socio === 'solicitado' || miTenant.solicito_socio_at ? (
+            <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-[var(--gray-100)] text-[var(--gray-600)] text-sm font-semibold"><CheckCircle2 size={15} /> Solicitud enviada</span>
+          ) : (
+            <form action={solicitarSocio}>
+              <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--amber)] hover:brightness-95 text-[var(--navy)] text-sm font-bold"><Star size={15} /> Quiero ser Socio</button>
+            </form>
+          )}
+        </div>
+      )}
 
       {error && <div className="mt-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2"><AlertTriangle size={16} /> {decodeURIComponent(error)}</div>}
       {conectado && <div className="mt-4 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center gap-2"><CheckCircle2 size={16} /> {ya ? <>Ya estabas conectado a <strong>{decodeURIComponent(conectado)}</strong>.</> : <>Te conectaste a <strong>{decodeURIComponent(conectado)}</strong> como <strong>Socio Dotia</strong>.</>}</div>}

@@ -1673,6 +1673,7 @@ export type Database = {
           created_at: string | null
           currency: string
           es_demo: boolean
+          es_invitado: boolean
           id: string
           limite_personas: number
           logo_url: string | null
@@ -1686,6 +1687,7 @@ export type Database = {
           rut: string | null
           secondary_color: string | null
           slug: string
+          solicito_socio_at: string | null
           tipo: string
         }
         Insert: {
@@ -1697,6 +1699,7 @@ export type Database = {
           created_at?: string | null
           currency?: string
           es_demo?: boolean
+          es_invitado?: boolean
           id?: string
           limite_personas?: number
           logo_url?: string | null
@@ -1710,6 +1713,7 @@ export type Database = {
           rut?: string | null
           secondary_color?: string | null
           slug: string
+          solicito_socio_at?: string | null
           tipo?: string
         }
         Update: {
@@ -1721,6 +1725,7 @@ export type Database = {
           created_at?: string | null
           currency?: string
           es_demo?: boolean
+          es_invitado?: boolean
           id?: string
           limite_personas?: number
           logo_url?: string | null
@@ -1734,6 +1739,7 @@ export type Database = {
           rut?: string | null
           secondary_color?: string | null
           slug?: string
+          solicito_socio_at?: string | null
           tipo?: string
         }
         Relationships: []

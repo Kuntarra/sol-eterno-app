@@ -156,6 +156,27 @@ export async function updateTenantModulos(id: string, formData: FormData) {
   redirect(`/super/${id}?success=modulos`)
 }
 
+// Convierte un Invitado en SOCIO (cliente pleno): le fija el plan (cupo, monto,
+// día de cobro), deja de ser invitado y todos sus vínculos pasan de stub→activo
+// (= ★ Socio Dotia para los Mandantes). Es el cierre del embudo.
+export async function convertirEnSocio(id: string, formData: FormData) {
+  await requireSuperAdmin()
+  const admin = createAdminClient()
+  const patch: Record<string, unknown> = {
+    es_invitado: false,
+    solicito_socio_at: null,
+    payment_status: 'al_dia',
+    monthly_amount: formData.get('monthly_amount') ? Number(formData.get('monthly_amount')) : null,
+    billing_day: formData.get('billing_day') ? Number(formData.get('billing_day')) : null,
+  }
+  if (formData.get('limite_personas') != null) patch.limite_personas = clampLimite(formData.get('limite_personas'))
+  await admin.from('tenants').update(patch as never).eq('id', id)
+  await admin.from('proyecto_proveedores').update({ estado: 'activo' }).eq('tenant_proveedor_id', id).eq('estado', 'stub')
+  revalidatePath('/super')
+  revalidatePath(`/super/${id}`)
+  redirect(`/super/${id}?success=socio`)
+}
+
 // Marca el cobro del mes como pagado (al día hasta fin del mes en curso).
 export async function markTenantPaid(id: string) {
   await requireSuperAdmin()

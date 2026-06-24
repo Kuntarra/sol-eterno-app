@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { puedeGestionar } from '@/lib/rbac'
+import { getMyTenantId } from '@/lib/tenant'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://gestion.soleterno.cl'
 const enc = encodeURIComponent
@@ -43,7 +44,7 @@ export async function invitarProveedor(proyectoId: string, formData: FormData) {
 
   // 1) Cuenta del proveedor (tenant tipo proveedor)
   const { data: tenant, error: tErr } = await admin.from('tenants').insert({
-    name: nombre, slug, rut, tipo: 'proveedor', limite_personas: 100,
+    name: nombre, slug, rut, tipo: 'proveedor', limite_personas: 100, es_invitado: true,
   }).select('id').single()
   if (tErr || !tenant) redirect(back + '?error=' + enc('No se pudo crear la cuenta del proveedor.'))
 
@@ -74,6 +75,17 @@ export async function invitarProveedor(proyectoId: string, formData: FormData) {
 
   revalidatePath(back)
   redirect(back + '?invitado=' + enc(nombre))
+}
+
+// El proveedor INVITADO solicita convertirse en Socio (deja registrado su
+// interés; el super admin lo convierte luego en /super). No cobra ni cambia nada
+// del acceso por sí solo.
+export async function solicitarSocio() {
+  const tenantId = await getMyTenantId()
+  const admin = createAdminClient()
+  await admin.from('tenants').update({ solicito_socio_at: new Date().toISOString() }).eq('id', tenantId)
+  revalidatePath('/admin/conectados')
+  redirect('/admin/conectados?socio=solicitado')
 }
 
 async function enviarCorreoInvitacion(p: { email: string; nombre: string; tempPass: string; proyecto: string; codigo: string }) {

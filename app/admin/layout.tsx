@@ -33,7 +33,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
 
-  const [tntRes, modulosArr, umsRes, overdueRes, checkinsRes, matchMineRes, matchProvRes] = await Promise.all([
+  const [tntRes, modulosArr, umsRes, overdueRes, checkinsRes, matchMineRes, matchProvRes, socioReqRes] = await Promise.all([
     // Tipo de empresa: define si se ofrece la vista "Proyectos conectados".
     supabase.from('tenants').select('tipo').eq('id', tenantId).maybeSingle(),
     // Módulos comprados por la empresa (acota el menú).
@@ -63,6 +63,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .select('estado, created_at, proyecto_id, proyectos(nombre)')
       .eq('tenant_proveedor_id', tenantId).gte('created_at', sevenDaysAgo)
       .order('created_at', { ascending: false }).limit(6),
+    // Solo super admin: invitados que pidieron ser Socio.
+    profile?.is_super_admin
+      ? admin.from('tenants').select('id, name, solicito_socio_at')
+          .eq('es_invitado', true).not('solicito_socio_at', 'is', null)
+          .order('solicito_socio_at', { ascending: false }).limit(6)
+      : Promise.resolve({ data: [] as { id: string; name: string; solicito_socio_at: string | null }[] }),
   ])
 
   const tenantTipo = tntRes.data?.tipo ?? 'empresa_proyecto'
@@ -117,6 +123,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       title: `Te conectaron a ${proy}`,
       detail: `Estás como ${sello(v.estado)}`,
       href: '/admin/conectados',
+    })
+  }
+  for (const tt of socioReqRes.data ?? []) {
+    notifications.push({
+      kind: 'info',
+      title: `${tt.name} quiere ser Socio`,
+      detail: 'Conviértelo en ★ Socio Dotia',
+      href: `/super/${tt.id}`,
     })
   }
 
