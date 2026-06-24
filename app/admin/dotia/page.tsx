@@ -34,7 +34,7 @@ export default async function DotiaOverviewPage() {
     <div>
       <div className="px-8 pt-8 pb-6 border-b border-[var(--gray-200)] mb-6">
         <span className="section-label">Trazabilidad de personal</span>
-        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Resultados de operación</h1>
+        <h1 className="font-display text-[2rem] font-semibold text-[var(--ink)] leading-tight tracking-tight">Resultados de Operación</h1>
         <p className="text-sm text-[var(--gray-600)] mt-1">Centro de control de la operación en faena</p>
       </div>
 
