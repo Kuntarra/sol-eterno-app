@@ -115,6 +115,52 @@ export async function addPasajero(trasladoId: string, formData: FormData) {
   redirect(`/admin/transporte/${trasladoId}`)
 }
 
+// Manifiesto MASIVO = SOLO planificación (quién debería ir): agrega una cuadrilla
+// o todos los en faena a la lista del traslado de una vez. NO es embarque: el
+// "quién subió" se sigue marcando persona por persona (marcarPasajero). Respeta
+// la capacidad del vehículo (el bus es crítico): no sobrepasa el tope.
+export async function addPasajerosMasivo(trasladoId: string, formData: FormData) {
+  if (!(await puedeGestionar('transporte'))) redirect(SIN_PERMISO)
+  const supabase = await createClient()
+  const back = `/admin/transporte/${trasladoId}`
+  const scope = (formData.get('scope') as string) || 'cuadrilla'
+  const ref = (formData.get('ref') as string) || ''
+
+  const t = await data.getTraslado(supabase, trasladoId)
+  if (!t) fail(back, 'Traslado no encontrado.')
+
+  let candidatos: { id: string; persona_id: string | null }[] = []
+  if (scope === 'cuadrilla') {
+    if (!ref) fail(back, 'Selecciona una cuadrilla.')
+    candidatos = await data.listDotacionesByCuadrilla(supabase, ref, t!.proyecto_id)
+  } else {
+    if (!t!.fecha) fail(back, 'El traslado no tiene fecha; no se puede calcular "en faena".')
+    candidatos = await data.listDotacionesEnFaena(supabase, t!.fecha as string, t!.proyecto_id)
+  }
+
+  // Quitar los que ya están en el manifiesto.
+  const yaIds = new Set(await data.listPasajeroDotacionIds(supabase, trasladoId))
+  let nuevos = candidatos.filter((c) => !yaIds.has(c.id))
+
+  // Respetar la capacidad del vehículo (no sobrepasar el bus).
+  const veh = t!.vehiculos as unknown as { capacidad: number } | null
+  let fuera = 0
+  if (veh?.capacidad && veh.capacidad > 0) {
+    const restante = Math.max(0, veh.capacidad - yaIds.size)
+    if (nuevos.length > restante) { fuera = nuevos.length - restante; nuevos = nuevos.slice(0, restante) }
+  }
+
+  if (!nuevos.length) {
+    redirect(back + (fuera > 0 ? '?fuera=' + fuera : '?agregados=0'))
+  }
+  const { error } = await data.insertPasajeros(supabase, nuevos.map((c) => ({
+    traslado_id: trasladoId, dotacion_id: c.id, persona_id: c.persona_id,
+  })))
+  if (error) fail(back, error.message)
+  revalidatePath(back)
+  redirect(back + '?agregados=' + nuevos.length + (fuera > 0 ? '&fuera=' + fuera : ''))
+}
+
 export async function marcarPasajero(trasladoId: string, pasajeroId: string, accion: 'subio' | 'dejado' | 'no_show') {
   const supabase = await createClient()
   const patch: Record<string, unknown> = { estado: accion }

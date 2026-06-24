@@ -96,6 +96,44 @@ type PasajeroInput = { traslado_id: string; dotacion_id: string; persona_id: str
 export function insertPasajero(supabase: ServerClient, values: PasajeroInput) {
   return supabase.from('traslado_pasajeros').insert(values)
 }
+export function insertPasajeros(supabase: ServerClient, rows: PasajeroInput[]) {
+  return supabase.from('traslado_pasajeros').insert(rows)
+}
+
+// Opciones de cuadrilla para el manifiesto masivo (solo planificación).
+export async function listCuadrillaOptions(supabase: ServerClient) {
+  const { data } = await supabase.from('cuadrillas').select('id, nombre').eq('activa', true).order('nombre')
+  return data ?? []
+}
+
+// dotacion_id ya presentes en el manifiesto (para no duplicar).
+export async function listPasajeroDotacionIds(supabase: ServerClient, trasladoId: string) {
+  const { data } = await supabase.from('traslado_pasajeros').select('dotacion_id').eq('traslado_id', trasladoId)
+  return (data ?? []).map((r) => r.dotacion_id).filter(Boolean) as string[]
+}
+
+// Candidatos por alcance para PLANIFICAR el manifiesto (no es embarque):
+// 'cuadrilla' = dotaciones activas de la cuadrilla; 'todos' = dotaciones con una
+// rotación que cubre la fecha (en faena). Acota al proyecto del traslado si lo hay.
+export async function listDotacionesByCuadrilla(supabase: ServerClient, cuadrillaId: string, proyectoId: string | null) {
+  let q = supabase.from('dotaciones').select('id, persona_id').eq('cuadrilla_id', cuadrillaId).eq('estado', 'activa')
+  if (proyectoId) q = q.eq('proyecto_id', proyectoId)
+  const { data } = await q
+  return data ?? []
+}
+export async function listDotacionesEnFaena(supabase: ServerClient, fecha: string, proyectoId: string | null) {
+  const { data: rots } = await supabase
+    .from('rotaciones')
+    .select('dotacion_id')
+    .lte('fecha_inicio', fecha)
+    .gte('fecha_fin_esperada', fecha)
+  const ids = [...new Set((rots ?? []).map((r) => r.dotacion_id).filter(Boolean))] as string[]
+  if (!ids.length) return []
+  let q = supabase.from('dotaciones').select('id, persona_id').in('id', ids).eq('estado', 'activa')
+  if (proyectoId) q = q.eq('proyecto_id', proyectoId)
+  const { data } = await q
+  return data ?? []
+}
 
 export function updatePasajeroEstado(supabase: ServerClient, pasajeroId: string, patch: Record<string, unknown>) {
   return supabase.from('traslado_pasajeros').update(patch as never).eq('id', pasajeroId)

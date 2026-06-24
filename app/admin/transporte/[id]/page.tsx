@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { addPasajero, marcarPasajero, updateTrasladoEstado } from '@/app/actions/transporte'
-import { getTraslado, listDotacionesCandidatas, listPasajeros, listTramos } from '@/lib/data/transporte'
+import { addPasajero, addPasajerosMasivo, marcarPasajero, updateTrasladoEstado } from '@/app/actions/transporte'
+import { getTraslado, listDotacionesCandidatas, listPasajeros, listTramos, listCuadrillaOptions } from '@/lib/data/transporte'
+import { ManifiestoMasivo } from './_components/manifiesto-masivo'
 import { puedeGestionar } from '@/lib/rbac'
 import { ArrowLeft, Plus, Check, MapPin, X, Plane, Bus, Car, Footprints, MoreHorizontal } from 'lucide-react'
 import Link from 'next/link'
@@ -8,7 +9,7 @@ import { notFound } from 'next/navigation'
 
 interface Props {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; agregados?: string; fuera?: string }>
 }
 
 const INPUT = 'px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)]'
@@ -21,17 +22,18 @@ const PAX_LABEL: Record<string, string> = {
 
 export default async function TrasladoDetallePage({ params, searchParams }: Props) {
   const { id } = await params
-  const { error } = await searchParams
+  const { error, agregados, fuera } = await searchParams
   const supabase = await createClient()
 
   const t = await getTraslado(supabase, id)
   if (!t) notFound()
 
-  // Dotaciones candidatas (del proyecto si lo hay) + pasajeros + tramos
-  const [dotaciones, pasajeros, tramos] = await Promise.all([
+  // Dotaciones candidatas (del proyecto si lo hay) + pasajeros + tramos + cuadrillas
+  const [dotaciones, pasajeros, tramos, cuadrillas] = await Promise.all([
     listDotacionesCandidatas(supabase, t.proyecto_id),
     listPasajeros(supabase, id),
     listTramos(supabase, id),
+    listCuadrillaOptions(supabase),
   ])
 
   const MODO_META: Record<string, { label: string; Icon: typeof Plane }> = {
@@ -40,6 +42,7 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
   }
 
   const addPax = addPasajero.bind(null, id)
+  const addPaxMasivo = addPasajerosMasivo.bind(null, id)
   const setEstado = updateTrasladoEstado.bind(null, id)
   const veh = t.vehiculos as unknown as { tipo: string; identificador: string | null; capacidad: number } | null
   const puedeEscribir = await puedeGestionar('transporte')
@@ -72,6 +75,8 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
       </div>
 
       {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
+      {agregados && Number(agregados) > 0 && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Se agregaron <strong>{agregados}</strong> {Number(agregados) === 1 ? 'pasajero' : 'pasajeros'} al manifiesto.{fuera ? ` ${fuera} quedaron fuera por capacidad del vehículo.` : ''}</div>}
+      {(!agregados || Number(agregados) === 0) && fuera && <div className="mb-6 px-4 py-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">No se agregó a nadie: <strong>{fuera}</strong> quedaron fuera por la capacidad del vehículo (ya está lleno).</div>}
 
       {/* Tramos del viaje (movilización multimodal) */}
       {tramos.length > 0 && (
@@ -123,6 +128,12 @@ export default async function TrasladoDetallePage({ params, searchParams }: Prop
         {!dotaciones?.length && (
           <p className="text-xs text-[var(--gray-600)] mt-2">No hay personas asignadas{t.proyecto_id ? ' a este proyecto' : ''}. Asígnalas en Proyectos primero.</p>
         )}
+
+        {/* Planificación masiva del manifiesto (NO es embarque) */}
+        <div className="mt-5 pt-5 border-t border-[var(--gray-100)]">
+          <p className="text-xs font-semibold text-[var(--gray-600)] uppercase tracking-wide mb-3">Agregar varios (planificación)</p>
+          <ManifiestoMasivo action={addPaxMasivo} cuadrillas={cuadrillas} />
+        </div>
       </div>
       )}
 
