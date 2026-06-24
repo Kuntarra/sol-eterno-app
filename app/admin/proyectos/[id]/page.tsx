@@ -2,14 +2,15 @@ import { createClient } from '@/lib/supabase/server'
 import { createDotacion } from '@/app/actions/dotaciones'
 import { updateProyectoEstado } from '@/app/actions/proyectos'
 import { createVinculo, addRecursoVinculo, deleteRecursoVinculo } from '@/app/actions/modulos'
-import { ArrowLeft, Plus, Users, Link2, Boxes, X } from 'lucide-react'
+import { invitarProveedor } from '@/app/actions/invitaciones'
+import { ArrowLeft, Plus, Users, Link2, Boxes, X, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
 
 interface Props {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ error?: string; success?: string }>
+  searchParams: Promise<{ error?: string; success?: string; invitado?: string }>
 }
 
 const INPUT = 'w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--navy)] focus:border-transparent'
@@ -17,7 +18,7 @@ const LABEL = 'block text-xs font-medium text-[var(--gray-600)] mb-1'
 
 export default async function ProyectoDetallePage({ params, searchParams }: Props) {
   const { id } = await params
-  const { error, success } = await searchParams
+  const { error, success, invitado } = await searchParams
   const supabase = await createClient()
 
   const { data: proyecto } = await supabase
@@ -49,6 +50,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
   const createDotacionForProject = createDotacion.bind(null, id)
   const setEstado = updateProyectoEstado.bind(null, id)
   const vincularProveedor = createVinculo.bind(null, id)
+  const invitar = invitarProveedor.bind(null, id)
 
   return (
     <div className="p-8 max-w-5xl">
@@ -91,6 +93,11 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
           {success === 'vinculo' ? 'Proveedor vinculado al proyecto.'
             : success === 'recurso' ? 'Recurso agregado al proveedor.'
             : 'Persona asignada. Las rotaciones se generaron automáticamente.'}
+        </div>
+      )}
+      {invitado && (
+        <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
+          Invitación enviada a <strong>{decodeURIComponent(invitado)}</strong>: se creó su cuenta como <strong>○ Invitado</strong> y se le envió el acceso + el código por correo.
         </div>
       )}
 
@@ -233,7 +240,43 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
             <Link2 size={15} strokeWidth={2.25} /> Vincular
           </button>
         </form>
-        <p className="text-xs text-[var(--gray-600)] mt-2">Si el RUT ya usa el sistema, se conecta directo. Si no, queda como invitado temporal del proyecto.</p>
+        <p className="text-xs text-[var(--gray-600)] mt-2">Si el RUT ya usa el sistema, se conecta directo como <strong>★ Socio Dotia</strong>. Si no, usa la invitación por correo de abajo.</p>
+      </div>
+
+      {/* Invitar proveedor NO registrado por correo (queda como ○ Invitado) */}
+      <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Mail size={16} strokeWidth={2} className="text-[var(--navy)]" />
+          <h3 className="text-sm font-semibold text-[var(--navy)]">Invitar proveedor por correo</h3>
+        </div>
+        <p className="text-xs text-[var(--gray-600)] mb-4">Para un proveedor que aún no usa el sistema. Se le crea una cuenta de <strong>○ Invitado</strong> y se le envía el acceso + el código del proyecto a su correo.</p>
+        <form action={invitar} className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+          <div className="md:col-span-2">
+            <label htmlFor="inv_email" className={LABEL}>Correo del proveedor *</label>
+            <input id="inv_email" name="inv_email" type="email" required placeholder="contacto@proveedor.cl" className={INPUT} />
+          </div>
+          <div>
+            <label htmlFor="inv_nombre" className={LABEL}>Nombre *</label>
+            <input id="inv_nombre" name="inv_nombre" required placeholder="Pullman San Luis" className={INPUT} />
+          </div>
+          <div>
+            <label htmlFor="inv_rut" className={LABEL}>RUT *</label>
+            <input id="inv_rut" name="inv_rut" required placeholder="76.543.210-K" className={INPUT} />
+          </div>
+          <div>
+            <label htmlFor="inv_modulo" className={LABEL}>Módulo</label>
+            <select id="inv_modulo" name="inv_modulo" className={INPUT} defaultValue="transporte">
+              <option value="transporte">Transporte</option>
+              <option value="hotel">Alojamiento</option>
+              <option value="alimentacion">Alimentación</option>
+              <option value="colaciones">Colaciones</option>
+              <option value="lavanderia">Lavandería</option>
+            </select>
+          </div>
+          <div className="md:col-span-5">
+            <button type="submit" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-[var(--navy)]/30 text-[var(--navy)] text-sm font-semibold rounded-lg hover:bg-[var(--navy)]/5"><Mail size={15} strokeWidth={2} /> Enviar invitación</button>
+          </div>
+        </form>
       </div>
       {!!proveedores?.length && (
         <div className="space-y-3">
