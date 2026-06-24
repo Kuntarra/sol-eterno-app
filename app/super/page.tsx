@@ -9,6 +9,7 @@ type TenantRow = {
   billing_day: number | null; monthly_amount: number | null
   payment_status: 'al_dia' | 'pendiente' | 'moroso'; paid_until: string | null
   companies: number; properties: number; users: number; active_stays: number; total_stays: number
+  tipo: string | null; es_invitado: boolean | null; solicito_socio_at: string | null
 }
 
 const CLP = (n: number | null) =>
@@ -95,7 +96,12 @@ export default async function SuperPage({
                       <Link href={`/super/${t.id}`} className="font-semibold text-[var(--navy)] hover:text-[var(--amber-dark)] hover:underline">
                         {t.name}
                       </Link>
-                      <div className="text-[11px] text-[var(--gray-500)]">{t.rut ?? 'sin RUT'} {!t.active && '· suspendido'}</div>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[var(--gray-100)] text-[var(--gray-600)]">{t.tipo === 'proveedor' ? 'Proveedor' : 'Mandante'}</span>
+                        {t.es_invitado && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">○ Invitado</span>}
+                        {t.solicito_socio_at && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--amber)]/25 text-[var(--amber-dark)]">★ Quiere ser Socio</span>}
+                      </div>
+                      <div className="text-[11px] text-[var(--gray-500)] mt-0.5">{t.rut ?? 'sin RUT'} {!t.active && '· suspendido'}</div>
                     </td>
                     <td>
                       <div className="flex items-center gap-3 text-xs text-[var(--gray-600)]">

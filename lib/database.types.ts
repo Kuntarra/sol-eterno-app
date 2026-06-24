@@ -2207,6 +2207,9 @@ export type Database = {
           slug: string
           total_stays: number
           users: number
+          tipo: string
+          es_invitado: boolean
+          solicito_socio_at: string | null
         }[]
       }
     }
