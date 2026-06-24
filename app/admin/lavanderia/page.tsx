@@ -35,20 +35,24 @@ export default async function LavanderiaPage({ searchParams }: Props) {
     return { id: d.id, nombre: p ? `${p.nombres} ${p.apellido_paterno}` : d.id }
   })
 
-  // Próxima rotación por dotación: la próxima fecha_inicio futura; si no hay,
-  // el fin esperado del turno vigente/último. Sirve de default editable.
-  const nextRota: Record<string, string> = {}
+  // Siguiente rotación por dotación (default editable de la boleta). Prioridad:
+  // 1) fin del turno VIGENTE (cuando sale a descanso) si hoy cae dentro de él;
+  // 2) si está en descanso, el próximo inicio futuro (cuando vuelve a entrar);
+  // 3) respaldo: el último fin conocido.
+  const vigente: Record<string, string> = {}
+  const futuro: Record<string, string> = {}
+  const ultimoFin: Record<string, string> = {}
   for (const r of rotaciones ?? []) {
     const id = r.dotacion_id as string
-    if (r.fecha_inicio && r.fecha_inicio > hoy) {
-      if (!nextRota[id] || r.fecha_inicio < nextRota[id]) nextRota[id] = r.fecha_inicio
-    }
+    const ini = r.fecha_inicio as string | null
+    const fin = r.fecha_fin_esperada as string | null
+    if (ini && fin && ini <= hoy && hoy <= fin && (!vigente[id] || fin < vigente[id])) vigente[id] = fin
+    if (ini && ini > hoy && (!futuro[id] || ini < futuro[id])) futuro[id] = ini
+    if (fin && (!ultimoFin[id] || fin > ultimoFin[id])) ultimoFin[id] = fin
   }
-  for (const r of rotaciones ?? []) {
-    const id = r.dotacion_id as string
-    if (!nextRota[id] && r.fecha_fin_esperada) {
-      if (!nextRota[id] || r.fecha_fin_esperada > nextRota[id]) nextRota[id] = r.fecha_fin_esperada
-    }
+  const nextRota: Record<string, string> = {}
+  for (const id of new Set([...Object.keys(vigente), ...Object.keys(futuro), ...Object.keys(ultimoFin)])) {
+    nextRota[id] = vigente[id] ?? futuro[id] ?? ultimoFin[id]
   }
 
   return (
