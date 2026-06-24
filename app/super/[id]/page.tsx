@@ -108,7 +108,7 @@ export default async function OperadorDetailPage({
         <div>
           <label className={LABEL}>Tipo de empresa</label>
           <select name="tipo" defaultValue={t.tipo ?? 'empresa_proyecto'} className={INPUT}>
-            <option value="empresa_proyecto">Empresa de proyecto (usa la plataforma completa)</option>
+            <option value="empresa_proyecto">Mandante (usa la plataforma completa)</option>
             <option value="proveedor">Proveedor (solo los módulos que contrate)</option>
           </select>
         </div>
@@ -134,7 +134,7 @@ export default async function OperadorDetailPage({
         <h3 className="text-sm font-bold text-[var(--navy)]">Datos y facturación</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
-            <label className={LABEL}>Nombre del operador</label>
+            <label className={LABEL}>Nombre del cliente</label>
             <input name="name" defaultValue={t.name} className={INPUT} />
           </div>
           <div><label className={LABEL}>RUT</label><input name="rut" defaultValue={t.rut ?? ''} className={INPUT} /></div>

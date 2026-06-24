@@ -20,12 +20,12 @@ export function OperadorForm() {
         </div>
       )}
 
-      {/* Datos del operador */}
+      {/* Datos del cliente */}
       <div className="bg-white rounded-xl border border-[var(--gray-200)] p-6">
-        <h3 className="text-sm font-bold text-[var(--navy)] mb-4">Datos del operador</h3>
+        <h3 className="text-sm font-bold text-[var(--navy)] mb-4">Datos del cliente</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
-            <label className={LABEL}>Nombre del operador *</label>
+            <label className={LABEL}>Nombre del cliente *</label>
             <input name="name" required className={INPUT} placeholder="Ej: Hospedajes del Norte SpA" />
           </div>
           <div>
@@ -87,7 +87,7 @@ export function OperadorForm() {
       <div className="flex justify-end gap-3">
         <Link href="/super" className="px-5 py-2.5 rounded-lg border border-[var(--gray-300)] text-[var(--gray-700)] text-sm font-semibold hover:bg-[var(--gray-50)] transition-colors">Cancelar</Link>
         <button type="submit" disabled={pending} className="btn-primary disabled:opacity-60 disabled:cursor-not-allowed">
-          {pending ? 'Creando operador…' : 'Crear operador'}
+          {pending ? 'Creando cliente…' : 'Crear cliente'}
         </button>
       </div>
     </form>

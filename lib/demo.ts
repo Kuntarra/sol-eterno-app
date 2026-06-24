@@ -13,7 +13,7 @@ export type DemoNivel = 'admin_modulo' | 'actuador' | 'visor'
 export type DemoUserDef = {
   email: string
   fullName: string
-  group: 'Empresa de Proyecto' | 'Proveedor'
+  group: 'Mandante' | 'Proveedor'
   label: string
   role: 'admin' | 'modulo'
   tenantId: string
@@ -24,11 +24,11 @@ export type DemoUserDef = {
 // llevan sus permisos por módulo; el alcance (todo el proyecto vs solo el
 // módulo) lo decide tenant.tipo en runtime.
 export const DEMO_USERS: DemoUserDef[] = [
-  // ── Empresa de Proyecto ──
-  { email: 'proyecto-admin@demo.cl',      fullName: 'Proyecto · Admin',           group: 'Empresa de Proyecto', label: 'Admin',                role: 'admin',  tenantId: DEMO_TENANTS.proyecto },
-  { email: 'proyecto-supervisor@demo.cl', fullName: 'Proyecto · Supervisor',      group: 'Empresa de Proyecto', label: 'Supervisor de módulo', role: 'modulo', tenantId: DEMO_TENANTS.proyecto, modulos: [{ modulo: 'hotel', nivel: 'admin_modulo' }, { modulo: 'transporte', nivel: 'admin_modulo' }] },
-  { email: 'proyecto-revisor@demo.cl',    fullName: 'Proyecto · Revisor',         group: 'Empresa de Proyecto', label: 'Revisor',              role: 'modulo', tenantId: DEMO_TENANTS.proyecto, modulos: [{ modulo: 'hotel', nivel: 'actuador' }, { modulo: 'transporte', nivel: 'actuador' }] },
-  { email: 'proyecto-visor@demo.cl',      fullName: 'Proyecto · Visualizador',    group: 'Empresa de Proyecto', label: 'Visualizador',         role: 'modulo', tenantId: DEMO_TENANTS.proyecto, modulos: [{ modulo: 'hotel', nivel: 'visor' }, { modulo: 'transporte', nivel: 'visor' }] },
+  // ── Mandante ──
+  { email: 'proyecto-admin@demo.cl',      fullName: 'Mandante · Admin',           group: 'Mandante', label: 'Admin',                role: 'admin',  tenantId: DEMO_TENANTS.proyecto },
+  { email: 'proyecto-supervisor@demo.cl', fullName: 'Mandante · Supervisor',      group: 'Mandante', label: 'Supervisor de módulo', role: 'modulo', tenantId: DEMO_TENANTS.proyecto, modulos: [{ modulo: 'hotel', nivel: 'admin_modulo' }, { modulo: 'transporte', nivel: 'admin_modulo' }] },
+  { email: 'proyecto-revisor@demo.cl',    fullName: 'Mandante · Revisor',         group: 'Mandante', label: 'Revisor',              role: 'modulo', tenantId: DEMO_TENANTS.proyecto, modulos: [{ modulo: 'hotel', nivel: 'actuador' }, { modulo: 'transporte', nivel: 'actuador' }] },
+  { email: 'proyecto-visor@demo.cl',      fullName: 'Mandante · Visualizador',    group: 'Mandante', label: 'Visualizador',         role: 'modulo', tenantId: DEMO_TENANTS.proyecto, modulos: [{ modulo: 'hotel', nivel: 'visor' }, { modulo: 'transporte', nivel: 'visor' }] },
   // ── Proveedor ──
   { email: 'prov-admin@demo.cl',          fullName: 'Proveedor · Admin',          group: 'Proveedor',           label: 'Admin',                role: 'admin',  tenantId: DEMO_TENANTS.proveedor },
   { email: 'prov-supervisor@demo.cl',     fullName: 'Proveedor · Supervisor',     group: 'Proveedor',           label: 'Supervisor de módulo', role: 'modulo', tenantId: DEMO_TENANTS.proveedor, modulos: [{ modulo: 'transporte', nivel: 'admin_modulo' }] },

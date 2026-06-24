@@ -12,8 +12,8 @@ export default async function NuevoOperadorPage() {
         <ArrowLeft size={15} strokeWidth={1.75} /> Volver al panel
       </Link>
 
-      <h2 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-tight mb-1">Nuevo operador</h2>
-      <p className="text-sm text-[var(--gray-600)] mb-6">Crea un operador (cliente del SaaS) y su primer administrador.</p>
+      <h2 className="font-display text-2xl font-semibold text-[var(--navy)] tracking-tight mb-1">Nuevo cliente</h2>
+      <p className="text-sm text-[var(--gray-600)] mb-6">Crea un cliente del SaaS (Mandante o Proveedor) y su primer administrador.</p>
 
       <OperadorForm />
     </div>

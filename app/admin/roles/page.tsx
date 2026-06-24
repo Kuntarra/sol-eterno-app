@@ -72,7 +72,7 @@ export default async function RolesPage({ searchParams }: Props) {
                 <div>
                   <label htmlFor="proyecto_id" className={LABEL}>Alcance (opcional)</label>
                   <select id="proyecto_id" name="proyecto_id" className={`${INPUT} w-full`} defaultValue="">
-                    <option value="">Todo el operador</option>
+                    <option value="">Toda la empresa</option>
                     {(proyectos ?? []).map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                   </select>
                 </div>

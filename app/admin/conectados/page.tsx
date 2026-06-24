@@ -115,7 +115,7 @@ export default async function ConectadosPage() {
             <Link2 size={24} strokeWidth={1.5} stroke="var(--gray-600)" />
           </div>
           <p className="text-sm text-[var(--gray-600)]">Todavía no estás conectado a ningún proyecto.</p>
-          <p className="text-xs text-[var(--gray-500)] mt-1">Cuando una empresa de proyecto te vincule por tu RUT, aquí verás su personal.</p>
+          <p className="text-xs text-[var(--gray-500)] mt-1">Cuando un Mandante te vincule por tu RUT, aquí verás su personal.</p>
         </div>
       ) : (
         <div className="space-y-6 mt-6">

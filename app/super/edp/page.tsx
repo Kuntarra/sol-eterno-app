@@ -39,7 +39,7 @@ export default async function EdpPage({ searchParams }: { searchParams: Promise<
         <h3 className="text-sm font-semibold text-[var(--navy)] mb-4">Emitir EDP del período</h3>
         <form action={emitirEDP} className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
           <div className="md:col-span-2">
-            <label className="block text-xs font-medium text-[var(--gray-600)] mb-1">Operador</label>
+            <label className="block text-xs font-medium text-[var(--gray-600)] mb-1">Cliente</label>
             <select name="tenant_id" required className="w-full px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" defaultValue="">
               <option value="" disabled>Selecciona…</option>
               {(tenants ?? []).map((t) => <option key={t.id} value={t.id}>{t.name} · {CLP(t.monthly_amount)}</option>)}
@@ -57,7 +57,7 @@ export default async function EdpPage({ searchParams }: { searchParams: Promise<
             <FileText size={15} strokeWidth={2.25} /> Emitir EDP
           </button>
         </form>
-        <p className="text-xs text-[var(--gray-600)] mt-2">Si no pones monto, se usa el cobro mensual del operador. La factura se estima a +30 días.</p>
+        <p className="text-xs text-[var(--gray-600)] mt-2">Si no pones monto, se usa el cobro mensual del cliente. La factura se estima a +30 días.</p>
       </div>
 
       {/* Historial de EDP */}
@@ -69,7 +69,7 @@ export default async function EdpPage({ searchParams }: { searchParams: Promise<
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Operador</th><th>Período</th><th>Monto</th><th>Factura est.</th><th>Estado</th><th></th>
+                <th>Cliente</th><th>Período</th><th>Monto</th><th>Factura est.</th><th>Estado</th><th></th>
               </tr>
             </thead>
             <tbody>

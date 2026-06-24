@@ -67,7 +67,7 @@ export default async function SuperPage({
         </div>
       </div>
 
-      {/* Tabla de operadores */}
+      {/* Tabla de clientes */}
       {!tenants.length ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-16 text-center">
           <p className="text-sm font-semibold text-[var(--navy)] mb-1">Aún no hay clientes</p>
@@ -80,7 +80,7 @@ export default async function SuperPage({
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>Operador</th>
+                  <th>Cliente</th>
                   <th>Uso (empresas · props · usuarios · activos)</th>
                   <th>Cobro mensual</th>
                   <th>Día</th>
