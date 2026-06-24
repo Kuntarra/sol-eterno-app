@@ -51,6 +51,21 @@ export async function aplicarColaciones(formData: FormData) {
   redirect('/admin/colaciones?generadas=' + (Number(data) || 0))
 }
 
+// Genera (1 clic) las colaciones de SALIDA sugeridas: personas que terminan
+// turno en la fecha y tienen bus de vuelta asignado.
+export async function generarColacionesSalida(formData: FormData) {
+  if (!(await puedeGestionar('colaciones'))) redirect('/admin/colaciones?error=' + encodeURIComponent('No tienes permiso de supervisor en Colaciones.'))
+  const supabase = await createClient()
+  const fecha = formData.get('fecha') as string
+  if (!fecha) redirect('/admin/colaciones?error=' + encodeURIComponent('Falta la fecha.'))
+  const { data, error } = await supabase.rpc('generar_colaciones_salida' as never, {
+    p_fecha: fecha, p_generar: true, p_punto: (formData.get('punto') as string) || 'transporte_vuelta',
+  } as never)
+  if (error) redirect('/admin/colaciones?error=' + encodeURIComponent((error as { message: string }).message))
+  revalidatePath('/admin/colaciones')
+  redirect('/admin/colaciones?generadas=' + (Number(data) || 0))
+}
+
 export async function toggleColacionEntregada(id: string, entregada: boolean) {
   const supabase = await createClient()
   await supabase.from('colaciones').update({

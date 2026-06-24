@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { toggleColacionEntregada } from '@/app/actions/modulos'
+import { toggleColacionEntregada, generarColacionesSalida } from '@/app/actions/modulos'
 import { ColacionesForm } from './_components/colaciones-form'
+import { SugerenciaFecha } from './_components/sugerencia-fecha'
 import { puedeGestionar } from '@/lib/rbac'
-import { Package, Check } from 'lucide-react'
+import { Package, Check, Sparkles } from 'lucide-react'
 
-interface Props { searchParams: Promise<{ error?: string; generadas?: string }> }
+interface Props { searchParams: Promise<{ error?: string; generadas?: string; sugfecha?: string }> }
 
 const PUNTO_LABEL: Record<string, string> = {
   origen: 'Origen', aeropuerto_llegada: 'Aeropuerto llegada', transporte_ida: 'Transporte ida',
@@ -12,8 +13,12 @@ const PUNTO_LABEL: Record<string, string> = {
 }
 
 export default async function ColacionesPage({ searchParams }: Props) {
-  const { error, generadas } = await searchParams
+  const { error, generadas, sugfecha } = await searchParams
   const supabase = await createClient()
+  const sugFecha = sugfecha || new Date().toISOString().slice(0, 10)
+  const { data: sugCount } = await supabase.rpc('generar_colaciones_salida' as never, { p_fecha: sugFecha, p_generar: false } as never)
+  const cuentaSalida = Number(sugCount) || 0
+  const sugLabel = new Date(sugFecha + 'T00:00:00').toLocaleDateString('es-CL', { weekday: 'long', day: '2-digit', month: 'short' })
   const [{ data: colaciones }, { data: dotacionesRaw }, { data: cuadrillasRaw }] = await Promise.all([
     supabase.from('colaciones').select('*, proyectos(nombre), dotaciones(personas(nombres, apellido_paterno))').order('fecha', { ascending: false }).limit(150),
     supabase.from('dotaciones').select('id, personas(nombres, apellido_paterno)').order('created_at', { ascending: false }),
@@ -38,9 +43,40 @@ export default async function ColacionesPage({ searchParams }: Props) {
         {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
         {generadas !== undefined && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Generadas <strong>{generadas}</strong> {Number(generadas) === 1 ? 'colación' : 'colaciones'}.</div>}
 
+        {/* Sugerencia automática: colación de salida para quienes egresan con bus de vuelta */}
+        {puedeEscribir && (
+        <div className="bg-gradient-to-br from-[var(--navy)]/[0.04] to-white rounded-xl border border-[var(--navy)]/15 p-5 mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles size={16} strokeWidth={2} className="text-[var(--amber-dark)]" />
+            <h2 className="text-sm font-semibold text-[var(--navy)]">Sugerencia automática · colación de salida</h2>
+          </div>
+          <p className="text-xs text-[var(--gray-600)] mb-4">Personas que terminan su turno y ya tienen bus de vuelta asignado. El sistema calcula el total; tú lo apruebas con un clic.</p>
+          <div className="flex flex-wrap items-end gap-5">
+            <div>
+              <span className="block text-xs font-medium text-[var(--gray-600)] mb-1">Fecha de egreso</span>
+              <SugerenciaFecha fecha={sugFecha} />
+            </div>
+            <div className="flex-1 min-w-[12rem]">
+              <p className="text-sm text-[var(--gray-700)] leading-snug">
+                <strong className="font-display text-2xl text-[var(--navy)] align-middle">{cuentaSalida}</strong>{' '}
+                <span className="capitalize">{cuentaSalida === 1 ? 'persona termina' : 'personas terminan'} turno con transporte de vuelta el {sugLabel}.</span>
+              </p>
+            </div>
+            {cuentaSalida > 0 && (
+              <form action={generarColacionesSalida}>
+                <input type="hidden" name="fecha" value={sugFecha} />
+                <button type="submit" className="px-5 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg whitespace-nowrap">
+                  Generar {cuentaSalida} colaciones de salida
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+        )}
+
         {puedeEscribir && (
         <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-6">
-          <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Generar colaciones</h2>
+          <h2 className="text-sm font-semibold text-[var(--navy)] mb-4">Generar colaciones manualmente</h2>
           <ColacionesForm dotaciones={dotaciones} cuadrillas={cuadrillas} />
         </div>
         )}
