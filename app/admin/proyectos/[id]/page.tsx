@@ -197,8 +197,18 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
         </div>
       )}
 
-      {/* Proveedores vinculados (match por RUT) */}
+      {/* Proveedores vinculados (match por RUT o por código) */}
       <h2 className="text-sm font-semibold text-[var(--navy)] mt-10 mb-3">Proveedores vinculados ({proveedores?.length ?? 0})</h2>
+
+      {/* Código del proyecto para enviar al proveedor */}
+      <div className="bg-gradient-to-br from-[var(--navy)]/[0.04] to-white rounded-xl border border-[var(--navy)]/15 p-5 mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span className="block text-xs font-medium text-[var(--gray-600)] mb-1">Código de este proyecto</span>
+          <span className="font-display text-2xl font-semibold tracking-[0.2em] text-[var(--navy)]">{proyecto.codigo}</span>
+        </div>
+        <p className="text-xs text-[var(--gray-600)] max-w-xs">Envíaselo a tu proveedor: si ya usa el sistema, lo ingresa en su panel y se conecta como <strong>★ Socio Dotia</strong>. O vincúlalo por RUT abajo.</p>
+      </div>
+
       <div className="bg-white rounded-xl border border-[var(--gray-200)] p-5 mb-4">
         <form action={vincularProveedor} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
           <div>
@@ -238,7 +248,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
                     <p className="text-xs text-[var(--gray-600)]">{pv.proveedor_rut} · {pv.modulo}</p>
                   </div>
                   <span className={`badge ${pv.estado === 'activo' ? 'badge-green' : pv.estado === 'stub' ? 'badge-amber' : 'badge-gray'}`}>
-                    {pv.estado === 'stub' ? 'Invitado temporal' : pv.estado === 'activo' ? 'Conectado' : pv.estado}
+                    {pv.estado === 'stub' ? '○ Invitado' : pv.estado === 'activo' ? '★ Socio Dotia' : pv.estado}
                   </span>
                 </div>
 

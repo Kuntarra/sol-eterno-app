@@ -1238,6 +1238,7 @@ export type Database = {
       proyectos: {
         Row: {
           ciudad_id: string | null
+          codigo: string
           created_at: string
           descripcion: string | null
           estado: string
@@ -1250,6 +1251,7 @@ export type Database = {
         }
         Insert: {
           ciudad_id?: string | null
+          codigo?: string
           created_at?: string
           descripcion?: string | null
           estado?: string
@@ -1262,6 +1264,7 @@ export type Database = {
         }
         Update: {
           ciudad_id?: string | null
+          codigo?: string
           created_at?: string
           descripcion?: string | null
           estado?: string

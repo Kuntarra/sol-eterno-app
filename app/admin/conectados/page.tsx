@@ -1,8 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatRut } from '@/lib/rut'
 import { puedeGestionar } from '@/lib/rbac'
+import { modulosActivosTenant } from '@/lib/tenant'
 import { registrarEvento } from '@/app/actions/bitacora'
-import { Link2, Users, Plane } from 'lucide-react'
+import { conectarPorCodigo } from '@/app/actions/modulos'
+import { Link2, Users, Plane, KeyRound, CheckCircle2, AlertTriangle } from 'lucide-react'
+
+const MODULO_LABEL: Record<string, string> = {
+  transporte: 'Transporte', hotel: 'Alojamiento', alimentacion: 'Alimentación', colaciones: 'Colaciones', lavanderia: 'Lavandería',
+}
 
 // Vista del PROVEEDOR: proyectos conectados por match. RLS acota a personas/
 // dotaciones/rotaciones de esos proyectos. El recorte por CAMPO (need-to-know)
@@ -53,8 +59,11 @@ function vuelo(r: Rotacion | undefined, dir: 'ida' | 'vuelta') {
   return `${num ?? 'Vuelo'} · ${fecha ?? '—'}${hora ? ` ${hora}` : ''}`
 }
 
-export default async function ConectadosPage() {
+export default async function ConectadosPage({ searchParams }: { searchParams: Promise<{ error?: string; conectado?: string; ya?: string }> }) {
+  const { error, conectado, ya } = await searchParams
   const supabase = await createClient()
+  const misModulos = await modulosActivosTenant()
+  const puedeConectar = await puedeGestionar(misModulos[0] ?? 'transporte')
 
   const { data: proyectos } = await supabase
     .from('proyectos')
@@ -108,6 +117,33 @@ export default async function ConectadosPage() {
           <p className="text-sm text-[var(--gray-600)]">Personal de los proyectos donde te contrataron · registra tu servicio sobre cada persona</p>
         </div>
       </div>
+
+      {error && <div className="mt-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2"><AlertTriangle size={16} /> {decodeURIComponent(error)}</div>}
+      {conectado && <div className="mt-4 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center gap-2"><CheckCircle2 size={16} /> {ya ? <>Ya estabas conectado a <strong>{decodeURIComponent(conectado)}</strong>.</> : <>Te conectaste a <strong>{decodeURIComponent(conectado)}</strong> como <strong>Socio Dotia</strong>.</>}</div>}
+
+      {/* Conectarse a un proyecto con el código que envió el Mandante */}
+      {puedeConectar && (
+        <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-5 mt-6">
+          <div className="flex items-center gap-2 mb-1">
+            <KeyRound size={16} strokeWidth={2} className="text-[var(--navy)]" />
+            <h2 className="text-sm font-semibold text-[var(--navy)]">Conectarme a un proyecto</h2>
+          </div>
+          <p className="text-xs text-[var(--gray-600)] mb-4">Ingresa el código que te envió el Mandante para vincularte a su proyecto. Quedarás como <strong>Socio Dotia</strong>.</p>
+          <form action={conectarPorCodigo} className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+            <div>
+              <label htmlFor="codigo" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Código del proyecto</label>
+              <input id="codigo" name="codigo" required placeholder="Ej: A1B2C3D4" className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" />
+            </div>
+            <div>
+              <label htmlFor="modulo" className="block text-xs font-medium text-[var(--gray-600)] mb-1">Atiendo con el módulo</label>
+              <select id="modulo" name="modulo" required defaultValue={misModulos[0] ?? ''} className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--gray-200)] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
+                {(misModulos.length ? misModulos : ['transporte']).map((m) => <option key={m} value={m}>{MODULO_LABEL[m] ?? m}</option>)}
+              </select>
+            </div>
+            <button type="submit" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg"><Link2 size={15} strokeWidth={2.25} /> Conectarme</button>
+          </form>
+        </div>
+      )}
 
       {!proyectos?.length ? (
         <div className="bg-white rounded-2xl border border-[var(--gray-200)] p-12 text-center mt-6">

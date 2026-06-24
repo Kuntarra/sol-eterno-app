@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { puedeGestionar } from '@/lib/rbac'
+import { getMyTenantId } from '@/lib/tenant'
 
 // ── Colaciones ─────────────────────────────────────────────────
 export async function createColacion(formData: FormData) {
@@ -315,6 +316,52 @@ export async function createVinculo(proyectoId: string, formData: FormData) {
   if (error) redirect(back + '?error=' + encodeURIComponent(error.message))
   revalidatePath(back)
   redirect(back + '?success=vinculo')
+}
+
+// Lado PROVEEDOR: se conecta a un proyecto con el CÓDIGO que le envió el
+// Mandante. Como el proveedor ya es cliente del SaaS, queda como 'activo'
+// (= "Socio Dotia"). El match por RUT (createVinculo) sigue siendo la otra vía.
+export async function conectarPorCodigo(formData: FormData) {
+  const supabase = await createClient()
+  const back = '/admin/conectados'
+  const codigo = ((formData.get('codigo') as string) || '').trim().toUpperCase()
+  const modulo = (formData.get('modulo') as string) || ''
+  if (!codigo) redirect(back + '?error=' + encodeURIComponent('Ingresa el código del proyecto.'))
+  if (!modulo) redirect(back + '?error=' + encodeURIComponent('Selecciona el módulo con el que atenderás.'))
+
+  // El proyecto vive en OTRO tenant (el Mandante). Buscar por código requiere
+  // saltar el RLS de proyectos (el proveedor aún no está vinculado), así que se
+  // resuelve con una función SECURITY DEFINER acotada al código exacto.
+  const { data: proy, error: errBusca } = await supabase.rpc('buscar_proyecto_por_codigo' as never, { p_codigo: codigo } as never)
+  if (errBusca) redirect(back + '?error=' + encodeURIComponent((errBusca as { message: string }).message))
+  const proyecto = (Array.isArray(proy) ? proy[0] : proy) as { id: string; nombre: string } | null
+  if (!proyecto?.id) redirect(back + '?error=' + encodeURIComponent('No existe un proyecto con ese código. Revísalo con el Mandante.'))
+
+  const tenantId = await getMyTenantId()
+  const { data: yo } = await supabase.from('tenants').select('rut, name').eq('id', tenantId).maybeSingle()
+  if (!yo?.rut) redirect(back + '?error=' + encodeURIComponent('Tu empresa no tiene RUT registrado. Pídele al administrador del sistema que lo complete.'))
+
+  // Evitar duplicar el vínculo para el mismo proyecto + módulo.
+  const { data: existe } = await supabase
+    .from('proyecto_proveedores')
+    .select('id')
+    .eq('proyecto_id', proyecto.id)
+    .eq('tenant_proveedor_id', tenantId)
+    .eq('modulo', modulo)
+    .maybeSingle()
+  if (existe) redirect(back + '?conectado=' + encodeURIComponent(proyecto.nombre) + '&ya=1')
+
+  const { error } = await supabase.from('proyecto_proveedores').insert({
+    proyecto_id:         proyecto.id,
+    proveedor_rut:       yo.rut,
+    proveedor_nombre:    yo.name,
+    tenant_proveedor_id: tenantId,
+    modulo,
+    estado:              'activo',
+  })
+  if (error) redirect(back + '?error=' + encodeURIComponent(error.message))
+  revalidatePath(back)
+  redirect(back + '?conectado=' + encodeURIComponent(proyecto.nombre))
 }
 
 // Recursos que el proveedor compromete a este proyecto (ej. 3 buses, 3 sprinters).
