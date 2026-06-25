@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getMyTenantId } from '@/lib/tenant'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { MODULO_RUTA, type ModuloKey } from '@/lib/modulos'
@@ -32,6 +33,11 @@ export default async function AdminDashboard() {
   await redirigirSubusuario()
   const supabase = await createClient()
 
+  // Todo el panel se acota a MI empresa: el super admin ve (RLS) las filas de
+  // todas las empresas, así que sin filtrar, KPIs y actividad reciente mezclarían
+  // datos de otros tenants (demos/pruebas) en vez de los de su empresa.
+  const tenantId = await getMyTenantId()
+
   const now             = new Date()
   const thisMonthStart  = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const lastMonthStart  = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
@@ -49,21 +55,23 @@ export default async function AdminDashboard() {
     { data: recentCheckins },
     { data: recentCheckouts },
   ] = await Promise.all([
-    supabase.from('properties').select('*', { count: 'exact', head: true }).eq('active', true),
-    supabase.from('companies').select('*', { count: 'exact', head: true }).eq('active', true),
-    supabase.from('stays').select('*', { count: 'exact', head: true }).is('checked_out_at', null),
-    supabase.from('guests').select('*', { count: 'exact', head: true }),
-    supabase.from('stays').select('*', { count: 'exact', head: true }).gte('checked_in_at', thisMonthStart),
-    supabase.from('stays').select('*', { count: 'exact', head: true }).gte('checked_in_at', lastMonthStart).lte('checked_in_at', lastMonthEnd),
-    supabase.from('guests').select('*', { count: 'exact', head: true }).gte('created_at', thisMonthStart),
-    supabase.from('guests').select('*', { count: 'exact', head: true }).gte('created_at', lastMonthStart).lte('created_at', lastMonthEnd),
+    supabase.from('properties').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('active', true),
+    supabase.from('companies').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('active', true),
+    supabase.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).is('checked_out_at', null),
+    supabase.from('guests').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId),
+    supabase.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('checked_in_at', thisMonthStart),
+    supabase.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('checked_in_at', lastMonthStart).lte('checked_in_at', lastMonthEnd),
+    supabase.from('guests').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('created_at', thisMonthStart),
+    supabase.from('guests').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('created_at', lastMonthStart).lte('created_at', lastMonthEnd),
     supabase.from('stays')
       .select('id, checked_in_at, guests(first_name, last_name_paterno), rooms(number, properties(name)), companies(name)')
+      .eq('tenant_id', tenantId)
       .is('checked_out_at', null)
       .order('checked_in_at', { ascending: false })
       .limit(4),
     supabase.from('stays')
       .select('id, checked_out_at, guests(first_name, last_name_paterno), rooms(number, properties(name)), companies(name)')
+      .eq('tenant_id', tenantId)
       .not('checked_out_at', 'is', null)
       .order('checked_out_at', { ascending: false })
       .limit(4),

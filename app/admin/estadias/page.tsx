@@ -35,15 +35,15 @@ export default async function EstadiasPage({
     { count: checkinsAyer },
     { count: totalActivos },
   ] = await Promise.all([
-    supabase.from('stays').select('*', { count: 'exact', head: true }).gte('checked_in_at', todayStart.toISOString()),
-    supabase.from('stays').select('*', { count: 'exact', head: true }).gte('checked_in_at', yesterdayStart.toISOString()).lt('checked_in_at', todayStart.toISOString()),
-    supabase.from('stays').select('*', { count: 'exact', head: true }).is('checked_out_at', null),
+    supabase.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('checked_in_at', todayStart.toISOString()),
+    supabase.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).gte('checked_in_at', yesterdayStart.toISOString()).lt('checked_in_at', todayStart.toISOString()),
+    supabase.from('stays').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).is('checked_out_at', null),
   ])
 
   const diffCheckins = (checkinsHoy ?? 0) - (checkinsAyer ?? 0)
 
-  // Ocupación: total camas de todas las allocations
-  const { data: allocsData } = await supabase.from('allocations').select('rooms(capacity)')
+  // Ocupación: total camas de todas las allocations (acotado a mi empresa)
+  const { data: allocsData } = await supabase.from('allocations').select('rooms(capacity)').eq('tenant_id', tenantId)
   const totalCamas = (allocsData ?? []).reduce((sum, a) => {
     const r = a.rooms as unknown as { capacity: number } | null
     return sum + (r?.capacity ?? 0)

@@ -1,21 +1,28 @@
 import { createClient } from '@/lib/supabase/server'
+import { getMyTenantId } from '@/lib/tenant'
 import Link from 'next/link'
 import { IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, Plane, BedDouble } from 'lucide-react'
 import type { Database } from '@/lib/database.types'
 
 type Tabla = keyof Database['public']['Tables']
 
-async function count(table: Tabla) {
+// Conteo SIEMPRE acotado a la empresa actual: el super admin ve (RLS) las filas
+// de TODAS las empresas, así que sin el filtro estas tarjetas sumarían los datos
+// de todos los tenants (Sol Eterno + demos + pruebas) en vez de los de su empresa.
+async function count(table: Tabla, tenantId: string) {
   const supabase = await createClient()
-  const { count } = await supabase.from(table).select('*', { count: 'exact', head: true })
+  // 'tenant_id' as never: con `table` genérico el cliente tipado no resuelve la
+  // columna (todas las 9 tablas usadas tienen tenant_id); el cast es seguro aquí.
+  const { count } = await supabase.from(table).select('*', { count: 'exact', head: true }).eq('tenant_id' as never, tenantId as never)
   return count ?? 0
 }
 
 export default async function DotiaOverviewPage() {
+  const tenantId = await getMyTenantId()
   const [personas, proyectos, dotaciones, rotaciones, estadias, traslados, alimentacion, colaciones, bolsas] = await Promise.all([
-    count('persona_directorio'), count('proyectos'), count('dotaciones'),
-    count('rotaciones'), count('stays'), count('traslados'),
-    count('plan_alimentacion'), count('colaciones'), count('lavanderia_bolsas'),
+    count('persona_directorio', tenantId), count('proyectos', tenantId), count('dotaciones', tenantId),
+    count('rotaciones', tenantId), count('stays', tenantId), count('traslados', tenantId),
+    count('plan_alimentacion', tenantId), count('colaciones', tenantId), count('lavanderia_bolsas', tenantId),
   ])
 
   const cards = [
