@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { requireSuperAdmin } from '@/lib/super'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { Plus, Building2, Users, BedDouble, CheckCircle2 } from 'lucide-react'
 
 type TenantRow = {
@@ -32,8 +32,10 @@ export default async function SuperPage({
   await requireSuperAdmin()
   const params = await searchParams
 
-  const admin = createAdminClient()
-  const { data } = await admin.rpc('tenants_overview')
+  // Sesión autenticada (no service role): tenants_overview es SECURITY DEFINER y
+  // ahora exige is_super_admin() del LLAMADOR, que el service role no satisface.
+  const supabase = await createClient()
+  const { data } = await supabase.rpc('tenants_overview')
   const tenants = (data ?? []) as TenantRow[]
 
   const activos = tenants.filter(t => t.active).length
