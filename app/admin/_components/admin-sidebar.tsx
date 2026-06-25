@@ -82,17 +82,21 @@ function visibleGroups(role: string, allowedModulos: string[] | null, tenantTipo
     .filter((g) => g.items.length > 0)
 }
 
-function BrandSection() {
+function BrandSection({ nombre, logo }: { nombre: string; logo: string | null }) {
   return (
     <div className="px-5 pt-5 pb-4 border-b border-white/8">
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-simbolo.png" alt="Sol Eterno" className="w-full h-full object-contain" />
+        <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-white/10 grid place-items-center">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt={nombre} className="w-full h-full object-contain" />
+          ) : (
+            <span className="text-white font-display font-semibold text-lg">{nombre.slice(0, 1).toUpperCase()}</span>
+          )}
         </div>
         <div className="min-w-0">
-          <p className="text-white font-display font-semibold text-[16px] leading-tight tracking-tight">Sol Eterno</p>
-          <p className="text-white/40 text-[10px] leading-tight">Gestión de Alojamientos</p>
+          <p className="text-white font-display font-semibold text-[16px] leading-tight tracking-tight truncate">{nombre}</p>
+          <p className="text-white/40 text-[10px] leading-tight">Powered by Dotia</p>
         </div>
       </div>
     </div>
@@ -121,11 +125,11 @@ function NavItem({ href, label, exact, icon, onClose }: { href: string; label: s
   )
 }
 
-function SidebarContent({ fullName, role, allowedModulos, tenantTipo, isSuper, onClose }: { fullName: string; role: string; allowedModulos: string[] | null; tenantTipo: string; isSuper: boolean; onClose?: () => void }) {
+function SidebarContent({ fullName, role, allowedModulos, tenantTipo, isSuper, tenantNombre, tenantLogo, onClose }: { fullName: string; role: string; allowedModulos: string[] | null; tenantTipo: string; isSuper: boolean; tenantNombre: string; tenantLogo: string | null; onClose?: () => void }) {
   const groups = visibleGroups(role, allowedModulos, tenantTipo, isSuper)
   return (
     <>
-      <BrandSection />
+      <BrandSection nombre={tenantNombre} logo={tenantLogo} />
 
       {/* Navegación agrupada */}
       <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto sidebar-scroll">
@@ -185,14 +189,14 @@ function SidebarContent({ fullName, role, allowedModulos, tenantTipo, isSuper, o
   )
 }
 
-export function AdminSidebar({ fullName, role, allowedModulos, tenantTipo, isSuper }: { fullName: string; role: string; allowedModulos: string[] | null; tenantTipo: string; isSuper: boolean }) {
+export function AdminSidebar({ fullName, role, allowedModulos, tenantTipo, isSuper, tenantNombre, tenantLogo }: { fullName: string; role: string; allowedModulos: string[] | null; tenantTipo: string; isSuper: boolean; tenantNombre: string; tenantLogo: string | null }) {
   const [open, setOpen] = useState(false)
 
   return (
     <>
       {/* ── Desktop sidebar ── */}
       <aside className="hidden md:flex w-[220px] min-h-screen bg-[var(--navy)] flex-col shrink-0 border-r border-white/5">
-        <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} tenantTipo={tenantTipo} isSuper={isSuper} />
+        <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} tenantTipo={tenantTipo} isSuper={isSuper} tenantNombre={tenantNombre} tenantLogo={tenantLogo} />
       </aside>
 
       {/* ── Mobile top bar ── */}
@@ -215,7 +219,7 @@ export function AdminSidebar({ fullName, role, allowedModulos, tenantTipo, isSup
               <X size={16} strokeWidth={2.25} />
             </button>
           </div>
-          <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} tenantTipo={tenantTipo} isSuper={isSuper} onClose={() => setOpen(false)} />
+          <SidebarContent fullName={fullName} role={role} allowedModulos={allowedModulos} tenantTipo={tenantTipo} isSuper={isSuper} tenantNombre={tenantNombre} tenantLogo={tenantLogo} onClose={() => setOpen(false)} />
         </aside>
       </div>
 

@@ -34,8 +34,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
 
   const [tntRes, modulosArr, umsRes, overdueRes, checkinsRes, matchMineRes, matchProvRes, socioReqRes] = await Promise.all([
-    // Tipo de empresa: define si se ofrece la vista "Proyectos conectados".
-    supabase.from('tenants').select('tipo').eq('id', tenantId).maybeSingle(),
+    // Tipo de empresa + marca (nombre y logo para el encabezado del menú).
+    supabase.from('tenants').select('tipo, name, logo_url').eq('id', tenantId).maybeSingle(),
     // Módulos comprados por la empresa (acota el menú).
     modulosActivosTenant(),
     // Asignaciones del sub-usuario (solo si es de tipo "modulo").
@@ -72,6 +72,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   ])
 
   const tenantTipo = tntRes.data?.tipo ?? 'empresa_proyecto'
+  const tenantNombre = tntRes.data?.name ?? 'Mi empresa'
+  const tenantLogo = tntRes.data?.logo_url ?? null
 
   // Regla del menú: lo que la EMPRESA compró acota a todos; el admin ve todo lo
   // comprado; el sub-usuario ve solo lo asignado intersectado con lo comprado.
@@ -136,7 +138,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar fullName={fullName} role={esAdmin ? 'admin' : 'modulo'} allowedModulos={allowedModulos} tenantTipo={tenantTipo} isSuper={!!profile?.is_super_admin} />
+      <AdminSidebar fullName={fullName} role={esAdmin ? 'admin' : 'modulo'} allowedModulos={allowedModulos} tenantTipo={tenantTipo} isSuper={!!profile?.is_super_admin} tenantNombre={tenantNombre} tenantLogo={tenantLogo} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminTopBar fullName={fullName} notifications={notifications} />
         <main className="flex-1 overflow-auto bg-[var(--gray-100)] pt-16 pb-16 md:pt-0 md:pb-0">
