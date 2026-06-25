@@ -91,6 +91,7 @@ export async function createMovilizacion(formData: FormData) {
 }
 
 export async function updateTrasladoEstado(id: string, formData: FormData) {
+  if (!(await puedeGestionar('transporte'))) redirect(SIN_PERMISO)
   const supabase = await createClient()
   await data.updateTrasladoEstado(supabase, id, formData.get('estado') as string)
   revalidatePath(`/admin/transporte/${id}`)
@@ -123,6 +124,7 @@ export async function createTrasladoDiario(formData: FormData) {
 
 // ── Manifiesto (pasajeros) ─────────────────────────────────────
 export async function addPasajero(trasladoId: string, formData: FormData) {
+  if (!(await puedeGestionar('transporte'))) redirect(SIN_PERMISO)
   const supabase = await createClient()
   const dotacionId = formData.get('dotacion_id') as string
   if (!dotacionId) fail(`/admin/transporte/${trasladoId}`, 'Selecciona una persona.')
@@ -187,6 +189,7 @@ export async function addPasajerosMasivo(trasladoId: string, formData: FormData)
 }
 
 export async function marcarPasajero(trasladoId: string, pasajeroId: string, accion: 'subio' | 'dejado' | 'no_show') {
+  if (!(await puedeGestionar('transporte'))) redirect(SIN_PERMISO)
   const supabase = await createClient()
   const patch: Record<string, unknown> = { estado: accion }
   if (accion === 'subio') patch.subio_at = new Date().toISOString()

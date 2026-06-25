@@ -145,6 +145,7 @@ export async function asignarPlanillaMasivo(formData: FormData) {
 }
 
 export async function toggleColacionEntregada(id: string, entregada: boolean) {
+  if (!(await puedeGestionar('colaciones'))) return
   const supabase = await createClient()
   await supabase.from('colaciones').update({
     entregada,
@@ -209,6 +210,7 @@ export async function aplicarAlimentacion(formData: FormData) {
 
 // ── Lavandería ─────────────────────────────────────────────────
 export async function createPrenda(formData: FormData) {
+  if (!(await puedeGestionar('lavanderia'))) redirect('/admin/lavanderia?error=' + encodeURIComponent('No tienes permiso de supervisor en Lavandería.'))
   const supabase = await createClient()
   const nombre = (formData.get('nombre') as string)?.trim()
   if (nombre) await supabase.from('prendas_catalogo').insert({ nombre })
@@ -236,6 +238,7 @@ const FLUJO: Record<string, string> = {
   recepcionada: 'en_lavanderia', en_lavanderia: 'en_proceso', en_proceso: 'entregada', entregada: 'entregada',
 }
 export async function avanzarBolsa(id: string, estadoActual: string) {
+  if (!(await puedeGestionar('lavanderia'))) return
   const supabase = await createClient()
   await supabase.from('lavanderia_bolsas')
     .update({ estado: FLUJO[estadoActual] ?? estadoActual, updated_at: new Date().toISOString() })

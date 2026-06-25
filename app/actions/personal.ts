@@ -8,18 +8,25 @@ import { getCupoPersonas, getMyTenantId } from '@/lib/tenant'
 
 const NUEVO = '/admin/personal/nuevo'
 
+// Solo la ADMINISTRACIÓN (admin de la empresa o super admin) gestiona el
+// directorio de personas. La UI ya lo oculta a los demás, pero las acciones de
+// servidor son invocables directamente: este guard lo impide en el servidor.
+async function requireAdministracion(supabase: Awaited<ReturnType<typeof createClient>>, back: string) {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: prof } = await supabase.from('user_profiles').select('role, is_super_admin').eq('id', user.id).single()
+  if (prof?.role !== 'admin' && !prof?.is_super_admin) {
+    redirect(back + '?error=' + encodeURIComponent('Solo la administración puede gestionar el personal.'))
+  }
+}
+
 // Activa/desactiva una persona en el directorio. Solo la ADMINISTRACIÓN
 // (admin de la empresa o super admin) puede cambiarlo. Inactivo = sigue en la
 // base pero ya no continúa la rotación de turnos.
 export async function setPersonaActiva(personaId: string, activa: boolean) {
   const supabase = await createClient()
   const back = `/admin/personal/${personaId}`
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-  const { data: prof } = await supabase.from('user_profiles').select('role, is_super_admin').eq('id', user.id).single()
-  if (prof?.role !== 'admin' && !prof?.is_super_admin) {
-    redirect(back + '?error=' + encodeURIComponent('Solo la administración puede cambiar el estado de una persona.'))
-  }
+  await requireAdministracion(supabase, back)
   await supabase
     .from('persona_directorio')
     .update({ activa })
@@ -33,6 +40,7 @@ export async function setPersonaActiva(personaId: string, activa: boolean) {
 // al directorio de mi empresa, con su oficio.
 export async function createPersona(formData: FormData) {
   const supabase = await createClient()
+  await requireAdministracion(supabase, NUEVO)
 
   const tipo = ((formData.get('tipo_documento') as string) || 'rut').trim()
   const rawDoc = ((formData.get('numero_documento') as string) || '').trim()
@@ -112,6 +120,7 @@ export async function createPersona(formData: FormData) {
 // nombre de encabezado, valida RUT, deduplica y agrega al directorio.
 export async function importPersonas(formData: FormData) {
   const supabase = await createClient()
+  await requireAdministracion(supabase, '/admin/personal/importar')
   const file = formData.get('file') as File | null
   if (!file || file.size === 0) {
     redirect('/admin/personal/importar?error=' + encodeURIComponent('Selecciona un archivo Excel (.xlsx).'))
