@@ -3,8 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { esAdministrador } from '@/lib/rbac'
 
 export async function createAllocation(companyId: string, formData: FormData) {
+  if (!(await esAdministrador())) redirect(`/admin/clientes/${companyId}?error=` + encodeURIComponent('Solo la administración puede asignar habitaciones.'))
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -53,6 +55,7 @@ export async function createAllocation(companyId: string, formData: FormData) {
 }
 
 export async function deleteAllocation(allocationId: string, companyId: string) {
+  if (!(await esAdministrador())) redirect(`/admin/clientes/${companyId}?error=` + encodeURIComponent('Solo la administración puede quitar asignaciones.'))
   const supabase = await createClient()
   await supabase.from('allocations').delete().eq('id', allocationId)
   revalidatePath(`/admin/clientes/${companyId}`)

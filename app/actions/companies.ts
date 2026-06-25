@@ -3,8 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { esAdministrador } from '@/lib/rbac'
 
 export async function createCompany(formData: FormData) {
+  if (!(await esAdministrador())) redirect('/admin/clientes/nuevo?error=' + encodeURIComponent('Solo la administración puede crear clientes.'))
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -27,6 +29,7 @@ export async function createCompany(formData: FormData) {
 }
 
 export async function updateCompany(id: string, formData: FormData) {
+  if (!(await esAdministrador())) redirect(`/admin/clientes/${id}?error=` + encodeURIComponent('Solo la administración puede editar clientes.'))
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -48,6 +51,7 @@ export async function updateCompany(id: string, formData: FormData) {
 }
 
 export async function toggleCompanyActive(id: string, active: boolean) {
+  if (!(await esAdministrador())) redirect(`/admin/clientes/${id}?error=` + encodeURIComponent('Solo la administración puede cambiar clientes.'))
   const supabase = await createClient()
   await supabase.from('companies').update({ active }).eq('id', id)
   revalidatePath('/admin/clientes')
@@ -55,6 +59,7 @@ export async function toggleCompanyActive(id: string, active: boolean) {
 }
 
 export async function deleteCompany(id: string) {
+  if (!(await esAdministrador())) redirect('/admin/clientes?error=' + encodeURIComponent('Solo la administración puede eliminar clientes.'))
   const supabase = await createClient()
   await supabase.from('companies').delete().eq('id', id)
   revalidatePath('/admin/clientes')

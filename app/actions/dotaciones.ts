@@ -3,12 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { esAdministrador } from '@/lib/rbac'
 
 // Asigna una persona del directorio a un proyecto (crea la DOTACIÓN/contrato)
 // y auto-genera las rotaciones esperadas desde el turno + duración.
 export async function createDotacion(proyectoId: string, formData: FormData) {
   const supabase = await createClient()
   const back = `/admin/proyectos/${proyectoId}`
+  if (!(await esAdministrador())) redirect(back + '?error=' + encodeURIComponent('Solo la administración puede gestionar dotaciones.'))
 
   const personaId = formData.get('persona_id') as string
   if (!personaId) redirect(back + '?error=' + encodeURIComponent('Selecciona una persona.'))

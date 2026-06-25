@@ -4,8 +4,10 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyTenantId } from '@/lib/tenant'
+import { esAdministrador } from '@/lib/rbac'
 
 export async function createReceptionist(formData: FormData) {
+  if (!(await esAdministrador())) redirect('/admin/usuarios/nuevo-recepcionista?error=' + encodeURIComponent('Solo la administración puede crear usuarios.'))
   const adminClient = createAdminClient()
   const tenantId = await getMyTenantId()
 
@@ -45,6 +47,7 @@ export async function createReceptionist(formData: FormData) {
 }
 
 export async function createClientUser(formData: FormData) {
+  if (!(await esAdministrador())) redirect('/admin/usuarios/nuevo-cliente?error=' + encodeURIComponent('Solo la administración puede crear usuarios.'))
   const adminClient = createAdminClient()
   const tenantId = await getMyTenantId()
 
@@ -77,6 +80,7 @@ export async function createClientUser(formData: FormData) {
 }
 
 export async function deleteUser(userId: string) {
+  if (!(await esAdministrador())) redirect('/admin/usuarios?error=' + encodeURIComponent('Solo la administración puede eliminar usuarios.'))
   const adminClient = createAdminClient()
   const tenantId = await getMyTenantId()
 
@@ -95,6 +99,7 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateReceptionistProperties(userId: string, formData: FormData) {
+  if (!(await esAdministrador())) redirect(`/admin/usuarios/${userId}?error=` + encodeURIComponent('Solo la administración puede cambiar usuarios.'))
   const adminClient = createAdminClient()
   const tenantId = await getMyTenantId()
   const propertyIds = formData.getAll('property_ids') as string[]

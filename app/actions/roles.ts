@@ -3,8 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { esAdministrador } from '@/lib/rbac'
 
 export async function assignModulo(formData: FormData) {
+  if (!(await esAdministrador())) redirect('/admin/roles?error=' + encodeURIComponent('Solo la administración puede asignar permisos.'))
   const supabase = await createClient()
   const userId = formData.get('user_id') as string
   const modulo = formData.get('modulo') as string
@@ -22,6 +24,7 @@ export async function assignModulo(formData: FormData) {
 }
 
 export async function removeModulo(id: string) {
+  if (!(await esAdministrador())) redirect('/admin/roles?error=' + encodeURIComponent('Solo la administración puede quitar permisos.'))
   const supabase = await createClient()
   await supabase.from('user_modulos').delete().eq('id', id)
   revalidatePath('/admin/roles')

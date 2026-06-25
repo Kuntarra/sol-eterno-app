@@ -23,6 +23,27 @@ export async function puedeAdministrar(modulo: string): Promise<boolean> {
   return (await nivelModulo(modulo)) === 'admin_modulo'
 }
 
+// ¿El usuario actual es admin de su empresa o super admin? Guard de las acciones
+// de administración (proyectos, dotaciones, propiedades, etc.). La UI ya las
+// oculta a los sub-usuarios, pero las acciones de servidor son invocables
+// directamente: este chequeo lo impide en el servidor (RLS no distingue el rol).
+export async function esAdministrador(): Promise<boolean> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+  const { data: prof } = await supabase.from('user_profiles').select('role, is_super_admin').eq('id', user.id).maybeSingle()
+  return prof?.role === 'admin' || !!prof?.is_super_admin
+}
+
+// ¿Es super admin? Guard de las acciones de la consola SaaS (/super: clientes, EDP).
+export async function esSuperAdmin(): Promise<boolean> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+  const { data: prof } = await supabase.from('user_profiles').select('is_super_admin').eq('id', user.id).maybeSingle()
+  return !!prof?.is_super_admin
+}
+
 // Guard de página de módulo. Bloquea (→ /admin) si:
 //  1) la EMPRESA no compró el módulo (vale incluso para el admin), o
 //  2) el usuario no tiene acceso al módulo (sub-usuario sin asignación).

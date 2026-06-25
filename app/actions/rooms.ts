@@ -3,8 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { esAdministrador } from '@/lib/rbac'
 
 export async function createRoom(propertyId: string, formData: FormData) {
+  if (!(await esAdministrador())) redirect(`/admin/propiedades/${propertyId}?error=` + encodeURIComponent('Solo la administración puede crear habitaciones.'))
   const supabase = await createClient()
 
   const { error } = await supabase.from('rooms').insert({
@@ -24,6 +26,7 @@ export async function createRoom(propertyId: string, formData: FormData) {
 }
 
 export async function deleteRoom(roomId: string, propertyId: string) {
+  if (!(await esAdministrador())) redirect(`/admin/propiedades/${propertyId}?error=` + encodeURIComponent('Solo la administración puede eliminar habitaciones.'))
   const supabase = await createClient()
   await supabase.from('rooms').delete().eq('id', roomId)
   revalidatePath(`/admin/propiedades/${propertyId}`)
