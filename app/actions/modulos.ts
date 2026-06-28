@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { puedeGestionar } from '@/lib/rbac'
+import { puedeGestionar, esAdministrador } from '@/lib/rbac'
 import { getMyTenantId } from '@/lib/tenant'
 
 // ── Colaciones ─────────────────────────────────────────────────
@@ -372,6 +372,7 @@ export async function asignarPlanilla(formData: FormData) {
 export async function createVinculo(proyectoId: string, formData: FormData) {
   const supabase = await createClient()
   const back = `/admin/proyectos/${proyectoId}`
+  if (!(await esAdministrador())) redirect(back + '?error=' + encodeURIComponent('Solo la administración puede vincular proveedores.'))
   const rut = ((formData.get('proveedor_rut') as string) || '').trim()
   if (!rut) redirect(back + '?error=' + encodeURIComponent('Ingresa el RUT del proveedor.'))
 
@@ -445,6 +446,7 @@ export async function conectarPorCodigo(formData: FormData) {
 export async function addRecursoVinculo(proyectoId: string, vinculoId: string, formData: FormData) {
   const supabase = await createClient()
   const back = `/admin/proyectos/${proyectoId}`
+  if (!(await esAdministrador())) redirect(back + '?error=' + encodeURIComponent('Solo la administración puede gestionar recursos del vínculo.'))
   const tipo = ((formData.get('tipo') as string) || '').trim()
   const cant = parseInt((formData.get('cantidad') as string) || '1', 10)
   if (!tipo) redirect(back + '?error=' + encodeURIComponent('Indica el tipo de recurso (ej. Bus, Sprinter).'))
@@ -461,6 +463,7 @@ export async function addRecursoVinculo(proyectoId: string, vinculoId: string, f
 }
 
 export async function deleteRecursoVinculo(proyectoId: string, recursoId: string) {
+  if (!(await esAdministrador())) redirect(`/admin/proyectos/${proyectoId}?error=` + encodeURIComponent('Solo la administración puede eliminar recursos del vínculo.'))
   const supabase = await createClient()
   await supabase.from('proyecto_proveedor_recursos').delete().eq('id', recursoId)
   revalidatePath(`/admin/proyectos/${proyectoId}`)
