@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { puedePlanificar } from '@/lib/rbac'
+import { registrarActividad } from './_log'
 
 // Asigna una persona del directorio a un proyecto (crea la DOTACIÓN/contrato)
 // y auto-genera las rotaciones esperadas desde el turno + duración.
@@ -44,6 +45,8 @@ export async function createDotacion(proyectoId: string, formData: FormData) {
 
   // Auto-generar rotaciones esperadas (si hay turno + fechas)
   await supabase.rpc('generar_rotaciones', { p_dotacion_id: dot.id })
+
+  await registrarActividad('dotacion', dot.id, 'crear_dotacion', { proyecto_id: proyectoId, persona_id: personaId })
 
   revalidatePath(back)
   redirect(back + '?success=asignada')

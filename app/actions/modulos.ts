@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { puedeGestionar, esAdministrador } from '@/lib/rbac'
 import { getMyTenantId } from '@/lib/tenant'
+import { registrarActividad } from './_log'
 
 // ── Colaciones ─────────────────────────────────────────────────
 export async function createColacion(formData: FormData) {
@@ -388,6 +389,10 @@ export async function createVinculo(proyectoId: string, formData: FormData) {
     estado:             tenantProv ? 'activo' : 'stub',
   })
   if (error) redirect(back + '?error=' + encodeURIComponent(error.message))
+  await registrarActividad('vinculo', proyectoId, 'vincular', {
+    proveedor_rut: rut, modulo: (formData.get('modulo') as string) || 'transporte',
+    estado: tenantProv ? 'activo' : 'stub',
+  })
   revalidatePath(back)
   redirect(back + '?success=vinculo')
 }
@@ -438,6 +443,7 @@ export async function conectarPorCodigo(formData: FormData) {
     tenant_id:           proyecto.tenant_id, // dueño = Mandante
   })
   if (error) redirect(back + '?error=' + encodeURIComponent(error.message))
+  await registrarActividad('vinculo', proyecto.id, 'vincular', { via: 'codigo', modulo })
   revalidatePath(back)
   redirect(back + '?conectado=' + encodeURIComponent(proyecto.nombre))
 }

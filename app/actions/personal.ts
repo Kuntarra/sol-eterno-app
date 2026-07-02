@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { cleanRut, isValidRut } from '@/lib/rut'
 import { getCupoPersonas, getMyTenantId } from '@/lib/tenant'
+import { registrarActividad } from './_log'
 
 const NUEVO = '/admin/personal/nuevo'
 
@@ -32,6 +33,7 @@ export async function setPersonaActiva(personaId: string, activa: boolean) {
     .update({ activa })
     .eq('persona_id', personaId)
     .eq('tenant_id', await getMyTenantId())
+  await registrarActividad('persona', personaId, activa ? 'activar' : 'desactivar')
   revalidatePath(back)
   redirect(back + '?success=estado')
 }
@@ -111,6 +113,8 @@ export async function createPersona(formData: FormData) {
     .from('persona_directorio')
     .upsert({ persona_id: personaId, oficio_id: oficioId }, { onConflict: 'tenant_id,persona_id' })
   if (dErr) redirect(NUEVO + '?error=' + encodeURIComponent(dErr.message))
+
+  await registrarActividad('persona', personaId as string, 'crear', { nombres, apellido_paterno: apPat, documento: numero })
 
   revalidatePath('/admin/personal')
   redirect('/admin/personal?success=creado')

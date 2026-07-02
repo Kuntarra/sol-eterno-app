@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireSuperAdmin } from '@/lib/super'
 import { MODULO_KEYS } from '@/lib/modulos'
+import { registrarActividad } from './_log'
 
 function slugify(s: string) {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -134,7 +135,7 @@ export async function toggleTenantActive(id: string, active: boolean) {
 // Guarda el TIPO de empresa (empresa_proyecto | proveedor) y los MÓDULOS
 // contratados. Define qué ve el admin de esa empresa (y sus sub-usuarios).
 export async function updateTenantModulos(id: string, formData: FormData) {
-  await requireSuperAdmin()
+  const { userId, fullName } = await requireSuperAdmin()
   const admin = createAdminClient()
 
   const tipo = (formData.get('tipo') as string) || 'empresa_proyecto'
@@ -150,6 +151,12 @@ export async function updateTenantModulos(id: string, formData: FormData) {
     activo: formData.get(`mod_${m}`) === 'on',
   }))
   await admin.from('tenant_modulos').upsert(rows, { onConflict: 'tenant_id,modulo' })
+
+  await registrarActividad(
+    'tenant_modulos', id, 'activar_modulos',
+    { tipo, modulos: rows.filter((r) => r.activo).map((r) => r.modulo) },
+    { client: admin, tenantId: id, actorUserId: userId, actorNombre: fullName },
+  )
 
   revalidatePath('/super')
   revalidatePath(`/super/${id}`)

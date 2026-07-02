@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      registro_actividad: {
+        Row: {
+          accion: string
+          actor_nombre: string | null
+          actor_user_id: string | null
+          created_at: string
+          detalle: Json | null
+          entidad: string
+          entidad_id: string | null
+          id: string
+          tenant_id: string
+        }
+        Insert: {
+          accion: string
+          actor_nombre?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          detalle?: Json | null
+          entidad: string
+          entidad_id?: string | null
+          id?: string
+          tenant_id?: string
+        }
+        Update: {
+          accion?: string
+          actor_nombre?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          detalle?: Json | null
+          entidad?: string
+          entidad_id?: string | null
+          id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registro_actividad_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       allocations: {
         Row: {
           company_id: string

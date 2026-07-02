@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyTenantId } from '@/lib/tenant'
 import { MODULO_KEYS } from '@/lib/modulos'
 import { requireTitular } from '@/lib/rbac'
+import { registrarActividad } from './_log'
 
 // Crea el login (correo/clave) ligado a la ficha persona.
 // Alta de usuarios: solo el Titular (hoy, todo admin existente ya lo es).
@@ -31,6 +32,8 @@ export async function crearAccesoPersona(personaId: string, formData: FormData) 
     user_metadata: { role: 'modulo', full_name: fullName, tenant_id: tenantId, persona_id: personaId },
   })
   if (error) redirect(back + '?error=' + encodeURIComponent(error.message))
+
+  await registrarActividad('acceso', personaId, 'crear', { email })
 
   revalidatePath(back)
   redirect(back + '?success=acceso')
@@ -66,6 +69,10 @@ export async function guardarPermisos(personaId: string, formData: FormData) {
     await supabase.from('user_modulos').insert(filas)
   }
 
+  await registrarActividad('acceso', personaId, 'editar_permisos', {
+    modulos: filas.map((f) => ({ modulo: f.modulo, nivel: f.nivel })),
+  })
+
   revalidatePath(back)
   redirect(back + '?success=permisos')
 }
@@ -76,16 +83,18 @@ export async function guardarPermisos(personaId: string, formData: FormData) {
 export async function actualizarRolCuenta(userId: string, formData: FormData) {
   await requireTitular()
   const supabase = await createClient()
+  const nuevos = {
+    es_titular: formData.get('es_titular') === 'on',
+    es_planificador: formData.get('es_planificador') === 'on',
+    ve_costos: formData.get('ve_costos') === 'on',
+  }
   const { error } = await supabase
     .from('user_profiles')
-    .update({
-      es_titular: formData.get('es_titular') === 'on',
-      es_planificador: formData.get('es_planificador') === 'on',
-      ve_costos: formData.get('ve_costos') === 'on',
-    })
+    .update(nuevos)
     .eq('id', userId)
     .eq('tenant_id', await getMyTenantId())
   if (error) redirect('/admin/roles?error=' + encodeURIComponent(error.message))
+  await registrarActividad('acceso', userId, 'cambiar_rol', nuevos)
   revalidatePath('/admin/roles')
   redirect('/admin/roles?success=rol')
 }

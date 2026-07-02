@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { puedeGestionar } from '@/lib/rbac'
 import { getMyTenantId } from '@/lib/tenant'
+import { registrarActividad } from './_log'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://gestion.soleterno.cl'
 const enc = encodeURIComponent
@@ -72,6 +73,8 @@ export async function invitarProveedor(proyectoId: string, formData: FormData) {
 
   // 5) Correo con el acceso + el código del proyecto (no bloquea si falta API key)
   await enviarCorreoInvitacion({ email, nombre, tempPass, proyecto: proyecto.nombre, codigo: proyecto.codigo })
+
+  await registrarActividad('proveedor', proyectoId, 'invitar', { email, nombre, rut, modulo })
 
   revalidatePath(back)
   redirect(back + '?invitado=' + enc(nombre))

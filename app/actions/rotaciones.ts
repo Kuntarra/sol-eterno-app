@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { puedePlanificar } from '@/lib/rbac'
+import { registrarActividad } from './_log'
 
 // Editar una rotación a mano (marca ajustada_manual = true)
 export async function updateRotacion(proyectoId: string, dotId: string, rotId: string, formData: FormData) {
@@ -20,6 +21,7 @@ export async function updateRotacion(proyectoId: string, dotId: string, rotId: s
     estado_ciclo:       (formData.get('estado_ciclo') as string) || 'planificada',
     ajustada_manual:    true,
   }).eq('id', rotId)
+  await registrarActividad('rotacion', rotId, 'editar_rotacion', { dotacion_id: dotId })
   revalidatePath(`/admin/proyectos/${proyectoId}/dotacion/${dotId}`)
 }
 
@@ -28,5 +30,6 @@ export async function recalcularSiguientes(proyectoId: string, dotId: string, de
   if (!(await puedePlanificar())) redirect(`/admin/proyectos/${proyectoId}/dotacion/${dotId}?error=` + encodeURIComponent('Solo quien planifica puede recalcular rotaciones.'))
   const supabase = await createClient()
   await supabase.rpc('recalcular_rotaciones', { p_dotacion_id: dotId, p_desde: desde })
+  await registrarActividad('rotacion', dotId, 'recalcular', { desde })
   revalidatePath(`/admin/proyectos/${proyectoId}/dotacion/${dotId}`)
 }

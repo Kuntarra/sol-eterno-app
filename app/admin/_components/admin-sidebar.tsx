@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck, Link2, CalendarRange, Image as ImageIcon } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck, Link2, CalendarRange, Image as ImageIcon, Activity } from 'lucide-react'
 
 // `modulo` = clave del módulo (user_modulos) para filtrar el menú de sub-usuarios.
 // `adminOnly` = visible solo para admin. Ítems sin ninguna marca = siempre visibles.
@@ -53,6 +53,7 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
     items: [
       { href: '/admin/clientes', label: 'Clientes',     exact: false, icon: <BriefIcon />, superOnly: true },
       { href: '/super',          label: 'Consola SaaS', exact: false, icon: <DashIcon />,  superOnly: true },
+      { href: '/super/actividad', label: 'Registro de actividad', exact: false, icon: <ActivityIcon />, superOnly: true },
     ],
   },
 ]
@@ -282,4 +283,5 @@ function AlimentacionIcon() { return <UtensilsCrossed {...ICON} /> }
 function ColacionIcon() { return <Package {...ICON} /> }
 function LavanderiaIcon() { return <Shirt {...ICON} /> }
 function RolesIcon() { return <ShieldCheck {...ICON} /> }
+function ActivityIcon() { return <Activity {...ICON} /> }
 function MarcaIcon() { return <ImageIcon {...ICON} /> }
