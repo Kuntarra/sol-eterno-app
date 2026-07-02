@@ -759,6 +759,54 @@ export type Database = {
           },
         ]
       }
+      puntos: {
+        Row: {
+          activa: boolean
+          created_at: string
+          direccion: string | null
+          id: string
+          nombre: string
+          property_id: string | null
+          tenant_id: string
+          tipo: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre: string
+          property_id?: string | null
+          tenant_id?: string
+          tipo?: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre?: string
+          property_id?: string | null
+          tenant_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "puntos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "puntos_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tipos_turno: {
         Row: {
           activa: boolean

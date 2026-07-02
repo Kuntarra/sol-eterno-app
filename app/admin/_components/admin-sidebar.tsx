@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck, Link2, CalendarRange, Image as ImageIcon, Activity, Coins } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck, Link2, CalendarRange, Image as ImageIcon, Activity, Coins, MapPin } from 'lucide-react'
 
 // `modulo` = clave del módulo (user_modulos) para filtrar el menú de sub-usuarios.
 // `adminOnly` = visible solo para admin. Ítems sin ninguna marca = siempre visibles.
@@ -29,6 +29,7 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
       { href: '/admin/proyectos',  label: 'Proyectos',  exact: false, icon: <ProyectoIcon />, adminOnly: true },
       { href: '/admin/planificacion', label: 'Planificación', exact: false, icon: <PlanIcon />, adminOnly: true },
       { href: '/admin/turnos',     label: 'Turnos',     exact: false, icon: <TurnosIcon />, adminOnly: true },
+      { href: '/admin/puntos',     label: 'Puntos',     exact: false, icon: <PuntosIcon />, adminOnly: true },
     ],
   },
   {
@@ -288,4 +289,5 @@ function RolesIcon() { return <ShieldCheck {...ICON} /> }
 function ActivityIcon() { return <Activity {...ICON} /> }
 function CostosIcon() { return <Coins {...ICON} /> }
 function TurnosIcon() { return <CalendarRange {...ICON} /> }
+function PuntosIcon() { return <MapPin {...ICON} /> }
 function MarcaIcon() { return <ImageIcon {...ICON} /> }
