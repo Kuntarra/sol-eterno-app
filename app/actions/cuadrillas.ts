@@ -1,0 +1,53 @@
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { esAdministrador, puedePlanificar } from '@/lib/rbac'
+import { registrarActividad } from './_log'
+
+// Crea una cuadrilla (grupo) a nivel de empresa.
+export async function crearCuadrilla(formData: FormData) {
+  if (!(await esAdministrador())) redirect('/admin/personal?error=' + encodeURIComponent('Solo la administración puede crear cuadrillas.'))
+  const supabase = await createClient()
+  const nombre = ((formData.get('nombre') as string) || '').trim()
+  const back = (formData.get('back') as string) || '/admin/personal'
+  if (!nombre) redirect(back + '?error=' + encodeURIComponent('Ponle un nombre a la cuadrilla.'))
+
+  const { data, error } = await supabase.from('cuadrillas').insert({ nombre }).select('id').single()
+  if (error) redirect(back + '?error=' + encodeURIComponent(error.message))
+
+  await registrarActividad('cuadrilla', data.id, 'crear', { nombre })
+  revalidatePath(back)
+  redirect(back + '?success=cuadrilla')
+}
+
+// Asigna/mueve a la persona a una cuadrilla GLOBAL (persona_directorio). Como
+// una persona nunca está en dos proyectos a la vez, la cuadrilla es propia de
+// la persona. Se sincroniza a sus dotaciones ACTIVAS para que los flujos
+// masivos por cuadrilla (alimentación/colaciones/lavandería/transporte) sigan
+// funcionando sin cambios.
+export async function moverPersonaCuadrilla(personaId: string, formData: FormData) {
+  const back = `/admin/personal/${personaId}`
+  if (!(await puedePlanificar())) redirect(back + '?error=' + encodeURIComponent('Solo quien planifica puede mover de cuadrilla.'))
+  const supabase = await createClient()
+
+  const cuadrillaId = ((formData.get('cuadrilla_id') as string) || '').trim() || null
+
+  const { error } = await supabase
+    .from('persona_directorio')
+    .update({ cuadrilla_id: cuadrillaId })
+    .eq('persona_id', personaId)
+  if (error) redirect(back + '?error=' + encodeURIComponent(error.message))
+
+  // Sincroniza las dotaciones activas de la persona (denormalización hacia abajo).
+  await supabase
+    .from('dotaciones')
+    .update({ cuadrilla_id: cuadrillaId })
+    .eq('persona_id', personaId)
+    .eq('estado', 'activa')
+
+  await registrarActividad('cuadrilla', cuadrillaId, 'mover', { persona_id: personaId })
+  revalidatePath(back)
+  redirect(back + '?success=cuadrilla')
+}

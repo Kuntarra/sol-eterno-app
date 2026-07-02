@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { crearAccesoPersona, guardarPermisos } from '@/app/actions/acceso'
 import { setPersonaActiva } from '@/app/actions/personal'
+import { moverPersonaCuadrilla, crearCuadrilla } from '@/app/actions/cuadrillas'
 import { SubmitButton } from '@/app/_components/submit-button'
-import { ArrowLeft, IdCard, Phone, Globe, Cake, ShieldAlert, FolderKanban, Lock, KeyRound, Save, CheckCircle2, Power } from 'lucide-react'
+import { ArrowLeft, IdCard, Phone, Globe, Cake, ShieldAlert, FolderKanban, Lock, KeyRound, Save, CheckCircle2, Power, UsersRound } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
@@ -30,8 +31,8 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
     : { data: null }
   const esAdmin = prof?.role === 'admin' || !!prof?.is_super_admin
 
-  const [{ data: dir }, { data: dotaciones }, { data: login }, { data: eventos }] = await Promise.all([
-    supabase.from('persona_directorio').select('activa, oficios(nombre)').eq('persona_id', id).maybeSingle(),
+  const [{ data: dir }, { data: dotaciones }, { data: login }, { data: eventos }, { data: cuadrillas }] = await Promise.all([
+    supabase.from('persona_directorio').select('activa, cuadrilla_id, oficios(nombre)').eq('persona_id', id).maybeSingle(),
     supabase
       .from('dotaciones')
       .select('id, proyecto_id, estado, turno_dias_trabajo, turno_dias_descanso, proyectos(nombre)')
@@ -44,6 +45,7 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
       .eq('persona_id', id)
       .order('created_at', { ascending: false })
       .limit(50),
+    supabase.from('cuadrillas').select('id, nombre').eq('activa', true).order('nombre'),
   ])
 
   const eventosVivos = (eventos ?? []).map((e) => ({
@@ -61,6 +63,8 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
   const crearAcceso = crearAccesoPersona.bind(null, id)
   const guardarPerms = guardarPermisos.bind(null, id)
   const toggleActiva = setPersonaActiva.bind(null, id, !(dir?.activa ?? true))
+  const moverCuadrilla = moverPersonaCuadrilla.bind(null, id)
+  const cuadrillaActual = (cuadrillas ?? []).find((c) => c.id === dir?.cuadrilla_id)?.nombre ?? null
 
   const nombre = `${persona.nombres} ${persona.apellido_paterno}${persona.apellido_materno ? ' ' + persona.apellido_materno : ''}`
   const doc = persona.tipo_documento === 'rut' ? formatRut(persona.numero_documento) : persona.numero_documento
@@ -129,6 +133,39 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
               <Power size={15} strokeWidth={2.25} /> {dir?.activa ? 'Marcar inactiva' : 'Reactivar'}
             </SubmitButton>
           </form>
+        </div>
+      )}
+
+      {/* Cuadrilla global (solo administración/planificación) */}
+      {esAdmin && (
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <UsersRound size={15} strokeWidth={2} className="text-[var(--ink)]" />
+            <h2 className="text-sm font-semibold text-[var(--ink)]">Cuadrilla</h2>
+            {cuadrillaActual && <span className="badge badge-green">{cuadrillaActual}</span>}
+            {success === 'cuadrilla' && <span className="text-xs text-green-600 inline-flex items-center gap-1"><CheckCircle2 size={13} strokeWidth={2} /> Actualizada</span>}
+          </div>
+          <p className="text-xs text-[var(--gray-600)] mb-3">La cuadrilla es propia de la persona (no del proyecto) y se aplica a sus asignaciones activas.</p>
+          <form action={moverCuadrilla} className="flex items-end gap-2 flex-wrap">
+            <div>
+              <label className="block text-xs font-medium text-[var(--gray-600)] mb-1">Asignar a</label>
+              <select name="cuadrilla_id" defaultValue={dir?.cuadrilla_id ?? ''} className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]">
+                <option value="">— Sin cuadrilla —</option>
+                {(cuadrillas ?? []).map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+              </select>
+            </div>
+            <SubmitButton pendingText="Guardando…" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg">
+              <Save size={14} strokeWidth={2.25} /> Guardar
+            </SubmitButton>
+          </form>
+          <details className="mt-3">
+            <summary className="text-xs text-[var(--gray-500)] cursor-pointer hover:text-[var(--ink)]">Crear una cuadrilla nueva</summary>
+            <form action={crearCuadrilla} className="flex items-end gap-2 mt-2 flex-wrap">
+              <input type="hidden" name="back" value={`/admin/personal/${id}`} />
+              <input name="nombre" placeholder="Cuadrilla A" className="px-3 py-2 rounded-lg border border-[var(--gray-200)] bg-[var(--surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--navy)]" required />
+              <SubmitButton pendingText="Creando…" className="px-4 py-2 bg-[var(--surface)] border border-[var(--gray-200)] text-[var(--gray-700)] hover:bg-[var(--gray-100)] text-sm font-semibold rounded-lg">Crear</SubmitButton>
+            </form>
+          </details>
         </div>
       )}
 

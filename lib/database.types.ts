@@ -1044,6 +1044,7 @@ export type Database = {
         Row: {
           activa: boolean
           created_at: string
+          cuadrilla_id: string | null
           id: string
           oficio_id: string | null
           persona_id: string
@@ -1052,6 +1053,7 @@ export type Database = {
         Insert: {
           activa?: boolean
           created_at?: string
+          cuadrilla_id?: string | null
           id?: string
           oficio_id?: string | null
           persona_id: string
@@ -1060,6 +1062,7 @@ export type Database = {
         Update: {
           activa?: boolean
           created_at?: string
+          cuadrilla_id?: string | null
           id?: string
           oficio_id?: string | null
           persona_id?: string
