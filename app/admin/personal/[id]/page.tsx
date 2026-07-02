@@ -12,11 +12,11 @@ import { modulosActivosTenant } from '@/lib/tenant'
 import { BitacoraTimeline } from './_components/bitacora-timeline'
 import { TrazaLinea } from './_components/traza-linea'
 
-interface Props { params: Promise<{ id: string }>; searchParams: Promise<{ success?: string; error?: string }> }
+interface Props { params: Promise<{ id: string }>; searchParams: Promise<{ success?: string; error?: string; fecha?: string }> }
 
 export default async function FichaPersonaPage({ params, searchParams }: Props) {
   const { id } = await params
-  const { success, error } = await searchParams
+  const { success, error, fecha: fechaParam } = await searchParams
   const supabase = await createClient()
 
   const { data: persona } = await supabase
@@ -56,10 +56,33 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
     proyectos: e.proyectos as { nombre: string } | null,
   }))
 
-  // Línea de trazabilidad: etapas confirmadas = módulos con al menos un evento.
-  const modulosActivos = await modulosActivosTenant()
-  const confirmados: Record<string, number> = {}
-  for (const e of eventosVivos) confirmados[e.modulo] = (confirmados[e.modulo] ?? 0) + 1
+  // Línea de trazabilidad del DÍA seleccionado: eventos de ese día por módulo +
+  // excepciones abiertas de la persona. Estado por etapa: excepción > confirmado > pendiente.
+  const ORDEN_ETAPAS = ['transporte', 'hotel', 'alimentacion', 'colaciones', 'lavanderia']
+  const fechaTraza = fechaParam || new Date().toISOString().slice(0, 10)
+  const [modulosActivos, { data: eventosDia }, { data: excAbiertas }] = await Promise.all([
+    modulosActivosTenant(),
+    supabase.from('eventos_bitacora').select('modulo, tipo, detalle, autor_nombre, created_at')
+      .eq('persona_id', id).gte('created_at', fechaTraza + 'T00:00:00').lte('created_at', fechaTraza + 'T23:59:59')
+      .order('created_at'),
+    supabase.from('excepciones').select('modulo, tipo, descripcion')
+      .eq('persona_id', id).in('estado', ['abierta', 'en_revision']),
+  ])
+
+  const eventosPorMod = new Map<string, { tipo: string; detalle: string | null; autor: string | null; hora: string }[]>()
+  for (const e of eventosDia ?? []) {
+    const arr = eventosPorMod.get(e.modulo) ?? []
+    arr.push({ tipo: e.tipo, detalle: e.detalle, autor: e.autor_nombre, hora: new Date(e.created_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) })
+    eventosPorMod.set(e.modulo, arr)
+  }
+  const excPorMod = new Map((excAbiertas ?? []).map((x) => [x.modulo, { tipo: x.tipo, descripcion: x.descripcion }]))
+
+  const stages = ORDEN_ETAPAS.filter((k) => modulosActivos.includes(k)).map((k) => {
+    const evs = eventosPorMod.get(k) ?? []
+    const exc = excPorMod.get(k) ?? null
+    const estado: 'confirmado' | 'pendiente' | 'excepcion' = exc ? 'excepcion' : evs.length ? 'confirmado' : 'pendiente'
+    return { key: k, estado, eventos: evs, excepcion: exc }
+  })
 
   // Permisos actuales (alcance general) del login de la persona
   const permisos: Record<string, string> = {}
@@ -183,7 +206,7 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
       )}
 
       {/* Línea de trazabilidad horizontal: recorrido por la cadena de servicios */}
-      <TrazaLinea modulosActivos={modulosActivos} confirmados={confirmados} />
+      <TrazaLinea stages={stages} fecha={fechaTraza} personaId={id} />
 
       {/* Bitácora viva: timeline de eventos en terreno */}
       <BitacoraTimeline eventos={eventosVivos} />
