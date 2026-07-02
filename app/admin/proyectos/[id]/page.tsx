@@ -31,7 +31,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
 
   if (!proyecto) notFound()
 
-  const [{ data: directorio }, { data: dotaciones }, { data: proveedores }] = await Promise.all([
+  const [{ data: directorio }, { data: dotaciones }, { data: proveedores }, { data: tiposTurno }] = await Promise.all([
     supabase
       .from('persona_directorio')
       .select('persona_id, personas(nombres, apellido_paterno, apellido_materno, tipo_documento, numero_documento)')
@@ -46,6 +46,11 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
       .select('*, proyecto_proveedor_recursos(id, tipo, cantidad, notas)')
       .eq('proyecto_id', id)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('tipos_turno')
+      .select('id, nombre, dias_trabajo, dias_descanso')
+      .eq('activa', true)
+      .order('nombre'),
   ])
 
   // Marcas para el match: logo del Mandante (dueño) + logos de los proveedores
@@ -118,7 +123,7 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
       {/* Planificar persona */}
       <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6 mb-8">
         <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Asignar persona al proyecto</h2>
-        <form action={createDotacionForProject} className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+        <form action={createDotacionForProject} className="grid grid-cols-1 md:grid-cols-7 gap-3 items-end">
           <div className="md:col-span-2">
             <label htmlFor="persona_id" className={LABEL}>Persona *</label>
             <select id="persona_id" name="persona_id" required className={INPUT} defaultValue="">
@@ -131,6 +136,15 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
                   </option>
                 )
               })}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="tipo_turno_id" className={LABEL}>Tipo de turno</label>
+            <select id="tipo_turno_id" name="tipo_turno_id" className={INPUT} defaultValue="">
+              <option value="">— Manual —</option>
+              {(tiposTurno ?? []).map((t) => (
+                <option key={t.id} value={t.id}>{t.nombre} ({t.dias_trabajo}x{t.dias_descanso})</option>
+              ))}
             </select>
           </div>
           <div>
@@ -149,11 +163,12 @@ export default async function ProyectoDetallePage({ params, searchParams }: Prop
             <label htmlFor="fecha_fin_contrato" className={LABEL}>Fin contrato</label>
             <input id="fecha_fin_contrato" name="fecha_fin_contrato" type="date" defaultValue={proyecto.fecha_fin_estimada ?? undefined} className={INPUT} />
           </div>
-          <div className="md:col-span-6">
+          <div className="md:col-span-7 flex items-center gap-3 flex-wrap">
             <button type="submit" className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-sm font-semibold rounded-lg transition-colors">
               <Plus size={15} strokeWidth={2.25} />
               Asignar y generar rotaciones
             </button>
+            <span className="text-xs text-[var(--gray-500)]">Si eliges un tipo de turno, puedes dejar los días en blanco: se toman del catálogo.</span>
           </div>
         </form>
         {!directorio?.length && (

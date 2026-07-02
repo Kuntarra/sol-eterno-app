@@ -28,6 +28,7 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
       { href: '/admin/personal',   label: 'Personal',   exact: false, icon: <PersonalIcon />, modulo: 'personal' },
       { href: '/admin/proyectos',  label: 'Proyectos',  exact: false, icon: <ProyectoIcon />, adminOnly: true },
       { href: '/admin/planificacion', label: 'Planificación', exact: false, icon: <PlanIcon />, adminOnly: true },
+      { href: '/admin/turnos',     label: 'Turnos',     exact: false, icon: <TurnosIcon />, adminOnly: true },
     ],
   },
   {
@@ -286,4 +287,5 @@ function LavanderiaIcon() { return <Shirt {...ICON} /> }
 function RolesIcon() { return <ShieldCheck {...ICON} /> }
 function ActivityIcon() { return <Activity {...ICON} /> }
 function CostosIcon() { return <Coins {...ICON} /> }
+function TurnosIcon() { return <CalendarRange {...ICON} /> }
 function MarcaIcon() { return <ImageIcon {...ICON} /> }

@@ -403,6 +403,7 @@ export type Database = {
           persona_id: string
           proyecto_id: string | null
           tenant_id: string
+          tipo_turno_id: string | null
           turno_dias_descanso: number | null
           turno_dias_trabajo: number | null
         }
@@ -418,6 +419,7 @@ export type Database = {
           persona_id: string
           proyecto_id?: string | null
           tenant_id?: string
+          tipo_turno_id?: string | null
           turno_dias_descanso?: number | null
           turno_dias_trabajo?: number | null
         }
@@ -433,6 +435,7 @@ export type Database = {
           persona_id?: string
           proyecto_id?: string | null
           tenant_id?: string
+          tipo_turno_id?: string | null
           turno_dias_descanso?: number | null
           turno_dias_trabajo?: number | null
         }
@@ -749,6 +752,50 @@ export type Database = {
           },
           {
             foreignKeyName: "lavanderia_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tipos_turno: {
+        Row: {
+          activa: boolean
+          created_at: string
+          dias_descanso: number
+          dias_trabajo: number
+          horas: number | null
+          id: string
+          jornada: string
+          nombre: string
+          tenant_id: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          dias_descanso?: number
+          dias_trabajo: number
+          horas?: number | null
+          id?: string
+          jornada?: string
+          nombre: string
+          tenant_id?: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          dias_descanso?: number
+          dias_trabajo?: number
+          horas?: number | null
+          id?: string
+          jornada?: string
+          nombre?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tipos_turno_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

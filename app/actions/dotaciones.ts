@@ -16,8 +16,23 @@ export async function createDotacion(proyectoId: string, formData: FormData) {
   const personaId = formData.get('persona_id') as string
   if (!personaId) redirect(back + '?error=' + encodeURIComponent('Selecciona una persona.'))
 
-  const diasTrabajo = parseInt((formData.get('turno_dias_trabajo') as string) || '', 10)
-  const diasDescanso = parseInt((formData.get('turno_dias_descanso') as string) || '', 10)
+  let diasTrabajo: number | null = Number.isFinite(parseInt((formData.get('turno_dias_trabajo') as string) || '', 10)) ? parseInt((formData.get('turno_dias_trabajo') as string), 10) : null
+  let diasDescanso: number | null = Number.isFinite(parseInt((formData.get('turno_dias_descanso') as string) || '', 10)) ? parseInt((formData.get('turno_dias_descanso') as string), 10) : null
+  const tipoTurnoId = (formData.get('tipo_turno_id') as string) || null
+
+  // Si se eligió un tipo de turno del catálogo y no se ingresaron días a mano,
+  // se denormalizan desde el catálogo (así la ficha y las rotaciones los usan).
+  if (tipoTurnoId && diasTrabajo === null) {
+    const { data: tt } = await supabase
+      .from('tipos_turno')
+      .select('dias_trabajo, dias_descanso')
+      .eq('id', tipoTurnoId)
+      .maybeSingle()
+    if (tt) {
+      diasTrabajo = tt.dias_trabajo
+      diasDescanso = diasDescanso ?? tt.dias_descanso
+    }
+  }
 
   // Oficio heredado del directorio de la persona
   const { data: dir } = await supabase
@@ -32,8 +47,9 @@ export async function createDotacion(proyectoId: string, formData: FormData) {
       persona_id:            personaId,
       proyecto_id:           proyectoId,
       oficio_id:             dir?.oficio_id ?? null,
-      turno_dias_trabajo:    Number.isFinite(diasTrabajo) ? diasTrabajo : null,
-      turno_dias_descanso:   Number.isFinite(diasDescanso) ? diasDescanso : null,
+      tipo_turno_id:         tipoTurnoId,
+      turno_dias_trabajo:    diasTrabajo,
+      turno_dias_descanso:   diasDescanso,
       fecha_inicio_contrato: (formData.get('fecha_inicio_contrato') as string) || null,
       fecha_fin_contrato:    (formData.get('fecha_fin_contrato') as string) || null,
       estado:                'activa',
