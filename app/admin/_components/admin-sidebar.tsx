@@ -17,6 +17,7 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
     items: [
       { href: '/admin',            label: 'Dashboard',   exact: true,  icon: <DashIcon />, adminOnly: true },
       { href: '/admin/conectados', label: 'Conectados',  exact: false, icon: <Link2 size={18} strokeWidth={1.75} />, proveedorOnly: true },
+      { href: '/admin/estado',     label: 'Estado',      exact: false, icon: <DashIcon />, adminOnly: true },
       { href: '/admin/reportes',   label: 'Reportes',    exact: false, icon: <ChartIcon />, adminOnly: true },
       { href: '/admin/costos',     label: 'Costos',      exact: false, icon: <CostosIcon />, adminOnly: true },
     ],
