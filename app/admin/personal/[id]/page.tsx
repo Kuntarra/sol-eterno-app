@@ -56,33 +56,57 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
     proyectos: e.proyectos as { nombre: string } | null,
   }))
 
-  // Línea de trazabilidad del DÍA seleccionado: eventos de ese día por módulo +
-  // excepciones abiertas de la persona. Estado por etapa: excepción > confirmado > pendiente.
-  const ORDEN_ETAPAS = ['transporte', 'hotel', 'alimentacion', 'colaciones', 'lavanderia']
+  // Línea de trazabilidad por PUNTO (lugar) del día seleccionado: bajo cada lugar
+  // se apila lo que la persona tiene planificado ahí (pernocta, comidas según su
+  // posición hotel/faena, colación, lavandería). El transporte conecta lugares.
   const fechaTraza = fechaParam || new Date().toISOString().slice(0, 10)
-  const [modulosActivos, { data: eventosDia }, { data: excAbiertas }] = await Promise.all([
-    modulosActivosTenant(),
-    supabase.from('eventos_bitacora').select('modulo, tipo, detalle, autor_nombre, created_at')
-      .eq('persona_id', id).gte('created_at', fechaTraza + 'T00:00:00').lte('created_at', fechaTraza + 'T23:59:59')
-      .order('created_at'),
-    supabase.from('excepciones').select('modulo, tipo, descripcion')
-      .eq('persona_id', id).in('estado', ['abierta', 'en_revision']),
-  ])
+  const dayStart = fechaTraza + 'T00:00:00'
+  const dayEnd = fechaTraza + 'T23:59:59'
+  const dotIds = (dotaciones ?? []).map((d) => d.id)
 
-  const eventosPorMod = new Map<string, { tipo: string; detalle: string | null; autor: string | null; hora: string }[]>()
-  for (const e of eventosDia ?? []) {
-    const arr = eventosPorMod.get(e.modulo) ?? []
-    arr.push({ tipo: e.tipo, detalle: e.detalle, autor: e.autor_nombre, hora: new Date(e.created_at).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) })
-    eventosPorMod.set(e.modulo, arr)
+  const [alimRes, staysRes, colRes, lavRes, tpRes, evtRes, excRes] = dotIds.length
+    ? await Promise.all([
+        supabase.from('plan_alimentacion').select('desayuno, almuerzo, cena').in('dotacion_id', dotIds).eq('fecha', fechaTraza),
+        supabase.from('stays').select('id').in('dotacion_id', dotIds).lte('checked_in_at', dayEnd).or(`checked_out_at.is.null,checked_out_at.gte.${fechaTraza}`),
+        supabase.from('colaciones').select('id').in('dotacion_id', dotIds).eq('fecha', fechaTraza),
+        supabase.from('lavanderia_bolsas').select('id').in('dotacion_id', dotIds).eq('fecha_entrega', fechaTraza),
+        supabase.from('traslado_pasajeros').select('subio_at, traslados!inner(fecha)').eq('persona_id', id).eq('traslados.fecha', fechaTraza),
+        supabase.from('eventos_bitacora').select('modulo').eq('persona_id', id).gte('created_at', dayStart).lte('created_at', dayEnd),
+        supabase.from('excepciones').select('modulo').eq('persona_id', id).in('estado', ['abierta', 'en_revision']),
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }]
+
+  const confSet = new Set((evtRes.data ?? []).map((e) => (e as { modulo: string }).modulo))
+  const excSet = new Set((excRes.data ?? []).map((e) => (e as { modulo: string }).modulo))
+  const estadoDe = (mod: string): 'planificado' | 'confirmado' | 'excepcion' =>
+    excSet.has(mod) ? 'excepcion' : confSet.has(mod) ? 'confirmado' : 'planificado'
+
+  // Comidas por posición (hotel / faena) desde plan_alimentacion.
+  const COMIDA = [['desayuno', 'Desayuno'], ['almuerzo', 'Almuerzo'], ['cena', 'Cena']] as const
+  const comidasEn = (pos: string) => {
+    const out: string[] = []
+    for (const [campo, label] of COMIDA) {
+      if ((alimRes.data ?? []).some((r) => (r as Record<string, string>)[campo] === pos)) out.push(label)
+    }
+    return out
   }
-  const excPorMod = new Map((excAbiertas ?? []).map((x) => [x.modulo, { tipo: x.tipo, descripcion: x.descripcion }]))
 
-  const stages = ORDEN_ETAPAS.filter((k) => modulosActivos.includes(k)).map((k) => {
-    const evs = eventosPorMod.get(k) ?? []
-    const exc = excPorMod.get(k) ?? null
-    const estado: 'confirmado' | 'pendiente' | 'excepcion' = exc ? 'excepcion' : evs.length ? 'confirmado' : 'pendiente'
-    return { key: k, estado, eventos: evs, excepcion: exc }
-  })
+  const alojActs = [
+    ...((staysRes.data ?? []).length ? [{ label: 'Pernocta', icon: 'pernocta', estado: estadoDe('hotel') }] : []),
+    ...comidasEn('hotel').map((l) => ({ label: l, icon: 'comida', estado: estadoDe('alimentacion') })),
+    ...((lavRes.data ?? []).length ? [{ label: 'Lavandería', icon: 'lavanderia', estado: estadoDe('lavanderia') }] : []),
+  ]
+  const faenaActs = [
+    ...comidasEn('faena').map((l) => ({ label: l, icon: 'comida', estado: estadoDe('alimentacion') })),
+    ...comidasEn('colacion').map((l) => ({ label: `${l} (vianda)`, icon: 'colacion', estado: estadoDe('alimentacion') })),
+    ...((colRes.data ?? []).length ? [{ label: 'Colación', icon: 'colacion', estado: estadoDe('colaciones') }] : []),
+  ]
+  const puntos = [
+    ...(alojActs.length ? [{ key: 'aloj', nombre: 'Alojamiento', icon: 'aloj' as const, actividades: alojActs }] : []),
+    ...(faenaActs.length ? [{ key: 'faena', nombre: 'Faena', icon: 'faena' as const, actividades: faenaActs }] : []),
+  ]
+  const hayTraslado = (tpRes.data ?? []).length > 0
+  const trasladoConfirmado = (tpRes.data ?? []).some((t) => (t as { subio_at: string | null }).subio_at !== null)
 
   // Permisos actuales (alcance general) del login de la persona
   const permisos: Record<string, string> = {}
@@ -205,8 +229,8 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
         </div>
       )}
 
-      {/* Línea de trazabilidad horizontal: recorrido por la cadena de servicios */}
-      <TrazaLinea stages={stages} fecha={fechaTraza} personaId={id} />
+      {/* Línea de trazabilidad por lugar: qué hace la persona en cada punto */}
+      <TrazaLinea puntos={puntos} hayTraslado={hayTraslado} trasladoConfirmado={trasladoConfirmado} fecha={fechaTraza} personaId={id} />
 
       {/* Bitácora viva: timeline de eventos en terreno */}
       <BitacoraTimeline eventos={eventosVivos} />
