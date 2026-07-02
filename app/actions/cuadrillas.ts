@@ -51,3 +51,26 @@ export async function moverPersonaCuadrilla(personaId: string, formData: FormDat
   revalidatePath(back)
   redirect(back + '?success=cuadrilla')
 }
+
+// Igual que moverPersonaCuadrilla pero sin redirect: la usa el tablero de
+// arrastre (/admin/cuadrillas) para reasignar sin recargar la página.
+export async function setCuadrillaPersona(personaId: string, cuadrillaId: string | null): Promise<{ ok: boolean; error?: string }> {
+  if (!(await puedePlanificar())) return { ok: false, error: 'No autorizado.' }
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('persona_directorio')
+    .update({ cuadrilla_id: cuadrillaId })
+    .eq('persona_id', personaId)
+  if (error) return { ok: false, error: error.message }
+
+  await supabase
+    .from('dotaciones')
+    .update({ cuadrilla_id: cuadrillaId })
+    .eq('persona_id', personaId)
+    .eq('estado', 'activa')
+
+  await registrarActividad('cuadrilla', cuadrillaId, 'mover', { persona_id: personaId })
+  revalidatePath('/admin/cuadrillas')
+  return { ok: true }
+}

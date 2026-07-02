@@ -30,6 +30,7 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
       { href: '/admin/planificacion', label: 'Planificación', exact: false, icon: <PlanIcon />, adminOnly: true },
       { href: '/admin/turnos',     label: 'Turnos',     exact: false, icon: <TurnosIcon />, adminOnly: true },
       { href: '/admin/puntos',     label: 'Puntos',     exact: false, icon: <PuntosIcon />, adminOnly: true },
+      { href: '/admin/cuadrillas', label: 'Cuadrillas', exact: false, icon: <UserIcon />,   adminOnly: true },
     ],
   },
   {
