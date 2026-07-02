@@ -851,6 +851,62 @@ export type Database = {
           },
         ]
       }
+      excepciones: {
+        Row: {
+          actualizada_at: string | null
+          created_at: string
+          descripcion: string | null
+          dotacion_id: string | null
+          estado: string
+          id: string
+          modulo: string
+          persona_id: string | null
+          proyecto_id: string | null
+          resolucion: string | null
+          responsable_nombre: string | null
+          tenant_id: string
+          tipo: string
+        }
+        Insert: {
+          actualizada_at?: string | null
+          created_at?: string
+          descripcion?: string | null
+          dotacion_id?: string | null
+          estado?: string
+          id?: string
+          modulo: string
+          persona_id?: string | null
+          proyecto_id?: string | null
+          resolucion?: string | null
+          responsable_nombre?: string | null
+          tenant_id?: string
+          tipo: string
+        }
+        Update: {
+          actualizada_at?: string | null
+          created_at?: string
+          descripcion?: string | null
+          dotacion_id?: string | null
+          estado?: string
+          id?: string
+          modulo?: string
+          persona_id?: string | null
+          proyecto_id?: string | null
+          resolucion?: string | null
+          responsable_nombre?: string | null
+          tenant_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "excepciones_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       costos_tarifas: {
         Row: {
           activa: boolean

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getMyTenantId } from '@/lib/tenant'
+import { getMyTenantId, modulosActivosTenant } from '@/lib/tenant'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { MODULO_RUTA, type ModuloKey } from '@/lib/modulos'
@@ -17,6 +17,19 @@ async function redirigirSubusuario() {
   redirect(primer ? MODULO_RUTA[primer] : '/admin/conectados')
 }
 
+// Home adaptativo: este Dashboard es hotelero (huéspedes/propiedades/check-ins).
+// Un cliente que no opera hotel (proveedor, o Mandante sin el módulo Alojamiento)
+// aterriza en "Operación" (el panel propio de Dotia), no en un panel de hotel vacío.
+async function redirigirSiNoEsHotel() {
+  const supabase = await createClient()
+  const tenantId = await getMyTenantId()
+  const [{ data: t }, activos] = await Promise.all([
+    supabase.from('tenants').select('tipo').eq('id', tenantId).maybeSingle(),
+    modulosActivosTenant(),
+  ])
+  if (t?.tipo === 'proveedor' || !activos.includes('hotel')) redirect('/admin/dotia')
+}
+
 function relativeTime(iso: string | null) {
   if (!iso) return ''
   const d   = new Date(iso)
@@ -31,6 +44,7 @@ function relativeTime(iso: string | null) {
 
 export default async function AdminDashboard() {
   await redirigirSubusuario()
+  await redirigirSiNoEsHotel()
   const supabase = await createClient()
 
   // Todo el panel se acota a MI empresa: el super admin ve (RLS) las filas de

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { logout } from '@/app/actions/auth'
 import { MobileBrand } from '@/app/_components/mobile-brand'
-import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, Plus, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck, Link2, CalendarRange, Image as ImageIcon, Activity, Coins, MapPin } from 'lucide-react'
+import { LayoutGrid, CalendarDays, BarChart3, Building2, Briefcase, Users, LogOut, Menu, X, Bell, IdCard, FolderKanban, Bus, UtensilsCrossed, Package, Shirt, ShieldCheck, Link2, CalendarRange, Image as ImageIcon, Activity, Coins, MapPin, TriangleAlert } from 'lucide-react'
 
 // `modulo` = clave del módulo (user_modulos) para filtrar el menú de sub-usuarios.
 // `adminOnly` = visible solo para admin. Ítems sin ninguna marca = siempre visibles.
@@ -18,6 +18,7 @@ const NAV_GROUPS: { label: string; items: NavItemDef[] }[] = [
       { href: '/admin',            label: 'Dashboard',   exact: true,  icon: <DashIcon />, adminOnly: true },
       { href: '/admin/conectados', label: 'Conectados',  exact: false, icon: <Link2 size={18} strokeWidth={1.75} />, proveedorOnly: true },
       { href: '/admin/estado',     label: 'Estado',      exact: false, icon: <DashIcon />, adminOnly: true },
+      { href: '/admin/excepciones', label: 'Excepciones', exact: false, icon: <ExcepcionIcon />, adminOnly: true },
       { href: '/admin/reportes',   label: 'Reportes',    exact: false, icon: <ChartIcon />, adminOnly: true },
       { href: '/admin/costos',     label: 'Costos',      exact: false, icon: <CostosIcon />, adminOnly: true },
     ],
@@ -153,21 +154,6 @@ function SidebarContent({ fullName, role, allowedModulos, tenantTipo, isSuper, t
         ))}
       </nav>
 
-      {/* CTA Nueva Propiedad (solo admin) */}
-      {role === 'admin' && (
-        <div className="px-3 pb-3">
-          <a href="/admin/propiedades/nueva"
-            className="btn-amber-cta flex items-center justify-center gap-2 w-full py-2.5 rounded-xl
-                       bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-[var(--navy)]
-                       text-[13px] font-bold transition-all duration-150
-                       shadow-[0_4px_12px_rgb(224_163_58/0.35)] hover:shadow-[0_6px_18px_rgb(224_163_58/0.45)]
-                       hover:-translate-y-px">
-            <Plus size={15} strokeWidth={2.5} />
-            Nueva propiedad
-          </a>
-        </div>
-      )}
-
       {/* Usuario + Cerrar sesión */}
       <div className="px-4 py-3 border-t border-white/8 space-y-2">
         <div className="flex items-center gap-3">
@@ -292,4 +278,5 @@ function ActivityIcon() { return <Activity {...ICON} /> }
 function CostosIcon() { return <Coins {...ICON} /> }
 function TurnosIcon() { return <CalendarRange {...ICON} /> }
 function PuntosIcon() { return <MapPin {...ICON} /> }
+function ExcepcionIcon() { return <TriangleAlert {...ICON} /> }
 function MarcaIcon() { return <ImageIcon {...ICON} /> }
