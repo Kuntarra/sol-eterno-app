@@ -756,6 +756,47 @@ export type Database = {
           },
         ]
       }
+      costos_tarifas: {
+        Row: {
+          activa: boolean
+          created_at: string
+          id: string
+          modulo: string
+          tarifa_clp: number
+          tenant_id: string
+          unidad: string
+          vigencia_desde: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          id?: string
+          modulo: string
+          tarifa_clp: number
+          tenant_id?: string
+          unidad: string
+          vigencia_desde?: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          id?: string
+          modulo?: string
+          tarifa_clp?: number
+          tenant_id?: string
+          unidad?: string
+          vigencia_desde?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costos_tarifas_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lavanderia_planillas: {
         Row: {
           activa: boolean
@@ -2202,6 +2243,16 @@ export type Database = {
           persona_id: string
           tipo_documento: string
           total: number
+        }[]
+      }
+      costos_resumen: {
+        Args: { p_desde: string; p_hasta: string; p_proyecto?: string }
+        Returns: {
+          modulo: string
+          unidad: string
+          cantidad_confirmada: number
+          tarifa_clp: number
+          subtotal_clp: number
         }[]
       }
       dotaciones_vinculadas: { Args: never; Returns: string[] }
