@@ -6,18 +6,12 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMyTenantId } from '@/lib/tenant'
 import { MODULO_KEYS } from '@/lib/modulos'
-
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-  const { data: prof } = await supabase.from('user_profiles').select('role').eq('id', user.id).single()
-  if (prof?.role !== 'admin') redirect('/admin')
-}
+import { requireTitular } from '@/lib/rbac'
 
 // Crea el login (correo/clave) ligado a la ficha persona.
+// Alta de usuarios: solo el Titular (hoy, todo admin existente ya lo es).
 export async function crearAccesoPersona(personaId: string, formData: FormData) {
-  await requireAdmin()
+  await requireTitular()
   const back = `/admin/personal/${personaId}`
   const email = ((formData.get('email') as string) || '').trim().toLowerCase()
   const password = (formData.get('password') as string) || ''
@@ -43,8 +37,9 @@ export async function crearAccesoPersona(personaId: string, formData: FormData) 
 }
 
 // Guarda los permisos por módulo (checkbox + nivel) del login de la persona.
+// Baja/ajuste de accesos: solo el Titular.
 export async function guardarPermisos(personaId: string, formData: FormData) {
-  await requireAdmin()
+  await requireTitular()
   const back = `/admin/personal/${personaId}`
   const supabase = await createClient()
 
@@ -73,4 +68,24 @@ export async function guardarPermisos(personaId: string, formData: FormData) {
 
   revalidatePath(back)
   redirect(back + '?success=permisos')
+}
+
+// Marca el rol de cuenta de un usuario: Titular, Planificador y el opt-in
+// ve_costos. Solo el Titular puede tocar estos flags (evita que un
+// planificador se auto-ascienda).
+export async function actualizarRolCuenta(userId: string, formData: FormData) {
+  await requireTitular()
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('user_profiles')
+    .update({
+      es_titular: formData.get('es_titular') === 'on',
+      es_planificador: formData.get('es_planificador') === 'on',
+      ve_costos: formData.get('ve_costos') === 'on',
+    })
+    .eq('id', userId)
+    .eq('tenant_id', await getMyTenantId())
+  if (error) redirect('/admin/roles?error=' + encodeURIComponent(error.message))
+  revalidatePath('/admin/roles')
+  redirect('/admin/roles?success=rol')
 }

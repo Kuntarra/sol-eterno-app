@@ -76,3 +76,39 @@ export async function requireAdminPage(): Promise<void> {
     .single()
   if (prof?.role !== 'admin' && !prof?.is_super_admin) redirect('/admin')
 }
+
+// ¿Es Titular (dueño) del tenant? Escalón por sobre Admin: hoy todo admin
+// existente quedó marcado como titular (backfill), pero el flag es propio
+// e independiente de `role` para poder tener admins que no sean titulares.
+export async function esTitular(): Promise<boolean> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+  const { data: prof } = await supabase.from('user_profiles').select('es_titular, is_super_admin').eq('id', user.id).maybeSingle()
+  return !!prof?.es_titular || !!prof?.is_super_admin
+}
+
+// ¿Puede ver Costos? Titular, opt-in explícito (ve_costos) o super admin.
+export async function puedeVerCostos(): Promise<boolean> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+  const { data: prof } = await supabase.from('user_profiles').select('es_titular, ve_costos, is_super_admin').eq('id', user.id).maybeSingle()
+  return !!prof?.es_titular || !!prof?.ve_costos || !!prof?.is_super_admin
+}
+
+// ¿Puede PLANIFICAR (dotaciones, rotaciones)? Administración (admin/titular/
+// super) o un sub-usuario marcado explícitamente como planificador.
+export async function puedePlanificar(): Promise<boolean> {
+  if (await esAdministrador()) return true
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+  const { data: prof } = await supabase.from('user_profiles').select('es_planificador').eq('id', user.id).maybeSingle()
+  return !!prof?.es_planificador
+}
+
+// Guard de acción solo-Titular: alta/baja de usuarios y su gestión de acceso.
+export async function requireTitular(): Promise<void> {
+  if (!(await esTitular())) redirect('/admin')
+}

@@ -3,12 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { esAdministrador } from '@/lib/rbac'
+import { puedePlanificar } from '@/lib/rbac'
 
 // Editar una rotación a mano (marca ajustada_manual = true)
 export async function updateRotacion(proyectoId: string, dotId: string, rotId: string, formData: FormData) {
   const back = `/admin/proyectos/${proyectoId}/dotacion/${dotId}`
-  if (!(await esAdministrador())) redirect(back + '?error=' + encodeURIComponent('Solo la administración puede editar rotaciones.'))
+  if (!(await puedePlanificar())) redirect(back + '?error=' + encodeURIComponent('Solo quien planifica puede editar rotaciones.'))
   const supabase = await createClient()
   await supabase.from('rotaciones').update({
     fecha_inicio:       (formData.get('fecha_inicio') as string) || null,
@@ -25,7 +25,7 @@ export async function updateRotacion(proyectoId: string, dotId: string, rotId: s
 
 // Recalcular las rotaciones siguientes a partir de un número
 export async function recalcularSiguientes(proyectoId: string, dotId: string, desde: number) {
-  if (!(await esAdministrador())) redirect(`/admin/proyectos/${proyectoId}/dotacion/${dotId}?error=` + encodeURIComponent('Solo la administración puede recalcular rotaciones.'))
+  if (!(await puedePlanificar())) redirect(`/admin/proyectos/${proyectoId}/dotacion/${dotId}?error=` + encodeURIComponent('Solo quien planifica puede recalcular rotaciones.'))
   const supabase = await createClient()
   await supabase.rpc('recalcular_rotaciones', { p_dotacion_id: dotId, p_desde: desde })
   revalidatePath(`/admin/proyectos/${proyectoId}/dotacion/${dotId}`)

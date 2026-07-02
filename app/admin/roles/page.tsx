@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { assignModulo, removeModulo } from '@/app/actions/roles'
-import { ShieldCheck, X } from 'lucide-react'
+import { actualizarRolCuenta } from '@/app/actions/acceso'
+import { SubmitButton } from '@/app/_components/submit-button'
+import { ShieldCheck, X, Crown } from 'lucide-react'
 import { MODULOS } from '@/lib/modulos'
 
 interface Props { searchParams: Promise<{ error?: string; success?: string }> }
@@ -18,10 +20,11 @@ const NIVEL_BADGE: Record<string, string> = {
 export default async function RolesPage({ searchParams }: Props) {
   const { error, success } = await searchParams
   const supabase = await createClient()
-  const [{ data: usuarios }, { data: asignaciones }, { data: proyectos }] = await Promise.all([
+  const [{ data: usuarios }, { data: asignaciones }, { data: proyectos }, { data: cuentas }] = await Promise.all([
     supabase.from('user_profiles').select('id, full_name, role').neq('role', 'admin').order('full_name'),
     supabase.from('user_modulos').select('*, proyectos(nombre)').order('created_at', { ascending: false }),
     supabase.from('proyectos').select('id, nombre').order('nombre'),
+    supabase.from('user_profiles').select('id, full_name, role, es_titular, es_planificador, ve_costos').order('role').order('full_name'),
   ])
 
   const nombreUsuario = (id: string) => (usuarios ?? []).find((u) => u.id === id)?.full_name ?? id.slice(0, 8)
@@ -36,7 +39,46 @@ export default async function RolesPage({ searchParams }: Props) {
 
       <div className="px-8 pb-8">
         {error && <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{decodeURIComponent(error)}</div>}
-        {success && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Asignación guardada.</div>}
+        {success === 'rol' && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Rol de cuenta guardado.</div>}
+        {success && success !== 'rol' && <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">Asignación guardada.</div>}
+
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-5 mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Crown size={15} strokeWidth={2} className="text-[var(--ink)]" />
+            <h2 className="text-sm font-semibold text-[var(--ink)]">Rol de cuenta</h2>
+          </div>
+          <p className="text-xs text-[var(--gray-600)] mb-4">Titular (gestiona usuarios y accesos) · Planificador (dotaciones y rotaciones sin ser Titular) · Ve costos (acceso al módulo Costos).</p>
+          <div className="divide-y divide-[var(--gray-100)]">
+            {(cuentas ?? []).map((c) => {
+              const guardar = actualizarRolCuenta.bind(null, c.id)
+              return (
+                <form key={c.id} action={guardar} className="flex items-center justify-between gap-4 py-3 flex-wrap">
+                  <div className="flex items-center gap-2 w-48 shrink-0">
+                    <span className="text-sm font-medium text-[var(--ink)] truncate">{c.full_name ?? c.id.slice(0, 8)}</span>
+                    <span className="badge badge-gray shrink-0">{c.role}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="checkbox" name="es_titular" defaultChecked={!!c.es_titular} className="w-4 h-4 accent-[var(--navy)]" />
+                      <span className="text-sm text-[var(--ink)]">Titular</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="checkbox" name="es_planificador" defaultChecked={!!c.es_planificador} className="w-4 h-4 accent-[var(--navy)]" />
+                      <span className="text-sm text-[var(--ink)]">Planificador</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="checkbox" name="ve_costos" defaultChecked={!!c.ve_costos} className="w-4 h-4 accent-[var(--navy)]" />
+                      <span className="text-sm text-[var(--ink)]">Ve costos</span>
+                    </label>
+                  </div>
+                  <SubmitButton pendingText="Guardando…" className="px-3 py-1.5 bg-[var(--navy)] hover:bg-[var(--navy-dark)] text-white text-xs font-semibold rounded-lg">
+                    Guardar
+                  </SubmitButton>
+                </form>
+              )
+            })}
+          </div>
+        </div>
 
         {!usuarios?.length ? (
           <div className="bg-[var(--surface)] rounded-2xl border border-[var(--gray-200)] p-12 text-center">

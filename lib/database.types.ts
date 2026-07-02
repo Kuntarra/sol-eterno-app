@@ -2038,34 +2038,43 @@ export type Database = {
           company_id: string | null
           created_at: string | null
           email: string | null
+          es_planificador: boolean
+          es_titular: boolean
           full_name: string | null
           id: string
           is_super_admin: boolean
           persona_id: string | null
           role: string
           tenant_id: string
+          ve_costos: boolean
         }
         Insert: {
           company_id?: string | null
           created_at?: string | null
           email?: string | null
+          es_planificador?: boolean
+          es_titular?: boolean
           full_name?: string | null
           id: string
           is_super_admin?: boolean
           persona_id?: string | null
           role: string
           tenant_id?: string
+          ve_costos?: boolean
         }
         Update: {
           company_id?: string | null
           created_at?: string | null
           email?: string | null
+          es_planificador?: boolean
+          es_titular?: boolean
           full_name?: string | null
           id?: string
           is_super_admin?: boolean
           persona_id?: string | null
           role?: string
           tenant_id?: string
+          ve_costos?: boolean
         }
         Relationships: [
           {
@@ -2152,6 +2161,7 @@ export type Database = {
         }[]
       }
       dotaciones_vinculadas: { Args: never; Returns: string[] }
+      es_titular: { Args: never; Returns: boolean }
       find_or_create_persona: {
         Args: {
           p_apellido_materno?: string
@@ -2179,6 +2189,7 @@ export type Database = {
       nivel_modulo: { Args: { p_modulo: string }; Returns: string }
       personas_vinculadas: { Args: never; Returns: string[] }
       proyectos_vinculados: { Args: never; Returns: string[] }
+      puede_ver_costos: { Args: never; Returns: boolean }
       puedo_acceder_proyecto: { Args: { p_proyecto: string }; Returns: boolean }
       recalcular_rotaciones: {
         Args: { p_desde: number; p_dotacion_id: string }
