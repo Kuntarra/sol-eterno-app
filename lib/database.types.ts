@@ -2353,6 +2353,20 @@ export type Database = {
           subtotal_clp: number
         }[]
       }
+      actualizar_persona: {
+        Args: {
+          p_persona_id: string
+          p_nombres: string
+          p_apellido_paterno: string
+          p_apellido_materno?: string
+          p_telefono?: string
+          p_nacionalidad?: string
+          p_fecha_nacimiento?: string
+          p_contacto_emergencia_nombre?: string
+          p_contacto_emergencia_telefono?: string
+        }
+        Returns: undefined
+      }
       dotaciones_vinculadas: { Args: never; Returns: string[] }
       es_titular: { Args: never; Returns: boolean }
       find_or_create_persona: {

@@ -98,7 +98,13 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
 
       {/* Datos */}
       <div className="bg-[var(--surface)] rounded-xl border border-[var(--gray-200)] p-6 mb-6">
-        <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Datos de la persona</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-[var(--ink)]">Datos de la persona</h2>
+          <div className="flex items-center gap-3">
+            {success === 'editado' && <span className="text-xs text-green-600 inline-flex items-center gap-1"><CheckCircle2 size={13} strokeWidth={2} /> Datos actualizados</span>}
+            {esAdmin && <Link href={`/admin/personal/${id}/editar`} className="text-xs font-semibold text-[var(--ink)] hover:underline">Editar</Link>}
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
           {datos.map((d) => (
             <div key={d.label} className="flex items-center gap-3">

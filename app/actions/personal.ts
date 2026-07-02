@@ -38,6 +38,37 @@ export async function setPersonaActiva(personaId: string, activa: boolean) {
   redirect(back + '?success=estado')
 }
 
+// Edita los datos descriptivos de una persona (no el documento). Pasa por una
+// función SECURITY DEFINER que verifica que la persona esté en el directorio de
+// mi empresa (personas es global y solo tiene policies de lectura).
+export async function editarPersona(personaId: string, formData: FormData) {
+  const supabase = await createClient()
+  const back = `/admin/personal/${personaId}`
+  const backEdit = `${back}/editar`
+  await requireAdministracion(supabase, back)
+
+  const nombres = ((formData.get('nombres') as string) || '').trim()
+  const apPat = ((formData.get('apellido_paterno') as string) || '').trim()
+  if (!nombres || !apPat) redirect(backEdit + '?error=' + encodeURIComponent('Nombres y apellido paterno son obligatorios.'))
+
+  const { error } = await supabase.rpc('actualizar_persona', {
+    p_persona_id: personaId,
+    p_nombres: nombres,
+    p_apellido_paterno: apPat,
+    p_apellido_materno: ((formData.get('apellido_materno') as string) || '').trim() || undefined,
+    p_telefono: ((formData.get('telefono') as string) || '').trim() || undefined,
+    p_nacionalidad: ((formData.get('nacionalidad') as string) || '').trim() || undefined,
+    p_fecha_nacimiento: ((formData.get('fecha_nacimiento') as string) || '').trim() || undefined,
+    p_contacto_emergencia_nombre: ((formData.get('contacto_emergencia_nombre') as string) || '').trim() || undefined,
+    p_contacto_emergencia_telefono: ((formData.get('contacto_emergencia_telefono') as string) || '').trim() || undefined,
+  })
+  if (error) redirect(backEdit + '?error=' + encodeURIComponent(error.message))
+
+  await registrarActividad('persona', personaId, 'editar', { nombres, apellido_paterno: apPat })
+  revalidatePath(back)
+  redirect(back + '?success=editado')
+}
+
 // Crea (o reutiliza) una persona global por documento y la agrega
 // al directorio de mi empresa, con su oficio.
 export async function createPersona(formData: FormData) {
