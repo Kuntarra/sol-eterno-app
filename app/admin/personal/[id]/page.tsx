@@ -8,7 +8,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatRut } from '@/lib/rut'
 import { MODULOS } from '@/lib/modulos'
+import { modulosActivosTenant } from '@/lib/tenant'
 import { BitacoraTimeline } from './_components/bitacora-timeline'
+import { TrazaLinea } from './_components/traza-linea'
 
 interface Props { params: Promise<{ id: string }>; searchParams: Promise<{ success?: string; error?: string }> }
 
@@ -53,6 +55,11 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
     autor_nombre: e.autor_nombre, created_at: e.created_at,
     proyectos: e.proyectos as { nombre: string } | null,
   }))
+
+  // Línea de trazabilidad: etapas confirmadas = módulos con al menos un evento.
+  const modulosActivos = await modulosActivosTenant()
+  const confirmados: Record<string, number> = {}
+  for (const e of eventosVivos) confirmados[e.modulo] = (confirmados[e.modulo] ?? 0) + 1
 
   // Permisos actuales (alcance general) del login de la persona
   const permisos: Record<string, string> = {}
@@ -174,6 +181,9 @@ export default async function FichaPersonaPage({ params, searchParams }: Props) 
           </details>
         </div>
       )}
+
+      {/* Línea de trazabilidad horizontal: recorrido por la cadena de servicios */}
+      <TrazaLinea modulosActivos={modulosActivos} confirmados={confirmados} />
 
       {/* Bitácora viva: timeline de eventos en terreno */}
       <BitacoraTimeline eventos={eventosVivos} />
